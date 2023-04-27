@@ -1,0 +1,4 @@
+(executable
+ (public_name vilangu)
+ (name main)
+ (libraries vilangu tiger_parser))

@@ -1,0 +1,8 @@
+(menhir
+ (modules parser))
+
+(ocamllex lexer)
+
+(library
+ (name tiger_parser)
+ (modules parser lexer json))
