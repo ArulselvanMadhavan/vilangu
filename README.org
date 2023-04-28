@@ -1,0 +1,4 @@
+* Useful links
+ - https://github.com/ksrky/tiger/tree/master
+ - [[https://www.cs.columbia.edu/~sedwards/classes/2002/w4115/tiger.pdf][Tiger Lang specs]]
+ - [[https://github.com/xandkar/tiger.ml][Tiger with tests upto chap 4]]
