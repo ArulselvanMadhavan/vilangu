@@ -1,5 +1,5 @@
 let () =
-  let open Tiger in
+  let open Tlang in
   let lexbuf = Lexing.from_string "1231 + 32 + 4" in
   let parsed_exp =
     try Parser.prog Lexer.token lexbuf with

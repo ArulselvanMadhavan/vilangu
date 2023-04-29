@@ -1,4 +1,4 @@
 (executable
  (public_name vilangu)
  (name main)
- (libraries tiger))
+ (libraries tiger tlang))

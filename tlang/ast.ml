@@ -1,4 +1,3 @@
-(* AST inspired from https://github.com/ksrky/tiger/blob/master/lib/absyn.ml *)
 open Base
 
 type loc = int * int
@@ -14,7 +13,12 @@ type exp =
       ; right : exp
       ; pos : pos
       }
-  | NilExp
+  | NilExp (* Is this needed? *)
 [@@deriving sexp]
 
-and oper = PlusOp
+and oper =
+  | PlusOp
+  | MinusOp
+  | TimesOp
+  | DivideOp
+[@@deriving sexp]
