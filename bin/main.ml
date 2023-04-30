@@ -1,17 +1,18 @@
 let () =
   let open Tlang in
-  let lexbuf = Lexing.from_string "1231 + 32 + 4" in
+  let lexbuf = Lexing.from_string "int main(){}" in
+  let default = Ast.MainFunc [] in
   let parsed_exp =
     try Parser.prog Lexer.token lexbuf with
     | Lexer.Error (_pos, msg) ->
       Printf.printf "Error at %d. %s" 0 msg;
-      Ast.NilExp
+      default
     | Parser.Error ->
       Printf.printf "Parser Error occured";
-      Ast.NilExp
+      default
     | _ ->
       Printf.printf "Unexpected error";
-      Ast.NilExp
+      default
   in
-  Ast.sexp_of_exp parsed_exp |> Sexplib0.Sexp.to_string_hum |> Stdlib.print_string
+  Ast.sexp_of_comp_unit parsed_exp |> Sexplib0.Sexp.to_string_hum |> Stdlib.print_string
 ;;
