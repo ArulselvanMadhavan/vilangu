@@ -11,12 +11,12 @@ exception Error of pos * string
 (*   get_loc (Lexing.lexeme_start_p lexbuf), get_loc (Lexing.lexeme_end_p lexbuf) *)
 }
 
-(* let digit = ['0'-'9'] *)
-(* let alpha = ['a'-'z' 'A'-'Z'] *)
+let digit = ['0'-'9']
+let alpha = ['a'-'z' 'A'-'Z']
 let space = ['\t' '\r' ' ']
 (* let newline = '\n' *)
 (* let decimal = digit+ *)
-(* let id = alpha (alpha | digit | '_')*   *)
+let id = alpha (alpha | digit | '_')*
 
 (* rule token = parse *)
 (* | space+ { token lexbuf} *)
@@ -32,11 +32,14 @@ let space = ['\t' '\r' ' ']
         (* end of a file *)
 rule token = parse
   | space+ { token lexbuf }
+  | ";" { SEMICOLON }
+  | "," { COMMA }
   | "int" { INT }
   | "main" { MAIN }
   | "(" { LPAREN }
   | ")" { RPAREN }
   | "{" { LBRACE }
   | "}" { RBRACE }
+  | id as s       { ID s }
   | eof           { EOF }
   

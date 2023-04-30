@@ -1,6 +1,6 @@
 let () =
   let open Tlang in
-  let lexbuf = Lexing.from_string "int main(){}" in
+  let lexbuf = Lexing.from_string "int main(){ int i; int j; int k;}" in
   let default = Ast.MainFunc [] in
   let parsed_exp =
     try Parser.prog Lexer.token lexbuf with
