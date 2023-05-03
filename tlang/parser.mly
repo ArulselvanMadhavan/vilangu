@@ -4,7 +4,10 @@ open Ast
 %token EOF
 %token INT
 %token MAIN
+%token NULL
 %token <string> ID
+%token <int> NUM
+%token ASSIGN_OP
 %token LPAREN RPAREN LBRACE RBRACE
 %token SEMICOLON
 %token COMMA
@@ -30,11 +33,22 @@ let stmts ==
   list(stmt)
         
 let stmt :=
-  (* | INT; ~=id; SEMICOLON; { VariableDecl { type_=IntType; id=id } } *)
   | INT; ~=ids; SEMICOLON; { VariableDecl {type_=IntType; ids=ids } }
+  | lhs=id; ASSIGN_OP; ~=exp; SEMICOLON; { Assignment {lhs; exp} }
 
 let ids ==
   separated_list(COMMA, id)
+
+let exp :=
+  | ~=primary; { primary }
+
+let primary :=
+  | ~=id; { Identifier id }
+  | ~=literal; { literal }
+
+let literal :=
+  | int=NUM; { IntLit int}
+  | NULL; { NullLit }
 
 let id :=
   | ~=ID;                                 <Symbol.symbol>      

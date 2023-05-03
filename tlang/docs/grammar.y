@@ -245,7 +245,7 @@ AssignmentExpression
 	;
 
 Assignment
-	: LeftHandSide AssignmentOperator AssignmentExpression
+	: LeftexpHandSide AssignmentOperator AssignmentExpression
 	;
 
 LeftHandSide

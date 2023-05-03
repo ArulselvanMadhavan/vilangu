@@ -1,7 +1,13 @@
+let tlang_prog = {| 
+  int main() {
+    int i, j, k;
+    i = 42;
+    j = i;
+  }
+|}
 let () =
   let open Tlang in
-  (* let lexbuf = Lexing.from_string "( 4124 + 321 * 2)" in *)
-  let lexbuf = Lexing.from_string "int main(){ int i, j, k;}" in
+  let lexbuf = Lexing.from_string tlang_prog in
   let default = Ast.MainFunc [] in
   (* let default = Ast.NilExp in *)
   let parsed_exp =

@@ -13,6 +13,15 @@ and stmt =
       { type_ : type_
       ; ids : symbol list
       }
+  | Assignment of
+      { lhs : symbol
+      ; exp : exp
+      }
+
+and exp =
+  | Identifier of symbol
+  | IntLit of int
+  | NullLit
 (* | MultiVarDecl of { type_ : type_; ids: symbol list } *)
 
 and type_ = IntType [@@deriving sexp]
