@@ -24,6 +24,7 @@ rule token = parse
   | ";" { SEMICOLON }
   | "int" { INT }
   | "main" { MAIN }
+  | "while" { WHILE }
   | "null" { NULL }
   | "(" { LPAREN }
   | ")" { RPAREN }
@@ -31,6 +32,8 @@ rule token = parse
   | "}" { RBRACE }
   | "," { COMMA }
   | "=" { ASSIGN_OP }
+  | "<" { LT }
+  | ">" { GT }
   | id as s       { ID s }
   | decimal as num {NUM (int_of_string num)}
   | _             { Error_msg.error (get_pos lexbuf) "illegal character" ; token lexbuf }

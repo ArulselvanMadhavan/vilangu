@@ -4,13 +4,16 @@ open Ast
 %token EOF
 %token INT
 %token MAIN
+%token WHILE
 %token NULL
 %token <string> ID
 %token <int> NUM
 %token ASSIGN_OP
+%token LT GT
 %token LPAREN RPAREN LBRACE RBRACE
 %token SEMICOLON
 %token COMMA
+(* %left LT GT *)
 %start <comp_unit> prog
 
 %{
@@ -35,11 +38,17 @@ let stmts ==
 let stmt :=
   | INT; ~=ids; SEMICOLON; { VariableDecl {type_=IntType; ids=ids } }
   | lhs=id; ASSIGN_OP; ~=exp; SEMICOLON; { Assignment {lhs; exp} }
-
+  | WHILE; ~=exp; ~=block; { While { exp; block} }
 let ids ==
   separated_list(COMMA, id)
 
 let exp :=
+  | left=exp; LT; right=relexp; { OpExp {left; right; oper=LT} }
+  | left=exp; GT; right=relexp; { OpExp {left; right; oper=GT} }
+  | ~=relexp; { relexp }
+
+let relexp :=
+  | LPAREN; ~=exp; RPAREN; { exp }
   | ~=primary; { primary }
 
 let primary :=

@@ -3,8 +3,12 @@ let tlang_prog = {|
     int i, j, k;
     i = 42;
     j = i;
+    while(i < 1){
+      out i;
+    }
   }
 |}
+
 let () =
   let open Tlang in
   let lexbuf = Lexing.from_string tlang_prog in

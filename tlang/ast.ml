@@ -17,11 +17,23 @@ and stmt =
       { lhs : symbol
       ; exp : exp
       }
+  | While of
+      { exp : exp
+      ; block : stmt list
+      }
 
 and exp =
   | Identifier of symbol
   | IntLit of int
+  | OpExp of
+      { left : exp
+      ; oper : oper
+      ; right : exp
+      }
   | NullLit
-(* | MultiVarDecl of { type_ : type_; ids: symbol list } *)
+
+and oper =
+  | LT
+  | GT
 
 and type_ = IntType [@@deriving sexp]
