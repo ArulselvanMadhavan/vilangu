@@ -21,6 +21,7 @@ and stmt =
       { exp : exp
       ; block : stmt list
       }
+  | Output of exp
 
 and exp =
   | Identifier of symbol
@@ -35,5 +36,7 @@ and exp =
 and oper =
   | LT
   | GT
+  | PLUS
+  | MULT
 
 and type_ = IntType [@@deriving sexp]

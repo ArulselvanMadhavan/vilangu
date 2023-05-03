@@ -5,11 +5,14 @@ open Ast
 %token INT
 %token MAIN
 %token WHILE
+%token OUT
 %token NULL
 %token <string> ID
 %token <int> NUM
 %token ASSIGN_OP
 %token LT GT
+%token PLUS
+%token MULT
 %token LPAREN RPAREN LBRACE RBRACE
 %token SEMICOLON
 %token COMMA
@@ -39,6 +42,8 @@ let stmt :=
   | INT; ~=ids; SEMICOLON; { VariableDecl {type_=IntType; ids=ids } }
   | lhs=id; ASSIGN_OP; ~=exp; SEMICOLON; { Assignment {lhs; exp} }
   | WHILE; ~=exp; ~=block; { While { exp; block} }
+  | OUT; ~=exp; SEMICOLON; { Output exp }
+
 let ids ==
   separated_list(COMMA, id)
 
@@ -48,6 +53,14 @@ let exp :=
   | ~=relexp; { relexp }
 
 let relexp :=
+  | left=relexp; PLUS; right=addexp; { OpExp {left;right; oper=PLUS}}
+  | ~=addexp; { addexp }
+
+let addexp :=
+  | left=addexp; MULT; right=mulexp; { OpExp {left; right; oper=MULT}}
+  | ~=mulexp; { mulexp }
+
+let mulexp :=
   | LPAREN; ~=exp; RPAREN; { exp }
   | ~=primary; { primary }
 

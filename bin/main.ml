@@ -1,13 +1,24 @@
-let tlang_prog = {| 
-  int main() {
-    int i, j, k;
-    i = 42;
-    j = i;
-    while(i < 1){
-      out i;
-    }
+let tlang_prog =
+  {| 
+int main()
+{
+  int i;
+  int value;
+
+  i = 0;
+  value = 1;
+
+  while (i < 13)
+  {
+    out i;
+    out value;
+
+    i = i + 1;
+    value = i * value;
   }
+}
 |}
+;;
 
 let () =
   let open Tlang in
