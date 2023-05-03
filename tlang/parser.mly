@@ -4,13 +4,13 @@ open Ast
 %token EOF
 %token INT
 %token MAIN
-%token WHILE
+%token WHILE NEW
 %token OUT
 %token NULL
 %token <string> ID
 %token <int> NUM
 %token ASSIGN_OP
-%token LT GT
+%token LT GT EQUALS
 %token PLUS
 %token MULT
 %token LPAREN RPAREN LBRACE RBRACE LSQB RSQB
@@ -49,29 +49,44 @@ let decls ==
   separated_list(COMMA, decl)
 
 let exp :=
-  | left=exp; LT; right=relexp; { OpExp {left; right; oper=LT} }
-  | left=exp; GT; right=relexp; { OpExp {left; right; oper=GT} }
-  | ~=relexp; { relexp }
+  | left=exp; EQUALS; right=relexp; { OpExp {left; right; oper=EQUALS}}
+  | ~=relexp; {relexp}
 
 let relexp :=
-  | left=relexp; PLUS; right=addexp; { OpExp {left;right; oper=PLUS}}
+  | left=relexp; LT; right=addexp; { OpExp {left; right; oper=LT} }
+  | left=relexp; GT; right=addexp; { OpExp {left; right; oper=GT} }
   | ~=addexp; { addexp }
 
 let addexp :=
-  | left=addexp; MULT; right=mulexp; { OpExp {left; right; oper=MULT}}
+  | left=addexp; PLUS; right=mulexp; { OpExp {left;right; oper=PLUS}}
   | ~=mulexp; { mulexp }
 
 let mulexp :=
-  | LPAREN; ~=exp; RPAREN; { exp }
+  | left=mulexp; MULT; right=castexp; { OpExp {left; right; oper=MULT}}
+  | ~=castexp; { castexp }
+
+let castexp :=
   | ~=primary; { primary }
 
 let primary :=
   | ~=id; { Identifier id }
-  | ~=literal; { literal }
-  (* | ~=arrayexpr; { arrayexpr } *)
+  | ~=arrayexpr; { arrayexpr }
+  | ~=primlit; { primlit }
 
-(* let arrayexpr := *)
-(*   | NEW; INT; ~=dimexpr; { ArrayExp {type_:IntType; exp}} *)
+let primlit :=
+  | LPAREN; ~=exp; RPAREN; { exp }
+  | ~=literal; { literal }
+
+let arrayexpr :=
+  | NEW; INT; ~=dimexprs; { ArrayExp {type_ = IntType; exprs=dimexprs} }
+
+let dimexprs :=
+  | ~=dimexprs; ~=dimexpr; { dimexpr :: dimexprs }
+  | ~=dimexpr; { [dimexpr] }
+
+let dimexpr :=
+  | LSQB; ~=exp; RSQB; { exp }
+
 let literal :=
   | int=NUM; { IntLit int}
   | NULL; { NullLit }

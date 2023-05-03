@@ -6,6 +6,8 @@ int main()
   int i;
   int value;
 
+  x = new int[10];
+
   i = 0;
   value = 1;
 

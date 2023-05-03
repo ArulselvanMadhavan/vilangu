@@ -24,6 +24,7 @@ rule token = parse
   | ";" { SEMICOLON }
   | "int" { INT }
   | "main" { MAIN }
+  | "new" { NEW }
   | "while" { WHILE }
   | "out" { OUT }
   | "null" { NULL }
@@ -32,6 +33,7 @@ rule token = parse
   | "{" { LBRACE }
   | "}" { RBRACE }
   | "," { COMMA }
+  | "==" { EQUALS }
   | "=" { ASSIGN_OP }
   | "<" { LT }
   | ">" { GT }

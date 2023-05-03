@@ -34,6 +34,10 @@ and exp =
       ; oper : oper
       ; right : exp
       }
+  | ArrayExp of
+      { type_ : type_
+      ; exprs : exp list
+      }
   | NullLit
 
 and oper =
@@ -41,5 +45,6 @@ and oper =
   | GT
   | PLUS
   | MULT
+  | EQUALS
 
 and type_ = IntType [@@deriving sexp]
