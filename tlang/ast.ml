@@ -8,11 +8,14 @@ type symbol = Symbol.symbol [@@deriving sexp]
 
 type comp_unit = MainFunc of stmt list
 
+and variable =
+  { type_ : type_
+  ; id : symbol
+  ; is_array : bool
+  }
+
 and stmt =
-  | VariableDecl of
-      { type_ : type_
-      ; ids : symbol list
-      }
+  | VariableDecl of variable list
   | Assignment of
       { lhs : symbol
       ; exp : exp

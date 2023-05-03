@@ -37,6 +37,8 @@ rule token = parse
   | ">" { GT }
   | "+" { PLUS }
   | "*" { MULT }
+  | "[" { LSQB }
+  | "]" { RSQB }
   | id as s       { ID s }
   | decimal as num {NUM (int_of_string num)}
   | _             { Error_msg.error (get_pos lexbuf) "illegal character" ; token lexbuf }

@@ -13,7 +13,7 @@ open Ast
 %token LT GT
 %token PLUS
 %token MULT
-%token LPAREN RPAREN LBRACE RBRACE
+%token LPAREN RPAREN LBRACE RBRACE LSQB RSQB
 %token SEMICOLON
 %token COMMA
 (* %left LT GT *)
@@ -21,7 +21,8 @@ open Ast
 
 %{
 (* let lp((sp, ep) : (Lexing.position * Lexing.position)) : pos *)
-(*   = ((sp.pos_lnum, sp.pos_cnum - sp.pos_bol + 1), (ep.pos_lnum, ep.pos_cnum - sp.pos_bol + 1)) *)
+    (*   = ((sp.pos_lnum, sp.pos_cnum - sp.pos_bol + 1), (ep.pos_lnum, ep.pos_cnum - sp.pos_bol + 1)) *)
+let var (is_array, id) = {type_=IntType; id; is_array}
 %}
 
 %%
@@ -39,13 +40,13 @@ let stmts ==
   list(stmt)
         
 let stmt :=
-  | INT; ~=ids; SEMICOLON; { VariableDecl {type_=IntType; ids=ids } }
+  | INT; ~=decls; SEMICOLON; { VariableDecl (List.map var decls) }
   | lhs=id; ASSIGN_OP; ~=exp; SEMICOLON; { Assignment {lhs; exp} }
   | WHILE; ~=exp; ~=block; { While { exp; block} }
   | OUT; ~=exp; SEMICOLON; { Output exp }
 
-let ids ==
-  separated_list(COMMA, id)
+let decls ==
+  separated_list(COMMA, decl)
 
 let exp :=
   | left=exp; LT; right=relexp; { OpExp {left; right; oper=LT} }
@@ -71,6 +72,10 @@ let primary :=
 let literal :=
   | int=NUM; { IntLit int}
   | NULL; { NullLit }
+
+let decl :=
+  | ~=id; LSQB; RSQB; { (true, id) }
+  | ~=id; { (false, id) }
 
 let id :=
   | ~=ID;                                 <Symbol.symbol>      
