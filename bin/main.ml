@@ -2,7 +2,7 @@ let tlang_prog =
   {| 
 int main()
 {
-  int x[];
+  int x[][][];
   int i;
   int value;
 

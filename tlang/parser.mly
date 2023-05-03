@@ -22,7 +22,7 @@ open Ast
 %{
 (* let lp((sp, ep) : (Lexing.position * Lexing.position)) : pos *)
     (*   = ((sp.pos_lnum, sp.pos_cnum - sp.pos_bol + 1), (ep.pos_lnum, ep.pos_cnum - sp.pos_bol + 1)) *)
-let var (is_array, id) = {type_=IntType; id; is_array}
+let var (rank, id) = {type_=IntType; id; rank}
 %}
 
 %%
@@ -68,14 +68,17 @@ let mulexp :=
 let primary :=
   | ~=id; { Identifier id }
   | ~=literal; { literal }
+  (* | ~=arrayexpr; { arrayexpr } *)
 
+(* let arrayexpr := *)
+(*   | NEW; INT; ~=dimexpr; { ArrayExp {type_:IntType; exp}} *)
 let literal :=
   | int=NUM; { IntLit int}
   | NULL; { NullLit }
 
 let decl :=
-  | ~=id; LSQB; RSQB; { (true, id) }
-  | ~=id; { (false, id) }
+  | (rank, id)=decl; LSQB; RSQB; { (rank + 1, id) }
+  | ~=id; { (0, id) }
 
 let id :=
   | ~=ID;                                 <Symbol.symbol>      

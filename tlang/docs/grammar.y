@@ -66,16 +66,6 @@ FieldDeclaration
 	: Type VariableDeclarators ';'
 	;
 
-VariableDeclarators
-	: VariableDeclarators ',' VariableDeclarator
-	| VariableDeclarator
-	;
-
-VariableDeclarator
-	: VariableDeclarator Dimension
-	| Identifier
-	;
-
 MethodDeclaration
 	: Type MethodDeclarator MethodBody
 	;
@@ -170,6 +160,16 @@ MainBlockStatement
 
 MainVariableDeclarationStatement
 	: MainVariableDeclaration ';'
+	;
+
+VariableDeclarators
+	: VariableDeclarators ',' VariableDeclarator
+	| VariableDeclarator
+	;
+
+VariableDeclarator
+	: VariableDeclarator Dimension
+	| Identifier
 	;
 
 MainVariableDeclaration

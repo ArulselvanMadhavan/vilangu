@@ -11,7 +11,7 @@ type comp_unit = MainFunc of stmt list
 and variable =
   { type_ : type_
   ; id : symbol
-  ; is_array : bool
+  ; rank : int
   }
 
 and stmt =
