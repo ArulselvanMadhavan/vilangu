@@ -41,9 +41,13 @@ let stmts ==
         
 let stmt :=
   | INT; ~=decls; SEMICOLON; { VariableDecl (List.map var decls) }
-  | lhs=id; ASSIGN_OP; ~=exp; SEMICOLON; { Assignment {lhs; exp} }
+  | lhs=lhs; ASSIGN_OP; ~=exp; SEMICOLON; { Assignment {lhs; exp} }
   | WHILE; ~=exp; ~=block; { While { exp; block} }
   | OUT; ~=exp; SEMICOLON; { Output exp }
+
+let lhs :=
+  | ~=id; { SimpleVar id }
+  | ~=array_access; { array_access }
 
 let decls ==
   separated_list(COMMA, decl)
@@ -76,6 +80,10 @@ let primary :=
 let primlit :=
   | LPAREN; ~=exp; RPAREN; { exp }
   | ~=literal; { literal }
+  | ~=array_access; { VarExp array_access }
+
+let array_access :=
+  | ~=id; ~=dimexpr; { (SubscriptVar (SimpleVar id, dimexpr)) }
 
 let arrayexpr :=
   | NEW; INT; ~=dimexprs; { ArrayExp {type_ = IntType; exprs=dimexprs} }

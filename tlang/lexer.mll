@@ -21,6 +21,7 @@ let id = alpha (alpha | digit | '_')*
 rule token = parse
   | space+ { token lexbuf }
   | newline       { Lexing.new_line lexbuf; token lexbuf }
+  | "//"          { line_comment lexbuf }
   | ";" { SEMICOLON }
   | "int" { INT }
   | "main" { MAIN }
@@ -46,3 +47,6 @@ rule token = parse
   | _             { Error_msg.error (get_pos lexbuf) "illegal character" ; token lexbuf }
   | eof           { EOF }  
       
+and line_comment = parse
+| ('\n' | eof)  { Lexing.new_line lexbuf; token lexbuf }
+| _             { line_comment lexbuf }

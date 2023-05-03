@@ -8,6 +8,10 @@ type symbol = Symbol.symbol [@@deriving sexp]
 
 type comp_unit = MainFunc of stmt list
 
+and var =
+  | SimpleVar of symbol
+  | SubscriptVar of var * exp
+
 and variable =
   { type_ : type_
   ; id : symbol
@@ -17,7 +21,7 @@ and variable =
 and stmt =
   | VariableDecl of variable list
   | Assignment of
-      { lhs : symbol
+      { lhs : var
       ; exp : exp
       }
   | While of
@@ -38,6 +42,7 @@ and exp =
       { type_ : type_
       ; exprs : exp list
       }
+  | VarExp of var
   | NullLit
 
 and oper =

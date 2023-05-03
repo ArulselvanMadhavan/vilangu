@@ -2,23 +2,32 @@ let tlang_prog =
   {| 
 int main()
 {
-  int x[][][];
+  int x[];
   int i;
-  int value;
+  int sum;
 
+  // create the array
   x = new int[10];
 
+  // initialize x[i] = i
   i = 0;
-  value = 1;
-
-  while (i < 13)
+  while (i < 10)
   {
-    out i;
-    out value;
-
+    x[i] = i;
     i = i + 1;
-    value = i * value;
   }
+
+  // sum x[i] for i = 0 to 9
+  i = 0;
+  sum = 0;
+  while (i < 10)
+  {
+    sum = sum + x[i];
+    i = i + 1;
+  }
+
+  // output the sum
+  out sum;
 }
 |}
 ;;

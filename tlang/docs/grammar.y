@@ -295,6 +295,11 @@ Primary
 	| PrimaryNoNewArray
 	;
 
+ArrayAccess
+	: Identifier DimensionExpression
+	| PrimaryNoNewArray DimensionExpression
+	;
+
 PrimaryNoNewArray
 	: ParenExpression
 	| THIS
@@ -343,11 +348,6 @@ MethodInvocation
 	: Identifier Arguments
 	| Primary '.' Identifier Arguments
 	| SUPER '.' Identifier Arguments
-	;
-
-ArrayAccess
-	: Identifier DimensionExpression
-	| PrimaryNoNewArray DimensionExpression
 	;
 
 Arguments
