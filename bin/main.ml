@@ -1,33 +1,14 @@
 let tlang_prog =
   {| 
-int main()
+class Animal
 {
-  int x[];
-  int i;
-  int sum;
-
-  // create the array
-  x = new int[10];
-
-  // initialize x[i] = i
-  i = 0;
-  while (i < 10)
+  // all animals must speak
+  int speak()
   {
-    x[i] = i;
-    i = i + 1;
+    // abstract method: should not be called
+    out -1;
+    return 0;
   }
-
-  // sum x[i] for i = 0 to 9
-  i = 0;
-  sum = 0;
-  while (i < 10)
-  {
-    sum = sum + x[i];
-    i = i + 1;
-  }
-
-  // output the sum
-  out sum;
 }
 |}
 ;;

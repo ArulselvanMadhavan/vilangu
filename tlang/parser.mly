@@ -3,7 +3,7 @@ open Ast
 %}
 %token EOF
 %token INT
-%token MAIN
+%token MAIN CLASS
 %token WHILE NEW
 %token OUT
 %token NULL
@@ -31,6 +31,7 @@ let prog :=
   ~=comp_unit; EOF; <>         (* <> is identity *)
 
 let comp_unit :=                       
+  (* | ~=class_decl; { } *)
   | INT; MAIN; LPAREN; RPAREN; ~=block; { MainFunc block }
 
 let block :=

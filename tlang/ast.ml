@@ -6,8 +6,12 @@ and span = loc * loc [@@deriving sexp]
 type pos = span [@@deriving sexp]
 type symbol = Symbol.symbol [@@deriving sexp]
 
-type comp_unit = MainFunc of stmt list
+type comp_unit =
+  | ClassDecs of (classdec list) * stmt list
+  | MainFunc of stmt list
 
+and classdec = { name: symbol; }
+  
 and var =
   | SimpleVar of symbol
   | SubscriptVar of var * exp
