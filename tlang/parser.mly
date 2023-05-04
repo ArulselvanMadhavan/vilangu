@@ -38,9 +38,18 @@ let class_decls ==
    list(class_decl)
 
 let class_decl :=
-      | CLASS; ~=id; { {name = id; base=None} }
-                     | CLASS; name=id; EXTENDS; class_type=id; { {name; base=Some class_type} }
+  | CLASS; ~=id; { {name = id; base=None} }
+  | CLASS; name=id; EXTENDS; class_type=id; { {name; base=Some class_type} }
 
+let class_body :=
+  | LBRACE; ~=class_body_decls; RBRACE; {}
+  | LBRACE; RBRACE; {}
+
+let class_body_decls ==
+  list(class_body_decl)
+
+let class_body_decl :=
+  | SEMICOLON; {}
 let block :=
   | LBRACE; ~=stmts; RBRACE; { stmts }
 (* == is %inline non-terminal *)
