@@ -7,11 +7,29 @@ type pos = span [@@deriving sexp]
 type symbol = Symbol.symbol [@@deriving sexp]
 
 type comp_unit =
-  | ClassDecs of (classdec list)
+  | ClassDecs of classdec list
   | MainFunc of stmt list
 
-and classdec = { name: symbol; base: symbol option}
-  
+and classdec =
+  | ClassDec of
+      { name : symbol
+      ; base : symbol option
+      ; class_body : class_body list
+      }
+
+and class_body =
+  | Constructor of
+      { name : symbol
+      ; params : field list
+      }
+
+and field =
+  | Field of
+      { name : symbol
+      ; typ : type_
+      ; rank : int
+      }
+
 and var =
   | SimpleVar of symbol
   | SubscriptVar of var * exp

@@ -1,10 +1,8 @@
-let tlang_prog =
-  {| 
-class Animal
-
-class Dog extends Animal    
+let tlang_prog = {| 
+class Animal{
+  Animal(int x, int[] y[])
+  }
 |}
-;;
 
 let () =
   let open Tlang in

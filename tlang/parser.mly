@@ -34,22 +34,63 @@ let comp_unit :=
   | ~=class_decls; { ClassDecs class_decls }
   | INT; MAIN; LPAREN; RPAREN; ~=block; { MainFunc block }
 
-let class_decls ==
-   list(class_decl)
+let class_decls :=
+  | ~=class_decls; ~=class_decl; { class_decl :: class_decls }
+  | ~=class_decl; { [ class_decl ] }
 
 let class_decl :=
-  | CLASS; ~=id; { {name = id; base=None} }
-  | CLASS; name=id; EXTENDS; class_type=id; { {name; base=Some class_type} }
+  | CLASS; ~=id; ~=class_body; { ClassDec {name = id; base=None; class_body} }
+  | CLASS; name=id; EXTENDS; class_type=id; ~=class_body; { ClassDec {name; base=Some class_type; class_body} }
 
 let class_body :=
-  | LBRACE; ~=class_body_decls; RBRACE; {}
-  | LBRACE; RBRACE; {}
+  | LBRACE; ~=class_body_decls; RBRACE; { class_body_decls }
+  | LBRACE; RBRACE; { [] }
 
-let class_body_decls ==
-  list(class_body_decl)
+let class_body_decls :=
+  | ~=class_body_decls; ~=class_body_decl; { class_body_decl :: class_body_decls }
+  | ~=class_body_decl; { [ class_body_decl ] }
 
 let class_body_decl :=
-  | SEMICOLON; {}
+  | ~=const_decl; { const_decl }
+
+let const_decl :=
+  | ~=const_desc; { const_desc }
+
+let const_desc :=
+  | ~=id; ~=formal_params; { Constructor {name = id; params = formal_params} }
+
+let formal_params ==
+  | LPAREN; ~=fplist; RPAREN; { fplist }
+
+let fplist == separated_list(COMMA, formal_param)
+
+let formal_param :=
+ | ~=typ; (rank, id)=decl; { Field { typ; name = id; rank } }
+
+let typ :=
+  | ~=prim_type; { prim_type }
+  | ~=ref_type; { ref_type }
+
+let ref_type :=
+  | ~=class_type; { class_type }
+  | ~=arr_type; { arr_type }
+
+let dimension :=
+  | LSQB; RSQB; {}
+
+let arr_type :=
+  | ~=prim_type; dimension; { (rank + 1, typ) }
+  | ~=id; LSQB; RSQB; { (rank + 1, ) }
+
+let prim_type :=
+  | ~=num_type; { num_type }
+
+let num_type :=
+  | ~=int_type; { int_type }
+
+let int_type :=
+  | INT; { IntType }
+
 let block :=
   | LBRACE; ~=stmts; RBRACE; { stmts }
 (* == is %inline non-terminal *)

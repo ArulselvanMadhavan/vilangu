@@ -13,6 +13,8 @@ depends: [
   "ocaml"
   "dune" {>= "3.7"}
   "menhir" {>= "20230415"}
+  "base" {>= "0.15.1"}
+  "ppx_sexp_conv" {>= "0.15.1"}
   "odoc" {with-doc}
 ]
 build: [
