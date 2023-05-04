@@ -1,15 +1,8 @@
 let tlang_prog =
   {| 
 class Animal
-{
-  // all animals must speak
-  int speak()
-  {
-    // abstract method: should not be called
-    out -1;
-    return 0;
-  }
-}
+
+class Dog extends Animal    
 |}
 ;;
 

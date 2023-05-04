@@ -25,6 +25,8 @@ rule token = parse
   | ";" { SEMICOLON }
   | "int" { INT }
   | "main" { MAIN }
+  | "class" { CLASS }
+  | "extends" { EXTENDS }
   | "new" { NEW }
   | "while" { WHILE }
   | "out" { OUT }

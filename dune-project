@@ -20,7 +20,7 @@
  (name vilangu)
  (synopsis "tiger compiler in OCaml")
  (description "Tiger compiler")
- (depends ocaml dune (menhir (>= 20230415)))
+ (depends ocaml dune (menhir (>= 20230415)) (base (>= 0.15.1)) (ppx_sexp_conv (>= 0.15.1)))
  (tags
   (topics compiler tiger)))
 

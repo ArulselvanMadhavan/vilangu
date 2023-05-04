@@ -3,7 +3,7 @@ open Ast
 %}
 %token EOF
 %token INT
-%token MAIN CLASS
+%token MAIN CLASS EXTENDS
 %token WHILE NEW
 %token OUT
 %token NULL
@@ -31,8 +31,15 @@ let prog :=
   ~=comp_unit; EOF; <>         (* <> is identity *)
 
 let comp_unit :=                       
-  (* | ~=class_decl; { } *)
+  | ~=class_decls; { ClassDecs class_decls }
   | INT; MAIN; LPAREN; RPAREN; ~=block; { MainFunc block }
+
+let class_decls ==
+   list(class_decl)
+
+let class_decl :=
+      | CLASS; ~=id; { {name = id; base=None} }
+                     | CLASS; name=id; EXTENDS; class_type=id; { {name; base=Some class_type} }
 
 let block :=
   | LBRACE; ~=stmts; RBRACE; { stmts }

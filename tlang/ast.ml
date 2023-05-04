@@ -7,10 +7,10 @@ type pos = span [@@deriving sexp]
 type symbol = Symbol.symbol [@@deriving sexp]
 
 type comp_unit =
-  | ClassDecs of (classdec list) * stmt list
+  | ClassDecs of (classdec list)
   | MainFunc of stmt list
 
-and classdec = { name: symbol; }
+and classdec = { name: symbol; base: symbol option}
   
 and var =
   | SimpleVar of symbol
