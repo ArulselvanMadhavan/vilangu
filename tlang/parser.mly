@@ -39,7 +39,25 @@ let comp_unit :=
   | cs1=class_decls; ~=main_decl; cs2=class_decls; { {main_decl; classdecs= cs1 @ cs2}}
 
 let main_decl :=
-  | INT; MAIN; LPAREN; RPAREN; ~=block; { block }
+  | INT; MAIN; LPAREN; RPAREN; ~=main_block; { main_block }
+
+let main_block :=
+  | LBRACE; ~=main_blk_stmts; RBRACE; { Block main_blk_stmts }
+  | LBRACE; RBRACE; { Block [] }
+
+let main_blk_stmts :=
+  | ~=main_blk_stmts; ~=main_blk_stmt; { main_blk_stmt :: main_blk_stmts }
+  | ~=main_blk_stmt; { [main_blk_stmt] }
+
+let main_blk_stmt :=
+  | ~=main_var_dec; { main_var_dec }
+  | ~=block_stmt; { block_stmt }
+
+let main_var_dec :=
+  | ~=main_var_desc; SEMICOLON; { main_var_desc }
+
+let main_var_desc :=
+  | (rank1, type_)=typ; ~=decls; { VariableDecl (List.map (fun (rank2, id) -> {type_; id; rank=rank1 + rank2}) decls)}
 
 let class_decls :=
   | ~=class_decls; ~=class_decl; { class_decl :: class_decls }

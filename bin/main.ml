@@ -1,25 +1,27 @@
-let tlang_prog =
-  {| 
-class Animal{
-  Animal(int x, int[][] y[]) {
-    this(4, 5);
-    x = x + 1;
-  }
-    int[] x[],y,z;
-  ~Animal(){
-  }
+let tlang_prog = {| 
+class A {
+  int f(int i) { return 1; }
+  int f(A a) { return 2; }
+}
 
-  int result(int ff){
-    ff = ff + 1;
-    return ff;
-  }
+class B extends A {
+  int f(int i, int j) { return i + j; }
+}
 
-  int res1(){
-    result(ff);
-  }
-  }
+int main()
+{
+  A a;
+  B b;
+
+  a = new A();
+  b = new B();
+
+  out b.f(19) + 14;
+  out b.f(a) + 13;
+  out b.f(b) + 13;
+  out b.f(7, 8);
+}
 |}
-;;
 
 let () =
   let open Tlang in
