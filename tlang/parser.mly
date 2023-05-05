@@ -65,22 +65,23 @@ let formal_params ==
 let fplist == separated_list(COMMA, formal_param)
 
 let formal_param :=
- | ~=typ; (rank, id)=decl; { Field { typ; name = id; rank } }
+ | (rank1, typ)=typ; (rank2, id)=decl; { Field { typ; name = id; rank = rank1 + rank2 } }
 
 let typ :=
-  | ~=prim_type; { prim_type }
+  | ~=prim_type; { (0, prim_type) }
   | ~=ref_type; { ref_type }
 
 let ref_type :=
-  | ~=class_type; { class_type }
+  (* | ~=class_type; { class_type } *)
   | ~=arr_type; { arr_type }
 
 let dimension :=
   | LSQB; RSQB; {}
 
 let arr_type :=
-  | ~=prim_type; dimension; { (rank + 1, typ) }
-  | ~=id; LSQB; RSQB; { (rank + 1, ) }
+  | ~=prim_type; dimension; { (1, prim_type) }
+  | ~=id; dimension; { (1, NameTy id) }
+  | (rank, dim)=arr_type; dimension; {(rank + 1, dim)}
 
 let prim_type :=
   | ~=num_type; { num_type }

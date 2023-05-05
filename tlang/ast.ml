@@ -74,4 +74,4 @@ and oper =
   | MULT
   | EQUALS
 
-and type_ = IntType [@@deriving sexp]
+and type_ = IntType | NameTy of symbol [@@deriving sexp]
