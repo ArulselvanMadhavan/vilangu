@@ -23,6 +23,10 @@ and class_body =
       ; fparams : field list
       ; body : stmt list
       }
+  | Destructor of
+      { name : symbol
+      ; body : stmt list
+      }
 
 and field =
   | Field of
@@ -34,6 +38,7 @@ and field =
 and var =
   | SimpleVar of symbol
   | SubscriptVar of var * exp
+  | FieldVar of var * symbol
 
 and variable =
   { type_ : type_
@@ -53,7 +58,7 @@ and stmt =
       }
   | Output of exp
   | MethodCall of
-      { field : symbol list (* ; ty : symbol . How to encode self/this *)
+      { var : var (* ; ty : symbol . How to encode self/this *)
       ; args : exp list
       }
 

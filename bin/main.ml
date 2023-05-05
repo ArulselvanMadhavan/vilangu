@@ -3,6 +3,9 @@ let tlang_prog =
 class Animal{
   Animal(int x, int[][] y[]) {
     this(4, 5);
+    x = x + 1;
+  }
+  ~Animal(){
   }
   }
 |}

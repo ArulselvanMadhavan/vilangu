@@ -2,9 +2,10 @@
 open Ast
 %}
 %token EOF
+%token TILDE
 %token INT
 %token MAIN CLASS EXTENDS
-%token THIS
+%token THIS SUPER
 %token WHILE NEW
 %token OUT
 %token NULL
@@ -53,16 +54,28 @@ let class_body_decls :=
 
 let class_body_decl :=
   | ~=const_decl; { const_decl }
+  | ~=dest_decl; { dest_decl }
+
+let dest_decl :=
+  | ~=dest_desc; ~=dest_body; { Destructor {name = dest_desc; body = dest_body } }
+
+let dest_desc :=
+  | TILDE; ~=id; LPAREN; RPAREN; { id }
+
+let dest_body :=
+  | ~=block; { block }
 
 let const_decl :=
   | (id, fparams)=const_desc; ~=const_body; { Constructor { name=id; fparams; body=const_body } }
 
 let const_body :=
+  | LBRACE; ~=const_invoc; ~=block_stmts; RBRACE; { const_invoc :: block_stmts }
   | LBRACE; ~=const_invoc; RBRACE; { [ const_invoc ] }
+  | ~=block; { block }
 
 let const_invoc :=
-  | THIS; ~=arguments; SEMICOLON; { MethodCall { field = []; args = arguments} }
-
+  | THIS; ~=arguments; SEMICOLON; { MethodCall { var = SimpleVar (Symbol.symbol "this"); args = arguments } }
+  | SUPER; ~=arguments; SEMICOLON; { MethodCall { var = SimpleVar (Symbol.symbol "super"); args = arguments } }
 let arguments :=
   | LPAREN; ~=args_list; RPAREN; { args_list }
 
@@ -75,8 +88,11 @@ let const_desc :=
 
 let formal_params ==
   | LPAREN; ~=fplist; RPAREN; { fplist }
+  | LPAREN; RPAREN; {[]}
 
-let fplist == separated_list(COMMA, formal_param)
+let fplist :=
+  | ~=fplist; COMMA; ~=formal_param; { formal_param :: fplist }
+  | ~=formal_param; { [ formal_param] }
 
 let formal_param :=
  | (rank1, typ)=typ; (rank2, id)=decl; { Field { typ; name = id; rank = rank1 + rank2 } }
@@ -110,11 +126,16 @@ let int_type :=
   | INT; { IntType }
 
 let block :=
-  | LBRACE; ~=stmts; RBRACE; { stmts }
-(* == is %inline non-terminal *)
-let stmts ==
-  list(stmt)
-        
+  | LBRACE; ~=block_stmts; RBRACE; { block_stmts }
+  | LBRACE; RBRACE; { [] }
+
+let block_stmts :=
+  | ~=block_stmts; ~=block_stmt; { block_stmt :: block_stmts }
+  | ~=block_stmt; { [ block_stmt ] }
+
+let block_stmt :=
+  | ~=stmt; { stmt }
+
 let stmt :=
   | INT; ~=decls; SEMICOLON; { VariableDecl (List.map var decls) }
   | lhs=lhs; ASSIGN_OP; ~=exp; SEMICOLON; { Assignment {lhs; exp} }

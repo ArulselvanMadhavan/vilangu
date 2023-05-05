@@ -28,6 +28,7 @@ rule token = parse
   | "class" { CLASS }
   | "extends" { EXTENDS }
   | "this" { THIS }
+  | "super" { SUPER }
   | "new" { NEW }
   | "while" { WHILE }
   | "out" { OUT }
@@ -47,8 +48,9 @@ rule token = parse
   | "]" { RSQB }
   | id as s       { ID s }
   | decimal as num {NUM (int_of_string num)}
-  | _             { Error_msg.error (get_pos lexbuf) "illegal character" ; token lexbuf }
+  | "~" { TILDE }
   | eof           { EOF }  
+  | _             { Error_msg.error (get_pos lexbuf) "illegal character" ; token lexbuf }
       
 and line_comment = parse
 | ('\n' | eof)  { Lexing.new_line lexbuf; token lexbuf }
