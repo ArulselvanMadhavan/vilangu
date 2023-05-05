@@ -6,8 +6,9 @@ open Ast
 %token INT
 %token MAIN CLASS EXTENDS
 %token THIS SUPER
-%token WHILE NEW RETURN
+%token WHILE NEW RETURN DELETE IF ELSE
 %token OUT
+%token BREAK CONTINUE
 %token NULL
 %token <string> ID
 %token <int> NUM
@@ -16,15 +17,14 @@ open Ast
 %token PLUS
 %token MULT
 %token LPAREN RPAREN LBRACE RBRACE LSQB RSQB
-%token SEMICOLON
-%token COMMA
+%token SEMICOLON COMMA DOT
 (* %left LT GT *)
 %start <comp_unit> prog
 
 %{
 (* let lp((sp, ep) : (Lexing.position * Lexing.position)) : pos *)
     (*   = ((sp.pos_lnum, sp.pos_cnum - sp.pos_bol + 1), (ep.pos_lnum, ep.pos_cnum - sp.pos_bol + 1)) *)
-let var (rank, id) = {type_=IntType; id; rank}
+(* let var (rank, id) = {type_=IntType; id; rank} *)
 %}
 
 %%
@@ -82,15 +82,20 @@ let const_decl :=
   | (id, fparams)=const_desc; ~=const_body; { Constructor { name=id; fparams; body=const_body } }
 
 let const_body :=
-  | LBRACE; ~=const_invoc; ~=block_stmts; RBRACE; { const_invoc :: block_stmts }
-  | LBRACE; ~=const_invoc; RBRACE; { [ const_invoc ] }
+  | LBRACE; ~=const_invoc; ~=block_stmts; RBRACE; { Block (ExprStmt const_invoc :: block_stmts) }
+  | LBRACE; ~=const_invoc; RBRACE; { Block [ ExprStmt const_invoc ] }
   | ~=block; { block }
 
+let mth_invoc :=
+  | ~=id; ~=arguments; { MethodCall {base = Identifier id; field = None; args = arguments} }
+  | ~=primary;  DOT; ~=id; ~=arguments; { MethodCall {base = primary; field = Some (Identifier id); args = arguments} }
+  | SUPER; DOT; ~=id; ~=arguments; { MethodCall {base=Super; field=Some (Identifier id); args=arguments} }
 let const_invoc :=
-  | THIS; ~=arguments; SEMICOLON; { MethodCall { var = SimpleVar (Symbol.symbol "this"); args = arguments } }
-  | SUPER; ~=arguments; SEMICOLON; { MethodCall { var = SimpleVar (Symbol.symbol "super"); args = arguments } }
+  | THIS; ~=arguments; SEMICOLON; { MethodCall { base = This; field = None; args = arguments } }
+  | SUPER; ~=arguments; SEMICOLON; { MethodCall { base = Super; field = None; args = arguments } }
 let arguments :=
   | LPAREN; ~=args_list; RPAREN; { args_list }
+  | LPAREN; RPAREN; {[]}
 
 let args_list :=
   | ~=args_list; COMMA; ~=exp; { exp :: args_list }
@@ -129,6 +134,10 @@ let class_type :=
 let dimension :=
   | LSQB; RSQB; {}
 
+let dimensions :=
+  | rank=dimensions; _d=dimension; { rank + 1}
+  | _d=dimension; { 1 }
+
 let arr_type :=
   | ~=prim_type; dimension; { (1, prim_type) }
   | ~=id; dimension; { (1, NameTy id) }
@@ -144,8 +153,8 @@ let int_type :=
   | INT; { IntType }
 
 let block :=
-  | LBRACE; ~=block_stmts; RBRACE; { block_stmts }
-  | LBRACE; RBRACE; { [] }
+  | LBRACE; ~=block_stmts; RBRACE; { Block block_stmts }
+  | LBRACE; RBRACE; { Block [] }
 
 let block_stmts :=
   | ~=block_stmts; ~=block_stmt; { block_stmt :: block_stmts }
@@ -155,11 +164,44 @@ let block_stmt :=
   | ~=stmt; { stmt }
 
 let stmt :=
-  | INT; ~=decls; SEMICOLON; { VariableDecl (List.map var decls) }
-  | lhs=lhs; ASSIGN_OP; ~=exp; SEMICOLON; { Assignment {lhs; exp} }
-  | WHILE; ~=exp; ~=block; { While { exp; block} }
+  | ~=while_stmt; <>
+  | ~=return_stmt; <>
+  | ~=empty_stmt; <>
+  | ~=continue; <>                                  
+  | ~=break; <>
+  | ~=expr_stmt; <>
+  | ~=delete_stmt; <>
+  | ~=if_stmt; <>
+  | ~=out_stmt; <>
+  | ~=block; <>
+
+let while_stmt :=
+  | WHILE; ~=paren_exp; ~=stmt; { While { exp=paren_exp; block=stmt} }
+let out_stmt :=                
   | OUT; ~=exp; SEMICOLON; { Output exp }
-  | ~=return_stmt; <>                                                                       
+
+let if_stmt :=
+  | IF; exp=paren_exp; istmt=stmt; ELSE; estmt=stmt; { IfElse {exp;istmt;estmt} }
+
+let delete_stmt :=
+  | DELETE; ~=exp; SEMICOLON; { Delete exp }
+
+let expr_stmt :=
+  | ~=stmt_expr; SEMICOLON; { stmt_expr }
+
+let stmt_expr :=
+  | ~=assignment; { assignment }
+  | ~=mth_invoc; { ExprStmt mth_invoc}
+
+let assignment :=
+  | lhs=lhs; ASSIGN_OP; ~=exp; { Assignment {lhs; exp} }
+
+let empty_stmt :=                    
+  | SEMICOLON; {Empty}
+let continue :=
+  | CONTINUE; { Continue }
+let break :=
+  | BREAK; { Break }
 
 let return_stmt :=                     
   | RETURN; SEMICOLON; { ReturnStmt None}
@@ -197,17 +239,33 @@ let primary :=
   | ~=arrayexpr; { arrayexpr }
   | ~=primlit; { primlit }
 
-let primlit :=
+let paren_exp :=
   | LPAREN; ~=exp; RPAREN; { exp }
+
+let primlit :=
+  | ~=paren_exp; { paren_exp }
+  | THIS; { This }
+  | ~=field_access; { field_access }
+  | ~=mth_invoc; { mth_invoc }
   | ~=literal; { literal }
   | ~=array_access; { VarExp array_access }
+  | ~=class_inst_creation; { class_inst_creation }
+
+let class_inst_creation :=
+  | NEW; (_, type_)=class_type; ~=arguments; { ClassCreationExp {type_; args=arguments} }
+
+let field_access :=
+  | ~=primary; DOT; ~=id; { FieldAccess (primary, id) }
+  | SUPER; DOT; ~=id; { FieldAccess (Super, id) }
 
 let array_access :=
   | ~=id; ~=dimexpr; { (SubscriptVar (SimpleVar id, dimexpr)) }
 
 let arrayexpr :=
-  | NEW; INT; ~=dimexprs; { ArrayExp {type_ = IntType; exprs=dimexprs} }
-
+  | NEW; ~=prim_type; ~=dimexprs; empty_dims=dimensions; { ArrayCreationExp {type_=prim_type; exprs=dimexprs; empty_dims}}
+  | NEW; ~=prim_type; ~=dimexprs; { ArrayCreationExp {type_ = prim_type; exprs=dimexprs; empty_dims=0} }
+  | NEW; (_, type_)=class_type; ~=dimexprs; empty_dims=dimensions; { ArrayCreationExp {type_; exprs=dimexprs; empty_dims}}
+  | NEW; (_, type_)=class_type; ~=dimexprs; { ArrayCreationExp {type_; exprs=dimexprs; empty_dims=0}}
 let dimexprs :=
   | ~=dimexprs; ~=dimexpr; { dimexpr :: dimexprs }
   | ~=dimexpr; { [dimexpr] }

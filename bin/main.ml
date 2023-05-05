@@ -13,6 +13,10 @@ class Animal{
     ff = ff + 1;
     return ff;
   }
+
+  int res1(){
+    result(ff);
+  }
   }
 |}
 ;;
@@ -20,7 +24,7 @@ class Animal{
 let () =
   let open Tlang in
   let lexbuf = Lexing.from_string tlang_prog in
-  let default = Ast.MainFunc [] in
+  let default = Ast.MainFunc (Block []) in
   (* let default = Ast.NilExp in *)
   let parsed_exp =
     try Parser.prog Lexer.token lexbuf with

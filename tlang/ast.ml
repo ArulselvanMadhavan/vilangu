@@ -8,7 +8,7 @@ type symbol = Symbol.symbol [@@deriving sexp]
 
 type comp_unit =
   | ClassDecs of classdec list
-  | MainFunc of stmt list
+  | MainFunc of stmt
 
 and classdec =
   | ClassDec of
@@ -34,18 +34,18 @@ and class_body =
   | Constructor of
       { name : symbol
       ; fparams : param list
-      ; body : stmt list
+      ; body : stmt
       }
   | FieldDec of class_field list
   | Method of
       { name : symbol
       ; return_t : return_t
       ; fparams : param list
-      ; body : stmt list
+      ; body : stmt
       }
   | Destructor of
       { name : symbol
-      ; body : stmt list
+      ; body : stmt
       }
 
 and param =
@@ -68,20 +68,27 @@ and variable =
 
 and stmt =
   | VariableDecl of variable list
+  | Block of stmt list
   | Assignment of
       { lhs : var
       ; exp : exp
       }
   | While of
       { exp : exp
-      ; block : stmt list
+      ; block : stmt
       }
   | Output of exp
-  | MethodCall of
-      { var : var (* ; ty : symbol . How to encode self/this *)
-      ; args : exp list
-      }
   | ReturnStmt of exp option
+  | Empty
+  | Break
+  | Continue
+  | ExprStmt of exp
+  | Delete of exp
+  | IfElse of
+      { exp : exp
+      ; istmt : stmt
+      ; estmt : stmt
+      }
 
 and exp =
   | Identifier of symbol
@@ -91,12 +98,25 @@ and exp =
       ; oper : oper
       ; right : exp
       }
-  | ArrayExp of
+  | ArrayCreationExp of
       { type_ : type_
       ; exprs : exp list
+      ; empty_dims : int
+      }
+  | ClassCreationExp of
+      { type_ : type_
+      ; args : exp list
       }
   | VarExp of var
   | NullLit
+  | This
+  | Super
+  | MethodCall of
+      { base : exp
+      ; field : exp option
+      ; args : exp list
+      }
+  | FieldAccess of exp * symbol
 
 and oper =
   | LT

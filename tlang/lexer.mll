@@ -30,15 +30,21 @@ rule token = parse
   | "this" { THIS }
   | "super" { SUPER }
   | "new" { NEW }
+  | "delete" { DELETE}
+  | "if" { IF }
+  | "else" { ELSE }
   | "return" { RETURN }
   | "while" { WHILE }
   | "out" { OUT }
+  | "break" { BREAK }
+  | "continue" { CONTINUE }
   | "null" { NULL }
   | "(" { LPAREN }
   | ")" { RPAREN }
   | "{" { LBRACE }
   | "}" { RBRACE }
   | "," { COMMA }
+  | "." { DOT }
   | "==" { EQUALS }
   | "=" { ASSIGN_OP }
   | "<" { LT }
