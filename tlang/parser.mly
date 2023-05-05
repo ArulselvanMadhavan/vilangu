@@ -14,7 +14,7 @@ open Ast
 %token <int> NUM
 %token ASSIGN_OP
 %token LT GT EQUALS
-%token PLUS
+%token PLUS MINUS
 %token MULT
 %token LPAREN RPAREN LBRACE RBRACE LSQB RSQB
 %token SEMICOLON COMMA DOT
@@ -251,9 +251,11 @@ let addexp :=
   | ~=mulexp; { mulexp }
 
 let mulexp :=
-  | left=mulexp; MULT; right=castexp; { OpExp {left; right; oper=MULT}}
-  | ~=castexp; { castexp }
+  | left=mulexp; MULT; right=unaryexp; { OpExp {left; right; oper=MULT}}
+  | ~=unaryexp; { unaryexp }
 
+let unaryexp :=
+  | MINUS; ~=unaryexp; { OpExp { left=IntLit 0; oper=}}
 let castexp :=
   | ~=primary; { primary }
 
