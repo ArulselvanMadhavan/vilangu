@@ -81,6 +81,7 @@ and stmt =
       { var : var (* ; ty : symbol . How to encode self/this *)
       ; args : exp list
       }
+  | ReturnStmt of exp option
 
 and exp =
   | Identifier of symbol

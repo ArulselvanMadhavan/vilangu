@@ -11,6 +11,7 @@ class Animal{
 
   int result(int ff){
     ff = ff + 1;
+    return ff;
   }
   }
 |}

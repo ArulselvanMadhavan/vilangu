@@ -6,7 +6,7 @@ open Ast
 %token INT
 %token MAIN CLASS EXTENDS
 %token THIS SUPER
-%token WHILE NEW
+%token WHILE NEW RETURN
 %token OUT
 %token NULL
 %token <string> ID
@@ -159,6 +159,11 @@ let stmt :=
   | lhs=lhs; ASSIGN_OP; ~=exp; SEMICOLON; { Assignment {lhs; exp} }
   | WHILE; ~=exp; ~=block; { While { exp; block} }
   | OUT; ~=exp; SEMICOLON; { Output exp }
+  | ~=return_stmt; <>                                                                       
+
+let return_stmt :=                     
+  | RETURN; SEMICOLON; { ReturnStmt None}
+  | RETURN; ~=exp; SEMICOLON; {ReturnStmt (Some exp)}
 
 let lhs :=
   | ~=id; { SimpleVar id }

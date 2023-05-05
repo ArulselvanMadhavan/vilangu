@@ -30,6 +30,7 @@ rule token = parse
   | "this" { THIS }
   | "super" { SUPER }
   | "new" { NEW }
+  | "return" { RETURN }
   | "while" { WHILE }
   | "out" { OUT }
   | "null" { NULL }
