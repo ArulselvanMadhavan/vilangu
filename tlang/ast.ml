@@ -17,7 +17,19 @@ and classdec =
       ; class_body : class_body list
       }
 
-and class_field = Field of { name: symbol; type_: type_; rank: int}
+and class_field =
+  | Field of
+      { name : symbol
+      ; type_ : type_
+      ; rank : int
+      }
+
+and return_t =
+  | Return of
+      { type_ : type_
+      ; rank : int
+      }
+
 and class_body =
   | Constructor of
       { name : symbol
@@ -25,6 +37,12 @@ and class_body =
       ; body : stmt list
       }
   | FieldDec of class_field list
+  | Method of
+      { name : symbol
+      ; return_t : return_t
+      ; fparams : param list
+      ; body : stmt list
+      }
   | Destructor of
       { name : symbol
       ; body : stmt list

@@ -8,6 +8,10 @@ class Animal{
     int[] x[],y,z;
   ~Animal(){
   }
+
+  int result(int ff){
+    ff = ff + 1;
+  }
   }
 |}
 ;;

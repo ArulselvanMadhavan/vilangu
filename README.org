@@ -3,7 +3,13 @@
 - [ ] Add position to AST
 - [ ] Add support for error reporting
 - [ ] AST for this, super is confusing
-- 
+- [ ] Is this grammar for real?
+#+begin_src yacc
+MethodDeclarator
+	: Identifier FormalParameters
+	| MethodDeclarator Dimension
+	;
+#+end_src
 * Useful links
  - https://github.com/ksrky/tiger/tree/master
  - [[https://www.cs.columbia.edu/~sedwards/classes/2002/w4115/tiger.pdf][Tiger Lang specs]]

@@ -59,7 +59,13 @@ let class_body_decl :=
 
 let class_mem :=
   | ~=field_decl; { field_decl }
+  | ~=mthd_decl; { mthd_decl }
 
+let mthd_decl :=
+  | (rank, type_)=typ; (id, fparams)=mthd_desc; ~=mth_body; { Method {return_t = Return { type_; rank}; name=id; fparams ; body = mth_body} }
+
+let mth_body :=
+  | ~=block; { block }
 let field_decl :=
   | (rank1, type_)=typ; ~=decls; SEMICOLON; { FieldDec (List.map (fun (rank2, id) -> Field { type_; rank = rank1 + rank2; name = id}) decls) }
 
@@ -92,6 +98,11 @@ let args_list :=
 
 let const_desc :=
   | ~=id; ~=formal_params; { (id,formal_params) }
+
+let mthd_desc :=
+  | ~=id; ~=formal_params; { (id, formal_params) }
+  (* method_decl dimension - Is this true?*)
+
 
 let formal_params ==
   | LPAREN; ~=fplist; RPAREN; { fplist }
