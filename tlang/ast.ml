@@ -7,8 +7,9 @@ type pos = span [@@deriving sexp]
 type symbol = Symbol.symbol [@@deriving sexp]
 
 type comp_unit =
-  | ClassDecs of classdec list
-  | MainFunc of stmt
+  { main_decl : stmt
+  ; classdecs : classdec list
+  }
 
 and classdec =
   | ClassDec of

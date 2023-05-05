@@ -33,8 +33,13 @@ let prog :=
   ~=comp_unit; EOF; <>         (* <> is identity *)
 
 let comp_unit :=                       
-  | ~=class_decls; { ClassDecs class_decls }
-  | INT; MAIN; LPAREN; RPAREN; ~=block; { MainFunc block }
+  | ~=main_decl; { {main_decl ; classdecs = []}}
+  | ~=main_decl; ~=class_decls; { {main_decl; classdecs = class_decls} }
+  | ~=class_decls; ~=main_decl; { {main_decl; classdecs = class_decls} }
+  | cs1=class_decls; ~=main_decl; cs2=class_decls; { {main_decl; classdecs= cs1 @ cs2}}
+
+let main_decl :=
+  | INT; MAIN; LPAREN; RPAREN; ~=block; { block }
 
 let class_decls :=
   | ~=class_decls; ~=class_decl; { class_decl :: class_decls }

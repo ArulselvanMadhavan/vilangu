@@ -24,8 +24,7 @@ class Animal{
 let () =
   let open Tlang in
   let lexbuf = Lexing.from_string tlang_prog in
-  let default = Ast.MainFunc (Block []) in
-  (* let default = Ast.NilExp in *)
+  let default = Ast.{ main_decl = Block []; classdecs = [] } in
   let parsed_exp =
     try Parser.prog Lexer.token lexbuf with
     | Lexer.Error (_pos, msg) ->
