@@ -5,6 +5,7 @@ class Animal{
     this(4, 5);
     x = x + 1;
   }
+    int[] x[],y,z;
   ~Animal(){
   }
   }

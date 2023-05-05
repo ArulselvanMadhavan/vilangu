@@ -17,19 +17,21 @@ and classdec =
       ; class_body : class_body list
       }
 
+and class_field = Field of { name: symbol; type_: type_; rank: int}
 and class_body =
   | Constructor of
       { name : symbol
-      ; fparams : field list
+      ; fparams : param list
       ; body : stmt list
       }
+  | FieldDec of class_field list
   | Destructor of
       { name : symbol
       ; body : stmt list
       }
 
-and field =
-  | Field of
+and param =
+  | Param of
       { name : symbol
       ; typ : type_
       ; rank : int

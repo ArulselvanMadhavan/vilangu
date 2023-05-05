@@ -55,6 +55,13 @@ let class_body_decls :=
 let class_body_decl :=
   | ~=const_decl; { const_decl }
   | ~=dest_decl; { dest_decl }
+  | ~=class_mem; { class_mem }
+
+let class_mem :=
+  | ~=field_decl; { field_decl }
+
+let field_decl :=
+  | (rank1, type_)=typ; ~=decls; SEMICOLON; { FieldDec (List.map (fun (rank2, id) -> Field { type_; rank = rank1 + rank2; name = id}) decls) }
 
 let dest_decl :=
   | ~=dest_desc; ~=dest_body; { Destructor {name = dest_desc; body = dest_body } }
@@ -95,7 +102,7 @@ let fplist :=
   | ~=formal_param; { [ formal_param] }
 
 let formal_param :=
- | (rank1, typ)=typ; (rank2, id)=decl; { Field { typ; name = id; rank = rank1 + rank2 } }
+ | (rank1, typ)=typ; (rank2, id)=decl; { Param { typ; name = id; rank = rank1 + rank2 } }
 
 let typ :=
   | ~=prim_type; { (0, prim_type) }
