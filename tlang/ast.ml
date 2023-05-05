@@ -20,7 +20,8 @@ and classdec =
 and class_body =
   | Constructor of
       { name : symbol
-      ; params : field list
+      ; fparams : field list
+      ; body : stmt list
       }
 
 and field =
@@ -51,6 +52,10 @@ and stmt =
       ; block : stmt list
       }
   | Output of exp
+  | MethodCall of
+      { field : symbol list (* ; ty : symbol . How to encode self/this *)
+      ; args : exp list
+      }
 
 and exp =
   | Identifier of symbol
@@ -74,4 +79,7 @@ and oper =
   | MULT
   | EQUALS
 
-and type_ = IntType | NameTy of symbol [@@deriving sexp]
+and type_ =
+  | IntType
+  | NameTy of symbol
+[@@deriving sexp]

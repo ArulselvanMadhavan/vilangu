@@ -4,6 +4,7 @@ open Ast
 %token EOF
 %token INT
 %token MAIN CLASS EXTENDS
+%token THIS
 %token WHILE NEW
 %token OUT
 %token NULL
@@ -54,10 +55,23 @@ let class_body_decl :=
   | ~=const_decl; { const_decl }
 
 let const_decl :=
-  | ~=const_desc; { const_desc }
+  | (id, fparams)=const_desc; ~=const_body; { Constructor { name=id; fparams; body=const_body } }
+
+let const_body :=
+  | LBRACE; ~=const_invoc; RBRACE; { [ const_invoc ] }
+
+let const_invoc :=
+  | THIS; ~=arguments; SEMICOLON; { MethodCall { field = []; args = arguments} }
+
+let arguments :=
+  | LPAREN; ~=args_list; RPAREN; { args_list }
+
+let args_list :=
+  | ~=args_list; COMMA; ~=exp; { exp :: args_list }
+  | ~=exp; { [exp]}
 
 let const_desc :=
-  | ~=id; ~=formal_params; { Constructor {name = id; params = formal_params} }
+  | ~=id; ~=formal_params; { (id,formal_params) }
 
 let formal_params ==
   | LPAREN; ~=fplist; RPAREN; { fplist }
@@ -72,8 +86,11 @@ let typ :=
   | ~=ref_type; { ref_type }
 
 let ref_type :=
-  (* | ~=class_type; { class_type } *)
+  | ~=class_type; { class_type }
   | ~=arr_type; { arr_type }
+
+let class_type :=
+  | ~=id; { (0, NameTy id) }
 
 let dimension :=
   | LSQB; RSQB; {}

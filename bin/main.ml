@@ -1,8 +1,12 @@
-let tlang_prog = {| 
+let tlang_prog =
+  {| 
 class Animal{
-  Animal(int x, int[][] y[])
+  Animal(int x, int[][] y[]) {
+    this(4, 5);
+  }
   }
 |}
+;;
 
 let () =
   let open Tlang in

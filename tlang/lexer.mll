@@ -27,6 +27,7 @@ rule token = parse
   | "main" { MAIN }
   | "class" { CLASS }
   | "extends" { EXTENDS }
+  | "this" { THIS }
   | "new" { NEW }
   | "while" { WHILE }
   | "out" { OUT }
