@@ -120,11 +120,12 @@ and exp =
   | FieldAccess of exp * symbol
 
 and oper =
-  | LT
-  | GT
-  | PLUS
-  | MULT
-  | EQUALS
+  | LessThanOp
+  | GreaterThanOp
+  | PlusOp
+  | MultOp
+  | EqualsOp
+  | MinusOp
 
 and type_ =
   | IntType

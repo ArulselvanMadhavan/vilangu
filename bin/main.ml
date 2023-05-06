@@ -1,7 +1,8 @@
-let tlang_prog = {| 
+let tlang_prog =
+  {| 
 class A {
   int f(int i) { return 1; }
-  int f(A a) { return 2; }
+  int f(A a) { return 5-2; }
 }
 
 class B extends A {
@@ -22,6 +23,7 @@ int main()
   out b.f(7, 8);
 }
 |}
+;;
 
 let () =
   let open Tlang in

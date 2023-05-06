@@ -50,6 +50,7 @@ rule token = parse
   | "<" { LT }
   | ">" { GT }
   | "+" { PLUS }
+  | "-" { MINUS }
   | "*" { MULT }
   | "[" { LSQB }
   | "]" { RSQB }

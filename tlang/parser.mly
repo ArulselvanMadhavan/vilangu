@@ -19,6 +19,7 @@ open Ast
 %token LPAREN RPAREN LBRACE RBRACE LSQB RSQB
 %token SEMICOLON COMMA DOT
 (* %left LT GT *)
+(* %nonassoc UMINUS *)
 %start <comp_unit> prog
 
 %{
@@ -238,24 +239,27 @@ let decls ==
   separated_list(COMMA, decl)
 
 let exp :=
-  | left=exp; EQUALS; right=relexp; { OpExp {left; right; oper=EQUALS}}
+  | left=exp; EQUALS; right=relexp; { OpExp {left; right; oper=EqualsOp}}
   | ~=relexp; {relexp}
 
 let relexp :=
-  | left=relexp; LT; right=addexp; { OpExp {left; right; oper=LT} }
-  | left=relexp; GT; right=addexp; { OpExp {left; right; oper=GT} }
+  | left=relexp; LT; right=addexp; { OpExp {left; right; oper=LessThanOp} }
+  | left=relexp; GT; right=addexp; { OpExp {left; right; oper=GreaterThanOp} }
   | ~=addexp; { addexp }
 
 let addexp :=
-  | left=addexp; PLUS; right=mulexp; { OpExp {left;right; oper=PLUS}}
+  | left=addexp; PLUS; right=mulexp; { OpExp {left;right; oper=PlusOp}}
+  | left=addexp; MINUS; right=mulexp; {OpExp {left; right; oper=MinusOp}}
   | ~=mulexp; { mulexp }
 
 let mulexp :=
-  | left=mulexp; MULT; right=unaryexp; { OpExp {left; right; oper=MULT}}
+  | left=mulexp; MULT; right=unaryexp; { OpExp {left; right; oper=MultOp}}
   | ~=unaryexp; { unaryexp }
 
 let unaryexp :=
-  | MINUS; ~=unaryexp; { OpExp { left=IntLit 0; oper=}}
+  | MINUS; right=castexp;        { OpExp{left=IntLit 0; oper=MinusOp; right;} }
+  | ~=castexp; <>
+
 let castexp :=
   | ~=primary; { primary }
 
