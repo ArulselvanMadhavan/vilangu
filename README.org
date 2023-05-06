@@ -1,16 +1,19 @@
-* TODO
-- [ ] Symbol table is global. Need Env specific symbol tables
-- [ ] Add position to AST
-- [ ] Add support for error reporting
-- [ ] AST for this, super is confusing
-- [ ] Is this grammar for real?
-#+begin_src yacc
-MethodDeclarator
-	: Identifier FormalParameters
-	| MethodDeclarator Dimension
-	;
-#+end_src
-* Useful links
- - https://github.com/ksrky/tiger/tree/master
- - [[https://www.cs.columbia.edu/~sedwards/classes/2002/w4115/tiger.pdf][Tiger Lang specs]]
- - [[https://github.com/xandkar/tiger.ml][Tiger with tests upto chap 4]]
+* Tlang in OCaml
+** Specs
+- [[https://www.cs.unh.edu/~cs712/T_language_spec/grammar.y][specs]]
+** TODO
+ - [ ] Symbol table is global. Need Env specific symbol tables
+ - [ ] Add position to AST
+ - [ ] Add support for error reporting
+ - [ ] AST for this, super is confusing
+ - [ ] Is this grammar for real?
+ #+begin_src yacc
+ MethodDeclarator
+	 : Identifier FormalParameters
+	 | MethodDeclarator Dimension
+	 ;
+ #+end_src
+** Useful links
+  - https://github.com/ksrky/tiger/tree/master
+  - [[https://www.cs.columbia.edu/~sedwards/classes/2002/w4115/tiger.pdf][Tiger Lang specs]]
+  - [[https://github.com/xandkar/tiger.ml][Tiger with tests upto chap 4]]
