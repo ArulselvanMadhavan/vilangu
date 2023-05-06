@@ -66,6 +66,16 @@ FieldDeclaration
 	: Type VariableDeclarators ';'
 	;
 
+VariableDeclarators
+	: VariableDeclarators ',' VariableDeclarator
+	| VariableDeclarator
+	;
+
+VariableDeclarator
+	: VariableDeclarator Dimension
+	| Identifier
+	;
+
 MethodDeclaration
 	: Type MethodDeclarator MethodBody
 	;
@@ -79,21 +89,20 @@ MethodBody
 	: Block
 	;
 
-/* done */
 ConstructorDeclaration
 	: ConstructorDeclarator ConstructorBody
 	;
-/* done */
+
 ConstructorDeclarator
 	: Identifier FormalParameters
 	;
-/* done */
+
 ConstructorBody
 	: '{' ConstructorInvocation BlockStatements '}'
 	| '{' ConstructorInvocation '}'
 	| Block
 	;
-/* done */
+
 ConstructorInvocation
 	: THIS Arguments ';'
 	| SUPER Arguments ';'
@@ -110,17 +119,17 @@ DestructorDeclarator
 DestructorBody
 	: Block
 	;
-/* done */
+
 FormalParameters
 	: '(' FormalParameterList ')'
 	| '(' ')'
 	;
-/* done */
+
 FormalParameterList
 	: FormalParameterList ',' FormalParameter
 	| FormalParameter
 	;
-/* done */
+
 FormalParameter
 	: Type VariableDeclaratorID
 	;
@@ -129,12 +138,12 @@ VariableDeclaratorID
 	: VariableDeclaratorID Dimension
 	| Identifier
 	;
-/* done */
+
 Block
 	: '{' BlockStatements '}'
 	| '{' '}'
 	;
-/* done */
+
 BlockStatements
 	: BlockStatements BlockStatement
 	| BlockStatement
@@ -161,16 +170,6 @@ MainBlockStatement
 
 MainVariableDeclarationStatement
 	: MainVariableDeclaration ';'
-	;
-
-VariableDeclarators
-	: VariableDeclarators ',' VariableDeclarator
-	| VariableDeclarator
-	;
-
-VariableDeclarator
-	: VariableDeclarator Dimension
-	| Identifier
 	;
 
 MainVariableDeclaration
@@ -246,7 +245,7 @@ AssignmentExpression
 	;
 
 Assignment
-	: LeftexpHandSide AssignmentOperator AssignmentExpression
+	: LeftHandSide AssignmentOperator AssignmentExpression
 	;
 
 LeftHandSide
@@ -294,11 +293,6 @@ Primary
 	: ArrayCreationExpression
 	| Identifier
 	| PrimaryNoNewArray
-	;
-
-ArrayAccess
-	: Identifier DimensionExpression
-	| PrimaryNoNewArray DimensionExpression
 	;
 
 PrimaryNoNewArray
@@ -349,6 +343,11 @@ MethodInvocation
 	: Identifier Arguments
 	| Primary '.' Identifier Arguments
 	| SUPER '.' Identifier Arguments
+	;
+
+ArrayAccess
+	: Identifier DimensionExpression
+	| PrimaryNoNewArray DimensionExpression
 	;
 
 Arguments

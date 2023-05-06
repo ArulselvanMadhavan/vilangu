@@ -18,6 +18,7 @@ open Ast
 %token MULT
 %token LPAREN RPAREN LBRACE RBRACE LSQB RSQB
 %token SEMICOLON COMMA DOT
+%token NOT
 (* %left LT GT *)
 (* %nonassoc UMINUS *)
 %start <comp_unit> prog
@@ -46,20 +47,6 @@ let main_block :=
   | LBRACE; ~=main_blk_stmts; RBRACE; { Block main_blk_stmts }
   | LBRACE; RBRACE; { Block [] }
 
-let main_blk_stmts :=
-  | ~=main_blk_stmts; ~=main_blk_stmt; { main_blk_stmt :: main_blk_stmts }
-  | ~=main_blk_stmt; { [main_blk_stmt] }
-
-let main_blk_stmt :=
-  | ~=main_var_dec; { main_var_dec }
-  | ~=block_stmt; { block_stmt }
-
-let main_var_dec :=
-  | ~=main_var_desc; SEMICOLON; { main_var_desc }
-
-let main_var_desc :=
-  | (rank1, type_)=typ; ~=decls; { VariableDecl (List.map (fun (rank2, id) -> {type_; id; rank=rank1 + rank2}) decls)}
-
 let class_decls :=
   | ~=class_decls; ~=class_decl; { class_decl :: class_decls }
   | ~=class_decl; { [ class_decl ] }
@@ -85,13 +72,40 @@ let class_mem :=
   | ~=field_decl; { field_decl }
   | ~=mthd_decl; { mthd_decl }
 
+let field_decl :=
+  | (rank1, type_)=typ; ~=decls; SEMICOLON; { FieldDec (List.map (fun (rank2, id) -> Field { type_; rank = rank1 + rank2; name = id}) decls) }
+
+let decls ==
+  separated_list(COMMA, decl)
+
+let decl :=
+  | (rank, id)=decl; _e=dimension; { (rank + 1, id) }
+  | ~=id; { (0, id) }
+
 let mthd_decl :=
   | (rank, type_)=typ; (id, fparams)=mthd_desc; ~=mth_body; { Method {return_t = Return { type_; rank}; name=id; fparams ; body = mth_body} }
 
+let mthd_desc :=
+  | ~=id; ~=formal_params; { (id, formal_params) }
+  (* method_decl dimension - Is this true?*)
+
 let mth_body :=
   | ~=block; { block }
-let field_decl :=
-  | (rank1, type_)=typ; ~=decls; SEMICOLON; { FieldDec (List.map (fun (rank2, id) -> Field { type_; rank = rank1 + rank2; name = id}) decls) }
+
+let const_decl :=
+  | (id, fparams)=const_desc; ~=const_body; { Constructor { name=id; fparams; body=const_body } }
+
+let const_desc :=
+  | ~=id; ~=formal_params; { (id,formal_params) }
+
+let const_body :=
+  | LBRACE; ~=const_invoc; ~=block_stmts; RBRACE; { Block (ExprStmt const_invoc :: block_stmts) }
+  | LBRACE; ~=const_invoc; RBRACE; { Block [ ExprStmt const_invoc ] }
+  | ~=block; { block }
+
+let const_invoc :=
+  | THIS; ~=arguments; SEMICOLON; { MethodCall { base = This; field = None; args = arguments } }
+  | SUPER; ~=arguments; SEMICOLON; { MethodCall { base = Super; field = None; args = arguments } }
 
 let dest_decl :=
   | ~=dest_desc; ~=dest_body; { Destructor {name = dest_desc; body = dest_body } }
@@ -101,37 +115,6 @@ let dest_desc :=
 
 let dest_body :=
   | ~=block; { block }
-
-let const_decl :=
-  | (id, fparams)=const_desc; ~=const_body; { Constructor { name=id; fparams; body=const_body } }
-
-let const_body :=
-  | LBRACE; ~=const_invoc; ~=block_stmts; RBRACE; { Block (ExprStmt const_invoc :: block_stmts) }
-  | LBRACE; ~=const_invoc; RBRACE; { Block [ ExprStmt const_invoc ] }
-  | ~=block; { block }
-
-let mth_invoc :=
-  | ~=id; ~=arguments; { MethodCall {base = Identifier id; field = None; args = arguments} }
-  | ~=primary;  DOT; ~=id; ~=arguments; { MethodCall {base = primary; field = Some (Identifier id); args = arguments} }
-  | SUPER; DOT; ~=id; ~=arguments; { MethodCall {base=Super; field=Some (Identifier id); args=arguments} }
-let const_invoc :=
-  | THIS; ~=arguments; SEMICOLON; { MethodCall { base = This; field = None; args = arguments } }
-  | SUPER; ~=arguments; SEMICOLON; { MethodCall { base = Super; field = None; args = arguments } }
-let arguments :=
-  | LPAREN; ~=args_list; RPAREN; { args_list }
-  | LPAREN; RPAREN; {[]}
-
-let args_list :=
-  | ~=args_list; COMMA; ~=exp; { exp :: args_list }
-  | ~=exp; { [exp]}
-
-let const_desc :=
-  | ~=id; ~=formal_params; { (id,formal_params) }
-
-let mthd_desc :=
-  | ~=id; ~=formal_params; { (id, formal_params) }
-  (* method_decl dimension - Is this true?*)
-
 
 let formal_params ==
   | LPAREN; ~=fplist; RPAREN; { fplist }
@@ -144,38 +127,7 @@ let fplist :=
 let formal_param :=
  | (rank1, typ)=typ; (rank2, id)=decl; { Param { typ; name = id; rank = rank1 + rank2 } }
 
-let typ :=
-  | ~=prim_type; { (0, prim_type) }
-  | ~=ref_type; { ref_type }
-
-let ref_type :=
-  | ~=class_type; { class_type }
-  | ~=arr_type; { arr_type }
-
-let class_type :=
-  | ~=id; { (0, NameTy id) }
-
-let dimension :=
-  | LSQB; RSQB; {}
-
-let dimensions :=
-  | rank=dimensions; _d=dimension; { rank + 1}
-  | _d=dimension; { 1 }
-
-let arr_type :=
-  | ~=prim_type; dimension; { (1, prim_type) }
-  | ~=id; dimension; { (1, NameTy id) }
-  | (rank, dim)=arr_type; dimension; {(rank + 1, dim)}
-
-let prim_type :=
-  | ~=num_type; { num_type }
-
-let num_type :=
-  | ~=int_type; { int_type }
-
-let int_type :=
-  | INT; { IntType }
-
+(* VariableDeclarationID substituted with decl *)
 let block :=
   | LBRACE; ~=block_stmts; RBRACE; { Block block_stmts }
   | LBRACE; RBRACE; { Block [] }
@@ -186,6 +138,21 @@ let block_stmts :=
 
 let block_stmt :=
   | ~=stmt; { stmt }
+
+(* Main block substituted *)
+let main_blk_stmts :=
+  | ~=main_blk_stmts; ~=main_blk_stmt; { main_blk_stmt :: main_blk_stmts }
+  | ~=main_blk_stmt; { [main_blk_stmt] }
+
+let main_blk_stmt :=
+  | ~=main_var_dec; { main_var_dec }
+  | ~=block_stmt; { block_stmt }
+
+let main_var_dec :=
+  | ~=main_var_desc; SEMICOLON; { main_var_desc }
+
+let main_var_desc :=
+  | (rank1, type_)=typ; ~=decls; { VariableDecl (List.map (fun (rank2, id) -> {type_; id; rank=rank1 + rank2}) decls)}
 
 let stmt :=
   | ~=while_stmt; <>
@@ -199,68 +166,75 @@ let stmt :=
   | ~=out_stmt; <>
   | ~=block; <>
 
-let while_stmt :=
-  | WHILE; ~=paren_exp; ~=stmt; { While { exp=paren_exp; block=stmt} }
-let out_stmt :=                
-  | OUT; ~=exp; SEMICOLON; { Output exp }
-
 let if_stmt :=
   | IF; exp=paren_exp; istmt=stmt; ELSE; estmt=stmt; { IfElse {exp;istmt;estmt} }
-
-let delete_stmt :=
-  | DELETE; ~=exp; SEMICOLON; { Delete exp }
-
-let expr_stmt :=
-  | ~=stmt_expr; SEMICOLON; { stmt_expr }
-
-let stmt_expr :=
-  | ~=assignment; { assignment }
-  | ~=mth_invoc; { ExprStmt mth_invoc}
-
-let assignment :=
-  | lhs=lhs; ASSIGN_OP; ~=exp; { Assignment {lhs; exp} }
-
-let empty_stmt :=                    
-  | SEMICOLON; {Empty}
-let continue :=
-  | CONTINUE; { Continue }
-let break :=
-  | BREAK; { Break }
+               
+let while_stmt :=
+  | WHILE; ~=paren_exp; ~=stmt; { While { exp=paren_exp; block=stmt} }
 
 let return_stmt :=                     
   | RETURN; SEMICOLON; { ReturnStmt None}
   | RETURN; ~=exp; SEMICOLON; {ReturnStmt (Some exp)}
 
-let lhs :=
-  | ~=id; { SimpleVar id }
-  | ~=array_access; { array_access }
+let delete_stmt :=
+  | DELETE; ~=exp; SEMICOLON; { Delete exp }
 
-let decls ==
-  separated_list(COMMA, decl)
+let out_stmt :=                
+  | OUT; ~=exp; SEMICOLON; { Output exp }
+
+let break :=
+  | BREAK; { Break }
+
+let continue :=
+  | CONTINUE; { Continue }
+
+let empty_stmt :=                    
+  | SEMICOLON; {Empty}
+
+let paren_exp :=
+  | LPAREN; ~=exp; RPAREN; { exp }
+
+let expr_stmt :=
+  | ~=stmt_expr; SEMICOLON; { stmt_expr }
+
+let stmt_expr :=
+  | ~=assignment; { ExprStmt assignment }
+  | ~=mth_invoc; { ExprStmt mth_invoc}
 
 let exp :=
-  | left=exp; EQUALS; right=relexp; { OpExp {left; right; oper=EqualsOp}}
+  | left=exp; EQUALS; right=relexp; { OpExp (BinaryOp {left; right; oper=EqualsOp}) }
   | ~=relexp; {relexp}
 
+let assignment :=
+  | lhs=lhs; ASSIGN_OP; ~=exp; { Assignment {lhs; exp} }
+
+let lhs :=
+  | ~=id; { SimpleVar id }
+  | ~=field_access; { field_access }
+  | ~=array_access; { array_access }
+
 let relexp :=
-  | left=relexp; LT; right=addexp; { OpExp {left; right; oper=LessThanOp} }
-  | left=relexp; GT; right=addexp; { OpExp {left; right; oper=GreaterThanOp} }
+  | left=relexp; LT; right=addexp; { OpExp (BinaryOp {left; right; oper=LessThanOp}) }
+  | left=relexp; GT; right=addexp; { OpExp (BinaryOp {left; right; oper=GreaterThanOp}) }
   | ~=addexp; { addexp }
 
 let addexp :=
-  | left=addexp; PLUS; right=mulexp; { OpExp {left;right; oper=PlusOp}}
-  | left=addexp; MINUS; right=mulexp; {OpExp {left; right; oper=MinusOp}}
+  | left=addexp; PLUS; right=mulexp; { OpExp (BinaryOp {left;right; oper=PlusOp})}
+  | left=addexp; MINUS; right=mulexp; {OpExp (BinaryOp {left; right; oper=MinusOp})}
   | ~=mulexp; { mulexp }
 
 let mulexp :=
-  | left=mulexp; MULT; right=unaryexp; { OpExp {left; right; oper=MultOp}}
+  | left=mulexp; MULT; right=unaryexp; { OpExp (BinaryOp {left; right; oper=MultOp})}
   | ~=unaryexp; { unaryexp }
 
 let unaryexp :=
-  | MINUS; right=castexp;        { OpExp{left=IntLit 0; oper=MinusOp; right;} }
+  | MINUS; exp=castexp; { OpExp (UnaryOp{oper= NegateOp; exp}) }
+  | NOT; exp=castexp; { OpExp (UnaryOp {oper=NotOp; exp}) }
   | ~=castexp; <>
 
 let castexp :=
+  | ~=paren_exp; ~=castexp; { CastEvalExp {to_=paren_exp; from_=castexp}}
+  | LPAREN; (rank, type_)=arr_type;RPAREN; exp=castexp; { CastType { rank; type_; exp}}
   | ~=primary; { primary }
 
 let primary :=
@@ -268,13 +242,10 @@ let primary :=
   | ~=arrayexpr; { arrayexpr }
   | ~=primlit; { primlit }
 
-let paren_exp :=
-  | LPAREN; ~=exp; RPAREN; { exp }
-
 let primlit :=
   | ~=paren_exp; { paren_exp }
   | THIS; { This }
-  | ~=field_access; { field_access }
+  | ~=field_access; { VarExp field_access }
   | ~=mth_invoc; { mth_invoc }
   | ~=literal; { literal }
   | ~=array_access; { VarExp array_access }
@@ -283,18 +254,12 @@ let primlit :=
 let class_inst_creation :=
   | NEW; (_, type_)=class_type; ~=arguments; { ClassCreationExp {type_; args=arguments} }
 
-let field_access :=
-  | ~=primary; DOT; ~=id; { FieldAccess (primary, id) }
-  | SUPER; DOT; ~=id; { FieldAccess (Super, id) }
-
-let array_access :=
-  | ~=id; ~=dimexpr; { (SubscriptVar (SimpleVar id, dimexpr)) }
-
 let arrayexpr :=
   | NEW; ~=prim_type; ~=dimexprs; empty_dims=dimensions; { ArrayCreationExp {type_=prim_type; exprs=dimexprs; empty_dims}}
   | NEW; ~=prim_type; ~=dimexprs; { ArrayCreationExp {type_ = prim_type; exprs=dimexprs; empty_dims=0} }
   | NEW; (_, type_)=class_type; ~=dimexprs; empty_dims=dimensions; { ArrayCreationExp {type_; exprs=dimexprs; empty_dims}}
   | NEW; (_, type_)=class_type; ~=dimexprs; { ArrayCreationExp {type_; exprs=dimexprs; empty_dims=0}}
+
 let dimexprs :=
   | ~=dimexprs; ~=dimexpr; { dimexpr :: dimexprs }
   | ~=dimexpr; { [dimexpr] }
@@ -302,13 +267,61 @@ let dimexprs :=
 let dimexpr :=
   | LSQB; ~=exp; RSQB; { exp }
 
+let dimensions :=
+  | rank=dimensions; _d=dimension; { rank + 1}
+  | _d=dimension; { 1 }
+
+let dimension :=
+  | LSQB; RSQB; {}
+
+let field_access :=
+  | ~=primary; DOT; ~=id; { FieldVar (primary, id) }
+  | SUPER; DOT; ~=id; { FieldVar (Super, id) }
+
+let mth_invoc :=
+  | ~=id; ~=arguments; { MethodCall {base = Identifier id; field = None; args = arguments} }
+  | ~=primary;  DOT; ~=id; ~=arguments; { MethodCall {base = primary; field = Some (Identifier id); args = arguments} }
+  | SUPER; DOT; ~=id; ~=arguments; { MethodCall {base=Super; field=Some (Identifier id); args=arguments} }
+
+let array_access :=
+  | ~=id; ~=dimexpr; { (SubscriptVar (SimpleVar id, dimexpr)) }
+
+let arguments :=
+  | LPAREN; ~=args_list; RPAREN; { args_list }
+  | LPAREN; RPAREN; {[]}
+
+let args_list :=
+  | ~=args_list; COMMA; ~=exp; { exp :: args_list }
+  | ~=exp; { [exp]}
+
+let typ :=
+  | ~=prim_type; { (0, prim_type) }
+  | ~=ref_type; { ref_type }
+
+let prim_type :=
+  | ~=num_type; { num_type }
+
+let num_type :=
+  | ~=int_type; { int_type }
+
+let int_type :=
+  | INT; { IntType }
+
+let ref_type :=
+  | ~=class_type; { class_type }
+  | ~=arr_type; { arr_type }
+
+let class_type :=
+  | ~=id; { (0, NameTy id) }
+
+let arr_type :=
+  | ~=prim_type; dimension; { (1, prim_type) }
+  | ~=id; dimension; { (1, NameTy id) }
+  | (rank, dim)=arr_type; dimension; {(rank + 1, dim)}
+
 let literal :=
   | int=NUM; { IntLit int}
   | NULL; { NullLit }
 
-let decl :=
-  | (rank, id)=decl; LSQB; RSQB; { (rank + 1, id) }
-  | ~=id; { (0, id) }
-
 let id :=
-  | ~=ID;                                 <Symbol.symbol>      
+  | ~=ID;                                 <Symbol.symbol>                                            

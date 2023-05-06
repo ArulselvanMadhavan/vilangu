@@ -59,7 +59,7 @@ and param =
 and var =
   | SimpleVar of symbol
   | SubscriptVar of var * exp
-  | FieldVar of var * symbol
+  | FieldVar of exp * symbol
 
 and variable =
   { type_ : type_
@@ -70,10 +70,6 @@ and variable =
 and stmt =
   | VariableDecl of variable list
   | Block of stmt list
-  | Assignment of
-      { lhs : var
-      ; exp : exp
-      }
   | While of
       { exp : exp
       ; block : stmt
@@ -94,11 +90,7 @@ and stmt =
 and exp =
   | Identifier of symbol
   | IntLit of int
-  | OpExp of
-      { left : exp
-      ; oper : oper
-      ; right : exp
-      }
+  | OpExp of operator
   | ArrayCreationExp of
       { type_ : type_
       ; exprs : exp list
@@ -117,15 +109,41 @@ and exp =
       ; field : exp option
       ; args : exp list
       }
-  | FieldAccess of exp * symbol
+  | CastEvalExp of
+      { to_ : exp
+      ; from_ : exp
+      }
+  | CastType of
+      { rank : int
+      ; type_ : type_
+      ; exp : exp
+      }
+  | Assignment of
+      { lhs : var
+      ; exp : exp
+      }
+and operator =
+  | UnaryOp of
+      { oper : uoper
+      ; exp : exp
+      }
+  | BinaryOp of
+      { left : exp
+      ; oper : bioper
+      ; right : exp
+      }
 
-and oper =
+and bioper =
   | LessThanOp
   | GreaterThanOp
   | PlusOp
   | MultOp
   | EqualsOp
   | MinusOp
+
+and uoper =
+  | NotOp
+  | NegateOp
 
 and type_ =
   | IntType
