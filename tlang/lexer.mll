@@ -52,6 +52,7 @@ rule token = parse
   | "+" { PLUS }
   | "-" { MINUS }
   | "*" { MULT }
+  | "!" { NOT }
   | "[" { LSQB }
   | "]" { RSQB }
   | id as s       { ID s }

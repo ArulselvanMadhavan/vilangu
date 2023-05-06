@@ -1,26 +1,74 @@
 let tlang_prog =
   {| 
-class A {
-  int f(int i) { return 1; }
-  int f(A a) { return 5-2; }
+class Animal
+{
+  // all animals must speak
+  int speak()
+  {
+    // abstract method: should not be called
+    out -1;
+    return 0;
+  }
 }
 
-class B extends A {
-  int f(int i, int j) { return i + j; }
+class Pig extends Animal
+{
+  int speak()
+  {
+    out 1999;
+    return 1;
+  }
+}
+
+class Rooster extends Animal
+{
+  int speak()
+  {
+    out 1066;
+    return 1;
+  }
+}
+
+class Dog extends Animal
+{
+  int speak()
+  {
+    out 1492;
+    return 1;
+  }
+}
+
+class Cow extends Animal
+{
+  int speak()
+  {
+    out 1980;
+    return 1;
+  }
 }
 
 int main()
 {
-  A a;
-  B b;
+  Animal zoo[];
+  Animal animal;
+  int i;
 
-  a = new A();
-  b = new B();
+  // initialize an array and place some animals in it
+  zoo = new Animal[10];
+  zoo[0] = new Cow();
+  zoo[1] = new Dog();
+  zoo[2] = new Rooster();
+  zoo[3] = new Pig();
 
-  out b.f(19) + 14;
-  out b.f(a) + 13;
-  out b.f(b) + 13;
-  out b.f(7, 8);
+  // now iterate over the array and ask each animal to speak 
+  i = 0;
+  while (!(zoo[i] == null))
+  {
+    animal = zoo[i];
+    animal.speak();
+
+    i = i + 1;
+  }
 }
 |}
 ;;
