@@ -57,9 +57,9 @@ and param =
       }
 
 and var =
-  | SimpleVar of symbol
-  | SubscriptVar of var * exp
-  | FieldVar of exp * symbol
+  | SimpleVar of symbol * pos
+  | SubscriptVar of var * exp * pos
+  | FieldVar of exp * symbol * pos
 
 and variable =
   { type_ : type_

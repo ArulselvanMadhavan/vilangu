@@ -24,9 +24,8 @@ open Ast
 %start <comp_unit> prog
 
 %{
-(* let lp((sp, ep) : (Lexing.position * Lexing.position)) : pos *)
-    (*   = ((sp.pos_lnum, sp.pos_cnum - sp.pos_bol + 1), (ep.pos_lnum, ep.pos_cnum - sp.pos_bol + 1)) *)
-(* let var (rank, id) = {type_=IntType; id; rank} *)
+let lp((sp, ep) : (Lexing.position * Lexing.position)) : pos
+      = ((sp.pos_lnum, sp.pos_cnum - sp.pos_bol), (ep.pos_lnum, ep.pos_cnum - sp.pos_bol))
 %}
 
 %%
@@ -209,7 +208,7 @@ let assignment :=
   | lhs=lhs; ASSIGN_OP; ~=exp; { Assignment {lhs; exp} }
 
 let lhs :=
-  | ~=id; { SimpleVar id }
+  | ~=id; { SimpleVar (id, lp($loc)) }
   | ~=field_access; { field_access }
   | ~=array_access; { array_access }
 
@@ -275,8 +274,8 @@ let dimension :=
   | LSQB; RSQB; {}
 
 let field_access :=
-  | ~=primary; DOT; ~=id; { FieldVar (primary, id) }
-  | SUPER; DOT; ~=id; { FieldVar (Super, id) }
+  | ~=primary; DOT; ~=id; { FieldVar (primary, id, lp($loc)) }
+  | SUPER; DOT; ~=id; { FieldVar (Super, id, lp($loc)) }
 
 let mth_invoc :=
   | ~=id; ~=arguments; { MethodCall {base = Identifier id; field = None; args = arguments} }
@@ -284,7 +283,7 @@ let mth_invoc :=
   | SUPER; DOT; ~=id; ~=arguments; { MethodCall {base=Super; field=Some (Identifier id); args=arguments} }
 
 let array_access :=
-  | ~=id; ~=dimexpr; { (SubscriptVar (SimpleVar id, dimexpr)) }
+  | ~=id; ~=dimexpr; { (SubscriptVar (SimpleVar (id, lp($loc)), dimexpr, lp($loc))) }
 
 let arguments :=
   | LPAREN; ~=args_list; RPAREN; { args_list }
