@@ -103,8 +103,8 @@ let const_body :=
   | ~=block; { block }
 
 let const_invoc :=
-  | THIS; ~=arguments; SEMICOLON; { MethodCall { base = This; field = None; args = arguments } }
-  | SUPER; ~=arguments; SEMICOLON; { MethodCall { base = Super; field = None; args = arguments } }
+  | THIS; ~=arguments; SEMICOLON; { MethodCall { base = (This (lp($loc))); field = None; args = arguments; pos = lp($loc) } }
+  | SUPER; ~=arguments; SEMICOLON; { MethodCall { base = (Super (lp($loc))); field = None; args = arguments; pos = lp($loc) } }
 
 let dest_decl :=
   | ~=dest_desc; ~=dest_body; { Destructor {name = dest_desc; body = dest_body } }
@@ -201,7 +201,7 @@ let stmt_expr :=
   | ~=mth_invoc; { ExprStmt mth_invoc}
 
 let exp :=
-  | left=exp; EQUALS; right=relexp; { OpExp (BinaryOp {left; right; oper=EqualsOp}) }
+  | left=exp; EQUALS; right=relexp; { OpExp (BinaryOp {left; right; oper=EqualsOp}, lp($loc)) }
   | ~=relexp; {relexp}
 
 let assignment :=
@@ -213,22 +213,22 @@ let lhs :=
   | ~=array_access; { array_access }
 
 let relexp :=
-  | left=relexp; LT; right=addexp; { OpExp (BinaryOp {left; right; oper=LessThanOp}) }
-  | left=relexp; GT; right=addexp; { OpExp (BinaryOp {left; right; oper=GreaterThanOp}) }
+  | left=relexp; LT; right=addexp; { OpExp (BinaryOp {left; right; oper=LessThanOp}, lp($loc)) }
+  | left=relexp; GT; right=addexp; { OpExp (BinaryOp {left; right; oper=GreaterThanOp}, lp($loc)) }
   | ~=addexp; { addexp }
 
 let addexp :=
-  | left=addexp; PLUS; right=mulexp; { OpExp (BinaryOp {left;right; oper=PlusOp})}
-  | left=addexp; MINUS; right=mulexp; {OpExp (BinaryOp {left; right; oper=MinusOp})}
+  | left=addexp; PLUS; right=mulexp; { OpExp (BinaryOp {left;right; oper=PlusOp}, lp($loc))}
+  | left=addexp; MINUS; right=mulexp; {OpExp (BinaryOp {left; right; oper=MinusOp}, lp($loc))}
   | ~=mulexp; { mulexp }
 
 let mulexp :=
-  | left=mulexp; MULT; right=unaryexp; { OpExp (BinaryOp {left; right; oper=MultOp})}
+  | left=mulexp; MULT; right=unaryexp; { OpExp (BinaryOp {left; right; oper=MultOp}, lp($loc))}
   | ~=unaryexp; { unaryexp }
 
 let unaryexp :=
-  | MINUS; exp=castexp; { OpExp (UnaryOp{oper= NegateOp; exp}) }
-  | NOT; exp=castexp; { OpExp (UnaryOp {oper=NotOp; exp}) }
+  | MINUS; exp=castexp; { OpExp (UnaryOp{oper= NegateOp; exp}, lp($loc)) }
+  | NOT; exp=castexp; { OpExp (UnaryOp {oper=NotOp; exp}, lp($loc)) }
   | ~=castexp; <>
 
 let castexp :=
@@ -237,27 +237,27 @@ let castexp :=
   | ~=primary; { primary }
 
 let primary :=
-  | ~=id; { Identifier id }
+  | ~=id; { Identifier (id, lp($loc)) }
   | ~=arrayexpr; { arrayexpr }
   | ~=primlit; { primlit }
 
 let primlit :=
   | ~=paren_exp; { paren_exp }
-  | THIS; { This }
-  | ~=field_access; { VarExp field_access }
+  | THIS; { This (lp($loc)) }
+  | ~=field_access; { VarExp (field_access, lp($loc)) }
   | ~=mth_invoc; { mth_invoc }
   | ~=literal; { literal }
-  | ~=array_access; { VarExp array_access }
+  | ~=array_access; { VarExp (array_access, lp($loc)) }
   | ~=class_inst_creation; { class_inst_creation }
 
 let class_inst_creation :=
-  | NEW; (_, type_)=class_type; ~=arguments; { ClassCreationExp {type_; args=arguments} }
+  | NEW; (_, type_)=class_type; ~=arguments; { ClassCreationExp {type_; args=arguments; pos = (lp($loc))} }
 
 let arrayexpr :=
-  | NEW; ~=prim_type; ~=dimexprs; empty_dims=dimensions; { ArrayCreationExp {type_=prim_type; exprs=dimexprs; empty_dims}}
-  | NEW; ~=prim_type; ~=dimexprs; { ArrayCreationExp {type_ = prim_type; exprs=dimexprs; empty_dims=0} }
-  | NEW; (_, type_)=class_type; ~=dimexprs; empty_dims=dimensions; { ArrayCreationExp {type_; exprs=dimexprs; empty_dims}}
-  | NEW; (_, type_)=class_type; ~=dimexprs; { ArrayCreationExp {type_; exprs=dimexprs; empty_dims=0}}
+  | NEW; ~=prim_type; ~=dimexprs; empty_dims=dimensions; { ArrayCreationExp {type_=prim_type; exprs=dimexprs; empty_dims; pos = lp($loc)}}
+  | NEW; ~=prim_type; ~=dimexprs; { ArrayCreationExp {type_ = prim_type; exprs=dimexprs; empty_dims=0; pos= lp($loc)} }
+  | NEW; (_, type_)=class_type; ~=dimexprs; empty_dims=dimensions; { ArrayCreationExp {type_; exprs=dimexprs; empty_dims; pos = lp($loc)}}
+  | NEW; (_, type_)=class_type; ~=dimexprs; { ArrayCreationExp {type_; exprs=dimexprs; empty_dims=0; pos = lp($loc)}}
 
 let dimexprs :=
   | ~=dimexprs; ~=dimexpr; { dimexpr :: dimexprs }
@@ -275,12 +275,12 @@ let dimension :=
 
 let field_access :=
   | ~=primary; DOT; ~=id; { FieldVar (primary, id, lp($loc)) }
-  | SUPER; DOT; ~=id; { FieldVar (Super, id, lp($loc)) }
+  | SUPER; DOT; ~=id; { FieldVar ((Super (lp($loc))), id, lp($loc)) }
 
 let mth_invoc :=
-  | ~=id; ~=arguments; { MethodCall {base = Identifier id; field = None; args = arguments} }
-  | ~=primary;  DOT; ~=id; ~=arguments; { MethodCall {base = primary; field = Some (Identifier id); args = arguments} }
-  | SUPER; DOT; ~=id; ~=arguments; { MethodCall {base=Super; field=Some (Identifier id); args=arguments} }
+  | ~=id; ~=arguments; { MethodCall {base = Identifier (id, lp($loc)); field = None; args = arguments; pos = lp($loc)} }
+  | ~=primary;  DOT; ~=id; ~=arguments; { MethodCall {base = primary; field = Some (Identifier (id, lp($loc))); args = arguments; pos = lp($loc)} }
+  | SUPER; DOT; ~=id; ~=arguments; { MethodCall {base=(Super (lp($loc))); field=Some (Identifier (id, lp($loc))); args=arguments; pos = lp($loc)} }
 
 let array_access :=
   | ~=id; ~=dimexpr; { (SubscriptVar (SimpleVar (id, lp($loc)), dimexpr, lp($loc))) }
@@ -319,8 +319,8 @@ let arr_type :=
   | (rank, dim)=arr_type; dimension; {(rank + 1, dim)}
 
 let literal :=
-  | int=NUM; { IntLit int}
-  | NULL; { NullLit }
+  | int=NUM; { IntLit (int, lp($loc))}
+  | NULL; { NullLit (lp($loc)) }
 
 let id :=
   | ~=ID;                                 <Symbol.symbol>                                            

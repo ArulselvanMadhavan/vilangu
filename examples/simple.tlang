@@ -1,0 +1,5 @@
+int main() {
+    int x, a[];
+    a[x] = 10;
+    animal.bark = 10;
+}

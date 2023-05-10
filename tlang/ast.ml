@@ -88,26 +88,29 @@ and stmt =
       }
 
 and exp =
-  | Identifier of symbol
-  | IntLit of int
-  | OpExp of operator
+  | Identifier of symbol * pos
+  | IntLit of int * pos
+  | OpExp of operator * pos
   | ArrayCreationExp of
       { type_ : type_
       ; exprs : exp list
       ; empty_dims : int
+      ; pos : pos
       }
   | ClassCreationExp of
       { type_ : type_
       ; args : exp list
+      ; pos : pos
       }
-  | VarExp of var
-  | NullLit
-  | This
-  | Super
+  | VarExp of var * pos
+  | NullLit of pos
+  | This of pos
+  | Super of pos
   | MethodCall of
       { base : exp
       ; field : exp option
       ; args : exp list
+      ; pos : pos
       }
   | CastEvalExp of
       { to_ : exp
@@ -122,6 +125,7 @@ and exp =
       { lhs : var
       ; exp : exp
       }
+
 and operator =
   | UnaryOp of
       { oper : uoper

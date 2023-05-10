@@ -1,13 +1,8 @@
-(* let tlang_prog = *)
-(* {| *)
-(* } *)
-(* |} *)
-(* ;; *)
-
 let () =
   let open Tlang in
-  let filename =  "examples/simple.tlang" in
+  let filename = "examples/simple.tlang" in
   let in_ch = open_in filename in
+  Error_msg.set_filename filename;
   let content = really_input_string in_ch (in_channel_length in_ch) in
   let lexbuf = Lexing.from_string ~with_positions:true content in
   let default = Ast.{ main_decl = Block []; classdecs = [] } in
