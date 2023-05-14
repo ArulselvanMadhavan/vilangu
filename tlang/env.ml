@@ -4,7 +4,10 @@ module S = Symbol
 type ty = T.ty
 
 type enventry =
-  | VarEntry of { ty : ty ; rank : int}
+  | VarEntry of
+      { ty : ty
+      ; rank : int
+      }
   | FunEntry of
       { label : Temp.label
       ; formals : ty list

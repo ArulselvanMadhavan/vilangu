@@ -205,7 +205,7 @@ let exp :=
   | ~=relexp; {relexp}
 
 let assignment :=
-  | lhs=lhs; ASSIGN_OP; ~=exp; { Assignment {lhs; exp} }
+  | lhs=lhs; ASSIGN_OP; ~=exp; { Assignment {lhs; exp; pos=lp($loc)} }
 
 let lhs :=
   | ~=id; { SimpleVar (id, lp($loc)) }

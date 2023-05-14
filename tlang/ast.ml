@@ -70,7 +70,7 @@ and variable =
 and main =
   | VariableDecl of variable list
   | MainStmt of stmt
-        
+
 and stmt =
   | Block of stmt list
   | While of
@@ -127,6 +127,7 @@ and exp =
   | Assignment of
       { lhs : var
       ; exp : exp
+      ; pos : pos
       }
 
 and operator =
@@ -152,6 +153,4 @@ and uoper =
   | NotOp
   | NegateOp
 
-and type_ =
-  | NameTy of symbol * pos
-[@@deriving sexp]
+and type_ = NameTy of symbol * pos [@@deriving sexp]
