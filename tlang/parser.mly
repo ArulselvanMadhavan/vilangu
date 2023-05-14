@@ -43,7 +43,7 @@ let main_decl :=
   | INT; MAIN; LPAREN; RPAREN; ~=main_block; { main_block }
 
 let main_block :=
-  | LBRACE; ~=main_blk_stmts; RBRACE; { main_blk_stmts }
+  | LBRACE; ~=main_blk_stmts; RBRACE; { List.rev main_blk_stmts }
   | LBRACE; RBRACE; { [] }
 
 let class_decls :=

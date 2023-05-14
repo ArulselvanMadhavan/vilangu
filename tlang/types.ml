@@ -1,3 +1,5 @@
+open Base
+
 type unique = unit ref
 
 type ty =
@@ -5,6 +7,7 @@ type ty =
   | UNIT
   | NULL
   | NAME of Symbol.symbol * ty option ref
+[@@deriving sexp]
 
 let type2str = function
   | NULL -> "NULL"

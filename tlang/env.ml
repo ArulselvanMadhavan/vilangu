@@ -1,7 +1,8 @@
+open Base
 module T = Types
 module S = Symbol
 
-type ty = T.ty
+type ty = T.ty [@@deriving sexp]
 
 type enventry =
   | VarEntry of
@@ -13,6 +14,7 @@ type enventry =
       ; formals : ty list
       ; result : ty
       }
+[@@deriving sexp]
 
 let int_symbol = S.symbol "int"
 let base_tenv = S.init [ int_symbol, T.INT ]
@@ -23,5 +25,5 @@ let base_venv =
     let label = Temp.named_label name in
     S.symbol name, FunEntry { label; formals; result }
   in
-  List.map make_sym base_v |> S.init
+  Stdlib.List.map make_sym base_v |> S.init
 ;;

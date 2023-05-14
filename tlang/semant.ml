@@ -71,6 +71,7 @@ let rec trans_exp (venv, tenv, exp) =
     let { ty = var_ty; _ } = trans_var (venv, lhs) in
     let { ty = exp_ty; _ } = trans_exp (venv, tenv, exp) in
     check_type (var_ty, exp_ty, pos);
+    (* TODO: check rank *)
     { stmt = (); ty = T.UNIT; rank = 0 }
   | _ -> err_stmty
 ;;
@@ -86,8 +87,8 @@ let trans_vars (venv, tenv, vars) : venv * tenv * stmty =
     Base.List.fold
       ~init:(venv, tenv, [])
       ~f:(fun (venv, tenv, xs) dec ->
-        let venv', tenv', stmty = trans_dec (venv, tenv, dec) in
-        venv', tenv', stmty :: xs)
+        let venv, tenv, stmty = trans_dec (venv, tenv, dec) in
+        venv, tenv, stmty :: xs)
       vars
   in
   venv, tenv, Base.List.last_exn stmtys
@@ -104,6 +105,12 @@ let trans_main (venv, tenv, main_stmts) : stmty =
       ~init:(venv, tenv, [])
       ~f:(fun (venv, tenv, xs) main_stmt ->
         let venv, tenv, stmty = tr_main (venv, tenv, main_stmt) in
+        (* Symbol.Table.iter *)
+        (*   (fun s a -> *)
+        (*     let s = Symbol.sexp_of_symbol s |> Sexplib0.Sexp.to_string_hum in *)
+        (*     let a = Env.sexp_of_enventry a |> Sexplib0.Sexp.to_string_hum in *)
+        (*     Printf.printf "%s|%s\n" s a) *)
+        (*   venv; *)
         venv, tenv, stmty :: xs)
       main_stmts
   in

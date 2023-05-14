@@ -1,4 +1,4 @@
-type label = Symbol.symbol
+type label = Symbol.symbol [@@deriving sexp]
 
 let labs = ref 0
 
