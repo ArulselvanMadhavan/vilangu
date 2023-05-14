@@ -4,14 +4,15 @@ module S = Symbol
 type ty = T.ty
 
 type enventry =
-  | VarEntry of { ty : ty }
+  | VarEntry of { ty : ty ; rank : int}
   | FunEntry of
       { label : Temp.label
       ; formals : ty list
       ; result : ty
       }
 
-let base_tenv = S.init [ S.symbol "int", T.INT ]
+let int_symbol = S.symbol "int"
+let base_tenv = S.init [ int_symbol, T.INT ]
 
 let base_venv =
   let base_v = [ "out", [ T.INT ], T.UNIT ] in

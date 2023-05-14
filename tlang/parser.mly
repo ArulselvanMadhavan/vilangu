@@ -43,8 +43,8 @@ let main_decl :=
   | INT; MAIN; LPAREN; RPAREN; ~=main_block; { main_block }
 
 let main_block :=
-  | LBRACE; ~=main_blk_stmts; RBRACE; { Block main_blk_stmts }
-  | LBRACE; RBRACE; { Block [] }
+  | LBRACE; ~=main_blk_stmts; RBRACE; { main_blk_stmts }
+  | LBRACE; RBRACE; { [] }
 
 let class_decls :=
   | ~=class_decls; ~=class_decl; { class_decl :: class_decls }
@@ -144,14 +144,14 @@ let main_blk_stmts :=
   | ~=main_blk_stmt; { [main_blk_stmt] }
 
 let main_blk_stmt :=
-  | ~=main_var_dec; { main_var_dec }
-  | ~=block_stmt; { block_stmt }
+  | ~=main_var_dec; { VariableDecl main_var_dec }
+  | ~=block_stmt; { MainStmt block_stmt }
 
 let main_var_dec :=
   | ~=main_var_desc; SEMICOLON; { main_var_desc }
 
 let main_var_desc :=
-  | (rank1, type_)=typ; ~=decls; { VariableDecl (List.map (fun (rank2, id) -> {type_; id; rank=rank1 + rank2}) decls)}
+  | (rank1, type_)=typ; ~=decls; { (List.map (fun (rank2, id) -> {type_; id; rank=rank1 + rank2}) decls)}
 
 let stmt :=
   | ~=while_stmt; <>
@@ -304,18 +304,18 @@ let num_type :=
   | ~=int_type; { int_type }
 
 let int_type :=
-  | INT; { IntType }
+  | INT; { NameTy (Env.int_symbol, lp($loc)) }
 
 let ref_type :=
   | ~=class_type; { class_type }
   | ~=arr_type; { arr_type }
 
 let class_type :=
-  | ~=id; { (0, NameTy id) }
+  | ~=id; { (0, NameTy (id, lp($loc))) }
 
 let arr_type :=
   | ~=prim_type; dimension; { (1, prim_type) }
-  | ~=id; dimension; { (1, NameTy id) }
+  | ~=id; dimension; { (1, NameTy (id, lp($loc))) }
   | (rank, dim)=arr_type; dimension; {(rank + 1, dim)}
 
 let literal :=

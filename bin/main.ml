@@ -5,7 +5,7 @@ let () =
   Error_msg.set_filename filename;
   let content = really_input_string in_ch (in_channel_length in_ch) in
   let lexbuf = Lexing.from_string ~with_positions:true content in
-  let default = Ast.{ main_decl = Block []; classdecs = [] } in
+  let default = Ast.{ main_decl = []; classdecs = [] } in
   let parsed_exp =
     try Parser.prog Lexer.token lexbuf with
     | Lexer.Error (_pos, msg) ->

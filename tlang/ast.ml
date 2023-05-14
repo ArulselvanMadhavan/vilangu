@@ -7,7 +7,7 @@ type pos = span [@@deriving sexp]
 type symbol = Symbol.symbol [@@deriving sexp]
 
 type comp_unit =
-  { main_decl : stmt
+  { main_decl : main list
   ; classdecs : classdec list
   }
 
@@ -67,8 +67,11 @@ and variable =
   ; rank : int
   }
 
-and stmt =
+and main =
   | VariableDecl of variable list
+  | MainStmt of stmt
+        
+and stmt =
   | Block of stmt list
   | While of
       { exp : exp
@@ -150,6 +153,5 @@ and uoper =
   | NegateOp
 
 and type_ =
-  | IntType
-  | NameTy of symbol
+  | NameTy of symbol * pos
 [@@deriving sexp]
