@@ -1,5 +1,9 @@
+class A {
+  int f(int i) { return 1; }
+}
+
 int main() {
     int x;
     int yz;
-    x = y; // fix me
+    A lion;
 }

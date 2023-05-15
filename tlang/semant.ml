@@ -106,19 +106,25 @@ let trans_main (venv, tenv, main_stmts) : stmty =
       ~init:(venv, tenv, [])
       ~f:(fun (venv, tenv, xs) main_stmt ->
         let venv, tenv, stmty = tr_main (venv, tenv, main_stmt) in
-        (* Symbol.Table.iter *)
-        (*   (fun s a -> *)
-        (*     let s = Symbol.sexp_of_symbol s |> Sexplib0.Sexp.to_string_hum in *)
-        (*     let a = Env.sexp_of_enventry a |> Sexplib0.Sexp.to_string_hum in *)
-        (*     Printf.printf "%s|%s\n" s a) *)
-        (*   venv; *)
         venv, tenv, stmty :: xs)
       main_stmts
   in
   Base.List.last_exn stmty
 ;;
 
+let trans_class (tenv, class_decs) =
+  let tr_class (tenv, A.ClassDec { name; _ }) =
+    let ctype = T.NAME (name, ref None) in
+    let tenv = S.enter (tenv, name, ctype) in
+    tenv, { stmt = (); ty = ctype; rank = 0 }
+  in
+  Base.List.fold class_decs ~init:(tenv, []) ~f:(fun (tenv, xs) cdec ->
+    let tenv, x = tr_class (tenv, cdec) in
+    tenv, x :: xs)
+;;
+
 let trans_prog comp_unit =
-  let A.{ main_decl; _ } = comp_unit in
-  trans_main (E.base_venv, E.base_tenv, main_decl)
+  let A.{ main_decl; classdecs } = comp_unit in
+  let tenv, _ = trans_class (E.base_tenv, classdecs) in
+  trans_main (E.base_venv, tenv, main_decl)
 ;;
