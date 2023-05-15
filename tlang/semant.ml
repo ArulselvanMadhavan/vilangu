@@ -73,6 +73,7 @@ let rec trans_exp (venv, tenv, exp) =
     check_type (var_ty, exp_ty, pos);
     (* TODO: check rank *)
     { stmt = (); ty = T.UNIT; rank = 0 }
+  | A.Identifier (id, pos) -> trans_var (venv, A.SimpleVar (id, pos))
   | _ -> err_stmty
 ;;
 
