@@ -20,12 +20,27 @@ let error pos msg ret =
 
 let err_stmty = { stmt = (); ty = T.NULL; rank = 0 }
 
-let rec check_type (exp_ty, got_ty, pos) =
+let check_rank (ty, exp_rank, got_rank, pos) =
+  if Int.equal exp_rank got_rank
+  then ()
+  else
+    error
+      pos
+      ("rank mismatch for type"
+       ^ T.type2str ty
+       ^ ". expecting "
+       ^ Int.to_string exp_rank
+       ^ " , but got "
+       ^ Int.to_string got_rank)
+      ()
+;;
+
+let rec check_type (exp_ty, got_ty, exp_rank, got_rank, pos) =
   let exp_ty' = actual_ty (exp_ty, pos) in
   let got_ty' = actual_ty (got_ty, pos) in
   (* note: checking physical equality *)
   if exp_ty' == got_ty' || exp_ty' == T.NULL || T.NULL == got_ty'
-  then ()
+  then check_rank (exp_ty', exp_rank, got_rank, pos)
   else
     error
       pos
@@ -68,9 +83,9 @@ let trans_var (venv, var) =
 let rec trans_exp (venv, tenv, exp) =
   match exp with
   | A.Assignment { lhs; exp; pos } ->
-    let { ty = var_ty; _ } = trans_var (venv, lhs) in
-    let { ty = exp_ty; _ } = trans_exp (venv, tenv, exp) in
-    check_type (var_ty, exp_ty, pos);
+    let { ty = var_ty; rank = vrank; _ } = trans_var (venv, lhs) in
+    let { ty = exp_ty; rank = erank; _ } = trans_exp (venv, tenv, exp) in
+    check_type (var_ty, exp_ty, vrank, erank, pos);
     (* TODO: check rank *)
     { stmt = (); ty = T.UNIT; rank = 0 }
   | A.Identifier (id, pos) -> trans_var (venv, A.SimpleVar (id, pos))

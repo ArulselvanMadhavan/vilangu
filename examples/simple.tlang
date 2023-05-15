@@ -1,9 +1,4 @@
-class A {
-  int f(int i) { return 1; }
-}
-
 int main() {
-    int x;
-    int yz;
-    A lion;
+    int[] m[];
+    m = 4;
 }
