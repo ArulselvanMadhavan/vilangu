@@ -1,4 +1,3 @@
 int main() {
-    int[] m[];
-    m = 4;
+    out 42;
 }

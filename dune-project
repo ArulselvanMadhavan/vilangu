@@ -25,7 +25,8 @@
           (menhir (>= 20230415))
           (base (>= 0.15.1))
           (ppx_sexp_conv (>= 0.15.1))
-          (ppx_deriving (>= 5.2.1)))
+          (ppx_deriving (>= 5.2.1))
+          (ppx_deriving_protobuf (>= 3.0.0)))
  (tags
   (topics compiler tiger)))
 
