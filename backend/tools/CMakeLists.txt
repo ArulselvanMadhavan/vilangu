@@ -1,0 +1,2 @@
+create_subdirectory_options(TLANG TOOL)
+add_tlang_subdirectory(driver)

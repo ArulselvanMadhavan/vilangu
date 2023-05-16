@@ -1,2 +1,4 @@
 _build/
 artifacts/
+backend/build/**
+backend/.cache/**
