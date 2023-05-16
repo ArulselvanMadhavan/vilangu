@@ -20,5 +20,6 @@ let () =
   in
   let Semant.{ ty; _ } = Semant.trans_prog parsed_exp in
   Ast.sexp_of_comp_unit parsed_exp |> Sexplib0.Sexp.to_string_hum |> Printf.printf "%s\n";
-  Printf.printf "Result type:%s\n" (Types.type2str ty)
+  Printf.printf "Result type:%s\n" (Types.type2str ty);
+  Ir_gen.gen_prog parsed_exp
 ;;

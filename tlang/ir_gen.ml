@@ -23,7 +23,13 @@ let gen_prog A.{ main_decl; _ } =
     | A.VariableDecl _ :: xs -> FT.Integer (-1) :: gen_main xs
     | A.MainStmt s :: xs -> gen_stmt s :: gen_main xs
   in
-  let prog = FT.{ main = gen_main main_decl } in
-  let encoder = Pbrt.Encoder.create () in
-  Frontend_pb.encode_program prog encoder
+  FT.{ main = gen_main main_decl }
 ;;
+
+let dump prog =
+  let encoder = Pbrt.Encoder.create () in
+  Frontend_pb.encode_program prog encoder;
+
+  let oc = open_out "prog" in
+  output_bytes oc (Pbrt.Encoder.to_bytes encoder);
+  close_out oc
