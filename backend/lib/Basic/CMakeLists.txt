@@ -10,6 +10,6 @@ add_custom_command(TARGET tlangBasic POST_BUILD
                    ${GENERATED_HEADER}
                    ${CMAKE_SOURCE_DIR}/include/tlang/Deserializer/frontend.pb.h)
 
-target_link_libraries(tlangBasic PRIVATE ${Protobuf_LIBRARIES})
+target_link_libraries(tlangBasic PRIVATE protobuf::libprotobuf)
 # This seems extraneous
-target_include_directories(tlangBasic PRIVATE ${Protobuf_INCLUDE_DIRS} ${CMAKE_CURRENT_BINARY_DIR})
+target_include_directories(tlangBasic PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
