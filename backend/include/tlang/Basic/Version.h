@@ -5,6 +5,7 @@
 #include <string>
 
 namespace tlang {
-  std::string getTlangVersion();
-}
+std::string getTlangVersion();
+void deserializePrograms(std::string &filePath);
+} // namespace tlang
 #endif
