@@ -1,1 +1,15 @@
-add_tlang_library(tlangBasic Version.cpp)
+find_package(Protobuf REQUIRED)
+protobuf_generate_cpp(GENERATED_SRC GENERATED_HEADER
+../../../frontend/frontend.proto)
+
+add_tlang_library(tlangBasic Version.cpp Protobuf_utils.cpp
+${GENERATED_SRC})
+
+add_custom_command(TARGET tlangBasic POST_BUILD
+                   COMMAND ${CMAKE_COMMAND} -E copy
+                   ${GENERATED_HEADER}
+                   ${CMAKE_SOURCE_DIR}/include/tlang/Deserializer/frontend.pb.h)
+
+target_link_libraries(tlangBasic PRIVATE ${Protobuf_LIBRARIES})
+# This seems extraneous
+target_include_directories(tlangBasic PRIVATE ${Protobuf_INCLUDE_DIRS} ${CMAKE_CURRENT_BINARY_DIR})
