@@ -5,6 +5,8 @@
 #include <string>
 
 namespace tlang {
-Frontend_ir::Program deserializeProgram(std::string &filePath);
-}
+enum class PbErrorCode { FileNotFound, Nil };
+std::pair<PbErrorCode, Frontend_ir::Program>
+deserializeProgram(std::string &filePath);
+} // namespace tlang
 #endif
