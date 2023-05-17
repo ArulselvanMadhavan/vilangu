@@ -8,7 +8,7 @@ message Expr {
   }
 
   oneof value {
-    int64 Integer = 1 [(ocaml_type)=int_t];
+    int64 Integer = 1;
     _FunctionApp FunctionApp = 2;
   }
 }

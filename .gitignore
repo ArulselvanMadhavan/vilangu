@@ -2,3 +2,4 @@ _build/
 artifacts/
 backend/build/**
 backend/.cache/**
+backend/compile_commands.json
