@@ -7,14 +7,15 @@ int main(int argc_, const char **argv_) {
   llvm::InitLLVM X(argc_, argv_);
   llvm::outs() << "Hello, I'm Tlang " << tlang::getTlangVersion() << "\n";
   std::string filePath(argv_[1]);
-  auto result = tlang::deserializeProgram(filePath);
-  switch (result.first) {
-  case tlang::PbErrorCode::Nil:
-    std::cout << "Success\n";
-    break;
-  default:
+  // Deserialize and handle error
+  auto pb_result = tlang::deserializeProgram(filePath);
+  if (pb_result.first != tlang::PbErrorCode::Nil) {
     std::cout << "Fail\n";
-    break;
+    return -1;
   }
+
+  // Prog IR
+  auto program = pb_result.second;
+  auto pir = tlang::protobufToIR(program);
   return 0;
 }

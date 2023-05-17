@@ -2,6 +2,7 @@
 #include "tlang/Deserializer/frontend.pb.h"
 #include <fstream>
 #include <iostream>
+#include <memory>
 
 namespace tlang {
 std::pair<PbErrorCode, Frontend_ir::Program>
@@ -11,10 +12,13 @@ deserializeProgram(std::string &filePath) {
   if (!fileIn) {
     return std::make_pair(PbErrorCode::FileNotFound, program);
   }
-  // if (!program.ParseFromIstream(&fileIn)) {
-  //   throw DeserialiseProtobufException("Protobuf not deserialised from
-  //   file.");
-  // }
+  if (!program.ParseFromIstream(&fileIn)) {
+    return std::make_pair(PbErrorCode::DeserError, program);
+  }
   return std::make_pair(PbErrorCode::Nil, program);
+}
+
+std::unique_ptr<ProgramIR> protobufToIR(const Frontend_ir::Program &program) {
+  return std::unique_ptr<ProgramIR>(new ProgramIR(program));
 }
 } // namespace tlang
