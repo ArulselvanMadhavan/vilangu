@@ -4,7 +4,7 @@ message Expr {
 
   message _FunctionApp {
     required string name = 1;
-    repeated Expr block = 2;
+    repeated Expr args = 2;
   }
 
   oneof value {

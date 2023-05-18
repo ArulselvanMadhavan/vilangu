@@ -194,26 +194,26 @@ class Expr__FunctionApp PROTOBUF_FINAL :
   // accessors -------------------------------------------------------
 
   enum : int {
-    kBlockFieldNumber = 2,
+    kArgsFieldNumber = 2,
     kNameFieldNumber = 1,
   };
-  // repeated .Frontend_ir.Expr block = 2;
-  int block_size() const;
+  // repeated .Frontend_ir.Expr args = 2;
+  int args_size() const;
   private:
-  int _internal_block_size() const;
+  int _internal_args_size() const;
   public:
-  void clear_block();
-  ::Frontend_ir::Expr* mutable_block(int index);
+  void clear_args();
+  ::Frontend_ir::Expr* mutable_args(int index);
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Frontend_ir::Expr >*
-      mutable_block();
+      mutable_args();
   private:
-  const ::Frontend_ir::Expr& _internal_block(int index) const;
-  ::Frontend_ir::Expr* _internal_add_block();
+  const ::Frontend_ir::Expr& _internal_args(int index) const;
+  ::Frontend_ir::Expr* _internal_add_args();
   public:
-  const ::Frontend_ir::Expr& block(int index) const;
-  ::Frontend_ir::Expr* add_block();
+  const ::Frontend_ir::Expr& args(int index) const;
+  ::Frontend_ir::Expr* add_args();
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Frontend_ir::Expr >&
-      block() const;
+      args() const;
 
   // required string name = 1;
   bool has_name() const;
@@ -253,7 +253,7 @@ class Expr__FunctionApp PROTOBUF_FINAL :
   typedef void DestructorSkippable_;
   ::PROTOBUF_NAMESPACE_ID::internal::HasBits<1> _has_bits_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
-  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Frontend_ir::Expr > block_;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Frontend_ir::Expr > args_;
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr name_;
   friend struct ::TableStruct_frontend_2eproto;
 };
@@ -702,43 +702,43 @@ inline void Expr__FunctionApp::unsafe_arena_set_allocated_name(
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:Frontend_ir.Expr._FunctionApp.name)
 }
 
-// repeated .Frontend_ir.Expr block = 2;
-inline int Expr__FunctionApp::_internal_block_size() const {
-  return block_.size();
+// repeated .Frontend_ir.Expr args = 2;
+inline int Expr__FunctionApp::_internal_args_size() const {
+  return args_.size();
 }
-inline int Expr__FunctionApp::block_size() const {
-  return _internal_block_size();
+inline int Expr__FunctionApp::args_size() const {
+  return _internal_args_size();
 }
-inline void Expr__FunctionApp::clear_block() {
-  block_.Clear();
+inline void Expr__FunctionApp::clear_args() {
+  args_.Clear();
 }
-inline ::Frontend_ir::Expr* Expr__FunctionApp::mutable_block(int index) {
-  // @@protoc_insertion_point(field_mutable:Frontend_ir.Expr._FunctionApp.block)
-  return block_.Mutable(index);
+inline ::Frontend_ir::Expr* Expr__FunctionApp::mutable_args(int index) {
+  // @@protoc_insertion_point(field_mutable:Frontend_ir.Expr._FunctionApp.args)
+  return args_.Mutable(index);
 }
 inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Frontend_ir::Expr >*
-Expr__FunctionApp::mutable_block() {
-  // @@protoc_insertion_point(field_mutable_list:Frontend_ir.Expr._FunctionApp.block)
-  return &block_;
+Expr__FunctionApp::mutable_args() {
+  // @@protoc_insertion_point(field_mutable_list:Frontend_ir.Expr._FunctionApp.args)
+  return &args_;
 }
-inline const ::Frontend_ir::Expr& Expr__FunctionApp::_internal_block(int index) const {
-  return block_.Get(index);
+inline const ::Frontend_ir::Expr& Expr__FunctionApp::_internal_args(int index) const {
+  return args_.Get(index);
 }
-inline const ::Frontend_ir::Expr& Expr__FunctionApp::block(int index) const {
-  // @@protoc_insertion_point(field_get:Frontend_ir.Expr._FunctionApp.block)
-  return _internal_block(index);
+inline const ::Frontend_ir::Expr& Expr__FunctionApp::args(int index) const {
+  // @@protoc_insertion_point(field_get:Frontend_ir.Expr._FunctionApp.args)
+  return _internal_args(index);
 }
-inline ::Frontend_ir::Expr* Expr__FunctionApp::_internal_add_block() {
-  return block_.Add();
+inline ::Frontend_ir::Expr* Expr__FunctionApp::_internal_add_args() {
+  return args_.Add();
 }
-inline ::Frontend_ir::Expr* Expr__FunctionApp::add_block() {
-  // @@protoc_insertion_point(field_add:Frontend_ir.Expr._FunctionApp.block)
-  return _internal_add_block();
+inline ::Frontend_ir::Expr* Expr__FunctionApp::add_args() {
+  // @@protoc_insertion_point(field_add:Frontend_ir.Expr._FunctionApp.args)
+  return _internal_add_args();
 }
 inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Frontend_ir::Expr >&
-Expr__FunctionApp::block() const {
-  // @@protoc_insertion_point(field_list:Frontend_ir.Expr._FunctionApp.block)
-  return block_;
+Expr__FunctionApp::args() const {
+  // @@protoc_insertion_point(field_list:Frontend_ir.Expr._FunctionApp.args)
+  return args_;
 }
 
 // -------------------------------------------------------------------
