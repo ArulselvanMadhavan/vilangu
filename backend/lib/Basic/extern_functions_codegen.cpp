@@ -4,7 +4,7 @@
 
 void IRCodegenVisitor::codegenExternFunctionDeclarations() {
   module->getOrInsertFunction(
-      "out", llvm::FunctionType::get(
-                 llvm::IntegerType::getInt32Ty(*context),
-                 llvm::Type::getInt8Ty(*context)->getPointerTo(), true));
+      "printf", llvm::FunctionType::get(
+                    llvm::IntegerType::getInt32Ty(*context),
+                    llvm::Type::getInt8Ty(*context)->getPointerTo(), true));
 }

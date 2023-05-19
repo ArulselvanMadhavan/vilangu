@@ -7,9 +7,15 @@ message Expr {
     repeated Expr args = 2;
   }
 
+  message _Printf {
+    required string format = 1;
+    repeated Expr f_args = 2;
+  }
+  
   oneof value {
-    int64 Integer = 1;
+    int32 Integer = 1;
     _FunctionApp FunctionApp = 2;
+    _Printf Printf = 3;
   }
 }
 

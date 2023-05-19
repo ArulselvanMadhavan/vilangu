@@ -3,13 +3,14 @@
 #include "llvm/IR/Constants.h"
 #include "llvm/IR/Type.h"
 #include "llvm/IR/Value.h"
-#include <llvm-14/llvm/ADT/StringRef.h>
-#include <llvm-14/llvm/IR/DerivedTypes.h>
-#include <llvm-14/llvm/IR/Function.h>
+#include <llvm/ADT/StringRef.h>
+#include <llvm/IR/DerivedTypes.h>
+#include <llvm/IR/Function.h>
+#include <llvm/Support/raw_ostream.h>
 #include <vector>
 
 llvm::Value *IRCodegenVisitor::codegen(const ExprIntegerIR &expr) {
-  return llvm::ConstantInt::getSigned((llvm::Type::getInt64Ty(*context)),
+  return llvm::ConstantInt::getSigned((llvm::Type::getInt32Ty(*context)),
                                       expr.val);
 }
 
@@ -35,4 +36,19 @@ llvm::Value *IRCodegenVisitor::codegen(const ExprFunctionAppIR &expr) {
     argVals.push_back(bitCastArgVal);
   }
   return builder->CreateCall(calleeFun, argVals);
+}
+
+llvm::Value *IRCodegenVisitor::codegen(const ExprPrintfIR &expr) {
+  llvm::Function *printf = module->getFunction("printf");
+  std::vector<llvm::Value *> printfArgs;
+  printfArgs.push_back(builder->CreateGlobalStringPtr(expr.formatStr));
+  for (auto &arg : expr.arguments) {
+    llvm::Value *argVal = arg->codegen(*this);
+    if (argVal == nullptr) {
+      llvm::outs() << "printf argval is null";
+      return nullptr;
+    }
+    printfArgs.push_back(argVal);
+  }
+  return builder->CreateCall(printf, printfArgs);
 }

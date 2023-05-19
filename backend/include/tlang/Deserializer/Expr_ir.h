@@ -25,5 +25,12 @@ struct ExprFunctionAppIR : public ExprIR {
   virtual llvm::Value *codegen(IRVisitor &visitor) override;
 };
 
+struct ExprPrintfIR : public ExprIR {
+  std::string formatStr;
+  std::vector<std::unique_ptr<ExprIR>> arguments;
+  ExprPrintfIR(const Frontend_ir::Expr::_Printf &expr);
+  virtual llvm::Value *codegen(IRVisitor &visitor) override;
+};
+
 std::unique_ptr<ExprIR> deserializeExpr(const Frontend_ir::Expr &expr);
 #endif

@@ -7,8 +7,14 @@ type expr_p_function_app = {
 }
 
 and expr =
-  | Integer of int64
+  | Integer of int32
   | Function_app of expr_p_function_app
+  | Printf of expr_p_printf
+
+and expr_p_printf = {
+  format : string;
+  f_args : expr list;
+}
 
 type program = {
   main : expr list;
@@ -22,7 +28,15 @@ let rec default_expr_p_function_app
   args;
 }
 
-and default_expr () : expr = Integer (0L)
+and default_expr () : expr = Integer (0l)
+
+and default_expr_p_printf 
+  ?format:((format:string) = "")
+  ?f_args:((f_args:expr list) = [])
+  () : expr_p_printf  = {
+  format;
+  f_args;
+}
 
 let rec default_program 
   ?main:((main:expr list) = [])

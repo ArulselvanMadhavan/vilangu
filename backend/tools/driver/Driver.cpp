@@ -6,7 +6,7 @@
 
 int main(int argc_, const char **argv_) {
   llvm::InitLLVM X(argc_, argv_);
-  llvm::outs() << "Hello, I'm Tlang " << tlang::getTlangVersion() << "\n";
+  // llvm::outs() << "Hello, I'm Tlang " << tlang::getTlangVersion() << "\n";
   std::string filePath(argv_[1]);
   // Deserialize and handle error
   auto pb_result = tlang::deserializeProgram(filePath);

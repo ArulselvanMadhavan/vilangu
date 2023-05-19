@@ -47,7 +47,7 @@ struct TableStruct_frontend_2eproto {
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::AuxillaryParseTableField aux[]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
-  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[3]
+  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[4]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::FieldMetadata field_metadata[];
   static const ::PROTOBUF_NAMESPACE_ID::internal::SerializationTable serialization_table[];
@@ -61,6 +61,9 @@ extern ExprDefaultTypeInternal _Expr_default_instance_;
 class Expr__FunctionApp;
 class Expr__FunctionAppDefaultTypeInternal;
 extern Expr__FunctionAppDefaultTypeInternal _Expr__FunctionApp_default_instance_;
+class Expr__Printf;
+class Expr__PrintfDefaultTypeInternal;
+extern Expr__PrintfDefaultTypeInternal _Expr__Printf_default_instance_;
 class Program;
 class ProgramDefaultTypeInternal;
 extern ProgramDefaultTypeInternal _Program_default_instance_;
@@ -68,6 +71,7 @@ extern ProgramDefaultTypeInternal _Program_default_instance_;
 PROTOBUF_NAMESPACE_OPEN
 template<> ::Frontend_ir::Expr* Arena::CreateMaybeMessage<::Frontend_ir::Expr>(Arena*);
 template<> ::Frontend_ir::Expr__FunctionApp* Arena::CreateMaybeMessage<::Frontend_ir::Expr__FunctionApp>(Arena*);
+template<> ::Frontend_ir::Expr__Printf* Arena::CreateMaybeMessage<::Frontend_ir::Expr__Printf>(Arena*);
 template<> ::Frontend_ir::Program* Arena::CreateMaybeMessage<::Frontend_ir::Program>(Arena*);
 PROTOBUF_NAMESPACE_CLOSE
 namespace Frontend_ir {
@@ -259,6 +263,191 @@ class Expr__FunctionApp PROTOBUF_FINAL :
 };
 // -------------------------------------------------------------------
 
+class Expr__Printf PROTOBUF_FINAL :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:Frontend_ir.Expr._Printf) */ {
+ public:
+  inline Expr__Printf() : Expr__Printf(nullptr) {};
+  virtual ~Expr__Printf();
+
+  Expr__Printf(const Expr__Printf& from);
+  Expr__Printf(Expr__Printf&& from) noexcept
+    : Expr__Printf() {
+    *this = ::std::move(from);
+  }
+
+  inline Expr__Printf& operator=(const Expr__Printf& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline Expr__Printf& operator=(Expr__Printf&& from) noexcept {
+    if (GetArena() == from.GetArena()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  inline const ::PROTOBUF_NAMESPACE_ID::UnknownFieldSet& unknown_fields() const {
+    return _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance);
+  }
+  inline ::PROTOBUF_NAMESPACE_ID::UnknownFieldSet* mutable_unknown_fields() {
+    return _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const Expr__Printf& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const Expr__Printf* internal_default_instance() {
+    return reinterpret_cast<const Expr__Printf*>(
+               &_Expr__Printf_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    1;
+
+  friend void swap(Expr__Printf& a, Expr__Printf& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(Expr__Printf* other) {
+    if (other == this) return;
+    if (GetArena() == other->GetArena()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(Expr__Printf* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArena() == other->GetArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline Expr__Printf* New() const final {
+    return CreateMaybeMessage<Expr__Printf>(nullptr);
+  }
+
+  Expr__Printf* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<Expr__Printf>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const Expr__Printf& from);
+  void MergeFrom(const Expr__Printf& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(Expr__Printf* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "Frontend_ir.Expr._Printf";
+  }
+  protected:
+  explicit Expr__Printf(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  private:
+  static void ArenaDtor(void* object);
+  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_frontend_2eproto);
+    return ::descriptor_table_frontend_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kFArgsFieldNumber = 2,
+    kFormatFieldNumber = 1,
+  };
+  // repeated .Frontend_ir.Expr f_args = 2;
+  int f_args_size() const;
+  private:
+  int _internal_f_args_size() const;
+  public:
+  void clear_f_args();
+  ::Frontend_ir::Expr* mutable_f_args(int index);
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Frontend_ir::Expr >*
+      mutable_f_args();
+  private:
+  const ::Frontend_ir::Expr& _internal_f_args(int index) const;
+  ::Frontend_ir::Expr* _internal_add_f_args();
+  public:
+  const ::Frontend_ir::Expr& f_args(int index) const;
+  ::Frontend_ir::Expr* add_f_args();
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Frontend_ir::Expr >&
+      f_args() const;
+
+  // required string format = 1;
+  bool has_format() const;
+  private:
+  bool _internal_has_format() const;
+  public:
+  void clear_format();
+  const std::string& format() const;
+  void set_format(const std::string& value);
+  void set_format(std::string&& value);
+  void set_format(const char* value);
+  void set_format(const char* value, size_t size);
+  std::string* mutable_format();
+  std::string* release_format();
+  void set_allocated_format(std::string* format);
+  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
+  std::string* unsafe_arena_release_format();
+  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
+  void unsafe_arena_set_allocated_format(
+      std::string* format);
+  private:
+  const std::string& _internal_format() const;
+  void _internal_set_format(const std::string& value);
+  std::string* _internal_mutable_format();
+  public:
+
+  // @@protoc_insertion_point(class_scope:Frontend_ir.Expr._Printf)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  ::PROTOBUF_NAMESPACE_ID::internal::HasBits<1> _has_bits_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Frontend_ir::Expr > f_args_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr format_;
+  friend struct ::TableStruct_frontend_2eproto;
+};
+// -------------------------------------------------------------------
+
 class Expr PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:Frontend_ir.Expr) */ {
  public:
@@ -305,6 +494,7 @@ class Expr PROTOBUF_FINAL :
   enum ValueCase {
     kInteger = 1,
     kFunctionApp = 2,
+    kPrintf = 3,
     VALUE_NOT_SET = 0,
   };
 
@@ -314,7 +504,7 @@ class Expr PROTOBUF_FINAL :
                &_Expr_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    1;
+    2;
 
   friend void swap(Expr& a, Expr& b) {
     a.Swap(&b);
@@ -383,24 +573,26 @@ class Expr PROTOBUF_FINAL :
   // nested types ----------------------------------------------------
 
   typedef Expr__FunctionApp _FunctionApp;
+  typedef Expr__Printf _Printf;
 
   // accessors -------------------------------------------------------
 
   enum : int {
     kIntegerFieldNumber = 1,
     kFunctionAppFieldNumber = 2,
+    kPrintfFieldNumber = 3,
   };
-  // int64 Integer = 1;
+  // int32 Integer = 1;
   bool has_integer() const;
   private:
   bool _internal_has_integer() const;
   public:
   void clear_integer();
-  ::PROTOBUF_NAMESPACE_ID::int64 integer() const;
-  void set_integer(::PROTOBUF_NAMESPACE_ID::int64 value);
+  ::PROTOBUF_NAMESPACE_ID::int32 integer() const;
+  void set_integer(::PROTOBUF_NAMESPACE_ID::int32 value);
   private:
-  ::PROTOBUF_NAMESPACE_ID::int64 _internal_integer() const;
-  void _internal_set_integer(::PROTOBUF_NAMESPACE_ID::int64 value);
+  ::PROTOBUF_NAMESPACE_ID::int32 _internal_integer() const;
+  void _internal_set_integer(::PROTOBUF_NAMESPACE_ID::int32 value);
   public:
 
   // .Frontend_ir.Expr._FunctionApp FunctionApp = 2;
@@ -421,6 +613,24 @@ class Expr PROTOBUF_FINAL :
       ::Frontend_ir::Expr__FunctionApp* functionapp);
   ::Frontend_ir::Expr__FunctionApp* unsafe_arena_release_functionapp();
 
+  // .Frontend_ir.Expr._Printf Printf = 3;
+  bool has_printf() const;
+  private:
+  bool _internal_has_printf() const;
+  public:
+  void clear_printf();
+  const ::Frontend_ir::Expr__Printf& printf() const;
+  ::Frontend_ir::Expr__Printf* release_printf();
+  ::Frontend_ir::Expr__Printf* mutable_printf();
+  void set_allocated_printf(::Frontend_ir::Expr__Printf* printf);
+  private:
+  const ::Frontend_ir::Expr__Printf& _internal_printf() const;
+  ::Frontend_ir::Expr__Printf* _internal_mutable_printf();
+  public:
+  void unsafe_arena_set_allocated_printf(
+      ::Frontend_ir::Expr__Printf* printf);
+  ::Frontend_ir::Expr__Printf* unsafe_arena_release_printf();
+
   void clear_value();
   ValueCase value_case() const;
   // @@protoc_insertion_point(class_scope:Frontend_ir.Expr)
@@ -428,6 +638,7 @@ class Expr PROTOBUF_FINAL :
   class _Internal;
   void set_has_integer();
   void set_has_functionapp();
+  void set_has_printf();
 
   inline bool has_value() const;
   inline void clear_has_value();
@@ -437,8 +648,9 @@ class Expr PROTOBUF_FINAL :
   typedef void DestructorSkippable_;
   union ValueUnion {
     ValueUnion() {}
-    ::PROTOBUF_NAMESPACE_ID::int64 integer_;
+    ::PROTOBUF_NAMESPACE_ID::int32 integer_;
     ::Frontend_ir::Expr__FunctionApp* functionapp_;
+    ::Frontend_ir::Expr__Printf* printf_;
   } value_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   ::PROTOBUF_NAMESPACE_ID::uint32 _oneof_case_[1];
@@ -496,7 +708,7 @@ class Program PROTOBUF_FINAL :
                &_Program_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    2;
+    3;
 
   friend void swap(Program& a, Program& b) {
     a.Swap(&b);
@@ -743,9 +955,145 @@ Expr__FunctionApp::args() const {
 
 // -------------------------------------------------------------------
 
+// Expr__Printf
+
+// required string format = 1;
+inline bool Expr__Printf::_internal_has_format() const {
+  bool value = (_has_bits_[0] & 0x00000001u) != 0;
+  return value;
+}
+inline bool Expr__Printf::has_format() const {
+  return _internal_has_format();
+}
+inline void Expr__Printf::clear_format() {
+  format_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline const std::string& Expr__Printf::format() const {
+  // @@protoc_insertion_point(field_get:Frontend_ir.Expr._Printf.format)
+  return _internal_format();
+}
+inline void Expr__Printf::set_format(const std::string& value) {
+  _internal_set_format(value);
+  // @@protoc_insertion_point(field_set:Frontend_ir.Expr._Printf.format)
+}
+inline std::string* Expr__Printf::mutable_format() {
+  // @@protoc_insertion_point(field_mutable:Frontend_ir.Expr._Printf.format)
+  return _internal_mutable_format();
+}
+inline const std::string& Expr__Printf::_internal_format() const {
+  return format_.Get();
+}
+inline void Expr__Printf::_internal_set_format(const std::string& value) {
+  _has_bits_[0] |= 0x00000001u;
+  format_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+}
+inline void Expr__Printf::set_format(std::string&& value) {
+  _has_bits_[0] |= 0x00000001u;
+  format_.Set(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+  // @@protoc_insertion_point(field_set_rvalue:Frontend_ir.Expr._Printf.format)
+}
+inline void Expr__Printf::set_format(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  _has_bits_[0] |= 0x00000001u;
+  format_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
+              GetArena());
+  // @@protoc_insertion_point(field_set_char:Frontend_ir.Expr._Printf.format)
+}
+inline void Expr__Printf::set_format(const char* value,
+    size_t size) {
+  _has_bits_[0] |= 0x00000001u;
+  format_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+      reinterpret_cast<const char*>(value), size), GetArena());
+  // @@protoc_insertion_point(field_set_pointer:Frontend_ir.Expr._Printf.format)
+}
+inline std::string* Expr__Printf::_internal_mutable_format() {
+  _has_bits_[0] |= 0x00000001u;
+  return format_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline std::string* Expr__Printf::release_format() {
+  // @@protoc_insertion_point(field_release:Frontend_ir.Expr._Printf.format)
+  if (!_internal_has_format()) {
+    return nullptr;
+  }
+  _has_bits_[0] &= ~0x00000001u;
+  return format_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline void Expr__Printf::set_allocated_format(std::string* format) {
+  if (format != nullptr) {
+    _has_bits_[0] |= 0x00000001u;
+  } else {
+    _has_bits_[0] &= ~0x00000001u;
+  }
+  format_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), format,
+      GetArena());
+  // @@protoc_insertion_point(field_set_allocated:Frontend_ir.Expr._Printf.format)
+}
+inline std::string* Expr__Printf::unsafe_arena_release_format() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:Frontend_ir.Expr._Printf.format)
+  GOOGLE_DCHECK(GetArena() != nullptr);
+  _has_bits_[0] &= ~0x00000001u;
+  return format_.UnsafeArenaRelease(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      GetArena());
+}
+inline void Expr__Printf::unsafe_arena_set_allocated_format(
+    std::string* format) {
+  GOOGLE_DCHECK(GetArena() != nullptr);
+  if (format != nullptr) {
+    _has_bits_[0] |= 0x00000001u;
+  } else {
+    _has_bits_[0] &= ~0x00000001u;
+  }
+  format_.UnsafeArenaSetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      format, GetArena());
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:Frontend_ir.Expr._Printf.format)
+}
+
+// repeated .Frontend_ir.Expr f_args = 2;
+inline int Expr__Printf::_internal_f_args_size() const {
+  return f_args_.size();
+}
+inline int Expr__Printf::f_args_size() const {
+  return _internal_f_args_size();
+}
+inline void Expr__Printf::clear_f_args() {
+  f_args_.Clear();
+}
+inline ::Frontend_ir::Expr* Expr__Printf::mutable_f_args(int index) {
+  // @@protoc_insertion_point(field_mutable:Frontend_ir.Expr._Printf.f_args)
+  return f_args_.Mutable(index);
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Frontend_ir::Expr >*
+Expr__Printf::mutable_f_args() {
+  // @@protoc_insertion_point(field_mutable_list:Frontend_ir.Expr._Printf.f_args)
+  return &f_args_;
+}
+inline const ::Frontend_ir::Expr& Expr__Printf::_internal_f_args(int index) const {
+  return f_args_.Get(index);
+}
+inline const ::Frontend_ir::Expr& Expr__Printf::f_args(int index) const {
+  // @@protoc_insertion_point(field_get:Frontend_ir.Expr._Printf.f_args)
+  return _internal_f_args(index);
+}
+inline ::Frontend_ir::Expr* Expr__Printf::_internal_add_f_args() {
+  return f_args_.Add();
+}
+inline ::Frontend_ir::Expr* Expr__Printf::add_f_args() {
+  // @@protoc_insertion_point(field_add:Frontend_ir.Expr._Printf.f_args)
+  return _internal_add_f_args();
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Frontend_ir::Expr >&
+Expr__Printf::f_args() const {
+  // @@protoc_insertion_point(field_list:Frontend_ir.Expr._Printf.f_args)
+  return f_args_;
+}
+
+// -------------------------------------------------------------------
+
 // Expr
 
-// int64 Integer = 1;
+// int32 Integer = 1;
 inline bool Expr::_internal_has_integer() const {
   return value_case() == kInteger;
 }
@@ -757,28 +1105,28 @@ inline void Expr::set_has_integer() {
 }
 inline void Expr::clear_integer() {
   if (_internal_has_integer()) {
-    value_.integer_ = PROTOBUF_LONGLONG(0);
+    value_.integer_ = 0;
     clear_has_value();
   }
 }
-inline ::PROTOBUF_NAMESPACE_ID::int64 Expr::_internal_integer() const {
+inline ::PROTOBUF_NAMESPACE_ID::int32 Expr::_internal_integer() const {
   if (_internal_has_integer()) {
     return value_.integer_;
   }
-  return PROTOBUF_LONGLONG(0);
+  return 0;
 }
-inline void Expr::_internal_set_integer(::PROTOBUF_NAMESPACE_ID::int64 value) {
+inline void Expr::_internal_set_integer(::PROTOBUF_NAMESPACE_ID::int32 value) {
   if (!_internal_has_integer()) {
     clear_value();
     set_has_integer();
   }
   value_.integer_ = value;
 }
-inline ::PROTOBUF_NAMESPACE_ID::int64 Expr::integer() const {
+inline ::PROTOBUF_NAMESPACE_ID::int32 Expr::integer() const {
   // @@protoc_insertion_point(field_get:Frontend_ir.Expr.Integer)
   return _internal_integer();
 }
-inline void Expr::set_integer(::PROTOBUF_NAMESPACE_ID::int64 value) {
+inline void Expr::set_integer(::PROTOBUF_NAMESPACE_ID::int32 value) {
   _internal_set_integer(value);
   // @@protoc_insertion_point(field_set:Frontend_ir.Expr.Integer)
 }
@@ -856,6 +1204,79 @@ inline ::Frontend_ir::Expr__FunctionApp* Expr::mutable_functionapp() {
   return _internal_mutable_functionapp();
 }
 
+// .Frontend_ir.Expr._Printf Printf = 3;
+inline bool Expr::_internal_has_printf() const {
+  return value_case() == kPrintf;
+}
+inline bool Expr::has_printf() const {
+  return _internal_has_printf();
+}
+inline void Expr::set_has_printf() {
+  _oneof_case_[0] = kPrintf;
+}
+inline void Expr::clear_printf() {
+  if (_internal_has_printf()) {
+    if (GetArena() == nullptr) {
+      delete value_.printf_;
+    }
+    clear_has_value();
+  }
+}
+inline ::Frontend_ir::Expr__Printf* Expr::release_printf() {
+  // @@protoc_insertion_point(field_release:Frontend_ir.Expr.Printf)
+  if (_internal_has_printf()) {
+    clear_has_value();
+      ::Frontend_ir::Expr__Printf* temp = value_.printf_;
+    if (GetArena() != nullptr) {
+      temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+    }
+    value_.printf_ = nullptr;
+    return temp;
+  } else {
+    return nullptr;
+  }
+}
+inline const ::Frontend_ir::Expr__Printf& Expr::_internal_printf() const {
+  return _internal_has_printf()
+      ? *value_.printf_
+      : *reinterpret_cast< ::Frontend_ir::Expr__Printf*>(&::Frontend_ir::_Expr__Printf_default_instance_);
+}
+inline const ::Frontend_ir::Expr__Printf& Expr::printf() const {
+  // @@protoc_insertion_point(field_get:Frontend_ir.Expr.Printf)
+  return _internal_printf();
+}
+inline ::Frontend_ir::Expr__Printf* Expr::unsafe_arena_release_printf() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:Frontend_ir.Expr.Printf)
+  if (_internal_has_printf()) {
+    clear_has_value();
+    ::Frontend_ir::Expr__Printf* temp = value_.printf_;
+    value_.printf_ = nullptr;
+    return temp;
+  } else {
+    return nullptr;
+  }
+}
+inline void Expr::unsafe_arena_set_allocated_printf(::Frontend_ir::Expr__Printf* printf) {
+  clear_value();
+  if (printf) {
+    set_has_printf();
+    value_.printf_ = printf;
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:Frontend_ir.Expr.Printf)
+}
+inline ::Frontend_ir::Expr__Printf* Expr::_internal_mutable_printf() {
+  if (!_internal_has_printf()) {
+    clear_value();
+    set_has_printf();
+    value_.printf_ = CreateMaybeMessage< ::Frontend_ir::Expr__Printf >(GetArena());
+  }
+  return value_.printf_;
+}
+inline ::Frontend_ir::Expr__Printf* Expr::mutable_printf() {
+  // @@protoc_insertion_point(field_mutable:Frontend_ir.Expr.Printf)
+  return _internal_mutable_printf();
+}
+
 inline bool Expr::has_value() const {
   return value_case() != VALUE_NOT_SET;
 }
@@ -911,6 +1332,8 @@ Program::main() const {
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

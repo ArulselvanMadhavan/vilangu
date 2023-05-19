@@ -9,6 +9,9 @@ val encode_expr_p_function_app : Frontend_types.expr_p_function_app -> Pbrt.Enco
 val encode_expr : Frontend_types.expr -> Pbrt.Encoder.t -> unit
 (** [encode_expr v encoder] encodes [v] with the given [encoder] *)
 
+val encode_expr_p_printf : Frontend_types.expr_p_printf -> Pbrt.Encoder.t -> unit
+(** [encode_expr_p_printf v encoder] encodes [v] with the given [encoder] *)
+
 val encode_program : Frontend_types.program -> Pbrt.Encoder.t -> unit
 (** [encode_program v encoder] encodes [v] with the given [encoder] *)
 
@@ -20,6 +23,9 @@ val decode_expr_p_function_app : Pbrt.Decoder.t -> Frontend_types.expr_p_functio
 
 val decode_expr : Pbrt.Decoder.t -> Frontend_types.expr
 (** [decode_expr decoder] decodes a [expr] value from [decoder] *)
+
+val decode_expr_p_printf : Pbrt.Decoder.t -> Frontend_types.expr_p_printf
+(** [decode_expr_p_printf decoder] decodes a [expr_p_printf] value from [decoder] *)
 
 val decode_program : Pbrt.Decoder.t -> Frontend_types.program
 (** [decode_program decoder] decodes a [program] value from [decoder] *)

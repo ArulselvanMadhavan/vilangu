@@ -10,8 +10,14 @@ type expr_p_function_app = {
 }
 
 and expr =
-  | Integer of int64
+  | Integer of int32
   | Function_app of expr_p_function_app
+  | Printf of expr_p_printf
+
+and expr_p_printf = {
+  format : string;
+  f_args : expr list;
+}
 
 type program = {
   main : expr list;
@@ -29,6 +35,13 @@ val default_expr_p_function_app :
 
 val default_expr : unit -> expr
 (** [default_expr ()] is the default value for type [expr] *)
+
+val default_expr_p_printf : 
+  ?format:string ->
+  ?f_args:expr list ->
+  unit ->
+  expr_p_printf
+(** [default_expr_p_printf ()] is the default value for type [expr_p_printf] *)
 
 val default_program : 
   ?main:expr list ->

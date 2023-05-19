@@ -10,6 +10,16 @@ let default_expr_p_function_app_mutable () : expr_p_function_app_mutable = {
   args = [];
 }
 
+type expr_p_printf_mutable = {
+  mutable format : string;
+  mutable f_args : Frontend_types.expr list;
+}
+
+let default_expr_p_printf_mutable () : expr_p_printf_mutable = {
+  format = "";
+  f_args = [];
+}
+
 type program_mutable = {
   mutable main : Frontend_types.expr list;
 }
@@ -50,8 +60,9 @@ and decode_expr d =
   let rec loop () = 
     let ret:Frontend_types.expr = match Pbrt.Decoder.key d with
       | None -> Pbrt.Decoder.malformed_variant "expr"
-      | Some (1, _) -> (Frontend_types.Integer (Pbrt.Decoder.int64_as_varint d) : Frontend_types.expr) 
+      | Some (1, _) -> (Frontend_types.Integer (Pbrt.Decoder.int32_as_varint d) : Frontend_types.expr) 
       | Some (2, _) -> (Frontend_types.Function_app (decode_expr_p_function_app (Pbrt.Decoder.nested d)) : Frontend_types.expr) 
+      | Some (3, _) -> (Frontend_types.Printf (decode_expr_p_printf (Pbrt.Decoder.nested d)) : Frontend_types.expr) 
       | Some (n, payload_kind) -> (
         Pbrt.Decoder.skip d payload_kind; 
         loop () 
@@ -60,6 +71,33 @@ and decode_expr d =
     ret
   in
   loop ()
+
+and decode_expr_p_printf d =
+  let v = default_expr_p_printf_mutable () in
+  let continue__= ref true in
+  let format_is_set = ref false in
+  while !continue__ do
+    match Pbrt.Decoder.key d with
+    | None -> (
+      v.f_args <- List.rev v.f_args;
+    ); continue__ := false
+    | Some (1, Pbrt.Bytes) -> begin
+      v.format <- Pbrt.Decoder.string d; format_is_set := true;
+    end
+    | Some (1, pk) -> 
+      Pbrt.Decoder.unexpected_payload "Message(expr_p_printf), field(1)" pk
+    | Some (2, Pbrt.Bytes) -> begin
+      v.f_args <- (decode_expr (Pbrt.Decoder.nested d)) :: v.f_args;
+    end
+    | Some (2, pk) -> 
+      Pbrt.Decoder.unexpected_payload "Message(expr_p_printf), field(2)" pk
+    | Some (_, payload_kind) -> Pbrt.Decoder.skip d payload_kind
+  done;
+  begin if not !format_is_set then Pbrt.Decoder.missing_field "format" end;
+  ({
+    Frontend_types.format = v.format;
+    Frontend_types.f_args = v.f_args;
+  } : Frontend_types.expr_p_printf)
 
 let rec decode_program d =
   let v = default_program_mutable () in
@@ -93,11 +131,23 @@ and encode_expr (v:Frontend_types.expr) encoder =
   begin match v with
   | Frontend_types.Integer x ->
     Pbrt.Encoder.key (1, Pbrt.Varint) encoder; 
-    Pbrt.Encoder.int64_as_varint x encoder;
+    Pbrt.Encoder.int32_as_varint x encoder;
   | Frontend_types.Function_app x ->
     Pbrt.Encoder.key (2, Pbrt.Bytes) encoder; 
     Pbrt.Encoder.nested (encode_expr_p_function_app x) encoder;
+  | Frontend_types.Printf x ->
+    Pbrt.Encoder.key (3, Pbrt.Bytes) encoder; 
+    Pbrt.Encoder.nested (encode_expr_p_printf x) encoder;
   end
+
+and encode_expr_p_printf (v:Frontend_types.expr_p_printf) encoder = 
+  Pbrt.Encoder.key (1, Pbrt.Bytes) encoder; 
+  Pbrt.Encoder.string v.Frontend_types.format encoder;
+  List.iter (fun x -> 
+    Pbrt.Encoder.key (2, Pbrt.Bytes) encoder; 
+    Pbrt.Encoder.nested (encode_expr x) encoder;
+  ) v.Frontend_types.f_args;
+  ()
 
 let rec encode_program (v:Frontend_types.program) encoder = 
   List.iter (fun x -> 

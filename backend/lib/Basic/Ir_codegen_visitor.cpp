@@ -9,6 +9,9 @@
 #include "llvm/IR/BasicBlock.h"
 #include "llvm/Support/Host.h"
 #include <iostream>
+#include <llvm/ADT/APInt.h>
+#include <llvm/IR/Constants.h>
+#include <llvm/IR/Verifier.h>
 #include <memory>
 
 IRCodegenVisitor::IRCodegenVisitor() {
@@ -33,13 +36,17 @@ void IRCodegenVisitor::codegenMainExpr(
   for (auto &expr : mainExpr) {
     expr->codegen(*this);
   }
+
+  llvm::APInt retVal(32, (uint32_t)0, true);
+  builder->CreateRet(llvm::ConstantInt::get(*(context), retVal));
+  llvm::verifyFunction(*main);
 }
 void IRCodegenVisitor::codegenProgram(const ProgramIR &program) {
   codegenExternFunctionDeclarations();
   codegenMainExpr(program.mainExpr);
 }
 IRCodegenVisitor::~IRCodegenVisitor() {
-  std::cout << "Destructor IRCodegenVisitor\n";
+  // std::cout << "Destructor IRCodegenVisitor\n";
 }
 
 void IRCodegenVisitor::configureTarget() {
