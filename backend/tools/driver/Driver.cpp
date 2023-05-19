@@ -1,4 +1,5 @@
 #include "tlang/Basic/Version.h"
+#include "tlang/Codegen/Ir_codegen_visitor.h"
 #include "tlang/Deserializer/Protobuf_utils.h"
 #include "llvm/Support/InitLLVM.h"
 #include "llvm/Support/raw_ostream.h"
@@ -17,5 +18,10 @@ int main(int argc_, const char **argv_) {
   // Prog IR
   auto program = pb_result.second;
   auto pir = tlang::protobufToIR(program);
+
+  IRCodegenVisitor codeGen;
+  codeGen.codegenProgram(*pir);
+  codeGen.configureTarget();
+  codeGen.dumpLLVMIR();
   return 0;
 }
