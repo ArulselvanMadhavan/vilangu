@@ -26,10 +26,10 @@ let gen_prog A.{ main_decl; _ } =
   FT.{ main = gen_main main_decl }
 ;;
 
-let dump prog =
+let dump fname prog =
   let encoder = Pbrt.Encoder.create () in
   Frontend_pb.encode_program prog encoder;
-
-  let oc = open_out "prog.ir" in
+  let oc = open_out fname in
   output_bytes oc (Pbrt.Encoder.to_bytes encoder);
   close_out oc
+;;

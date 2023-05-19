@@ -26,7 +26,8 @@
           (base (>= 0.15.1))
           (ppx_sexp_conv (>= 0.15.1))
           (ppx_deriving (>= 5.2.1))
-          (ppx_deriving_protobuf (>= 3.0.0)))
+          (ppx_deriving_protobuf (>= 3.0.0))
+          (fpath (>= 0.7.3)))
  (tags
   (topics compiler tiger)))
 
