@@ -4,6 +4,7 @@
 #include "llvm/IR/Value.h"
 #include "llvm/Support/raw_ostream.h"
 #include <memory>
+#include <string>
 
 enum Unop deserializeUnop(const Frontend_ir::Un_op &op) {
   switch (op.value_case()) {
@@ -48,6 +49,7 @@ ExprFunctionAppIR::ExprFunctionAppIR(
 
 ExprPrintfIR::ExprPrintfIR(const Frontend_ir::Expr::_Printf &expr) {
   formatStr = expr.format();
+  formatStr = formatStr.append("\n"); // Add new line to format string
   for (int i = 0; i < expr.f_args_size(); i++) {
     arguments.push_back(deserializeExpr(expr.f_args()[i]));
   }

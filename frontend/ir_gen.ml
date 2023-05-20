@@ -16,7 +16,7 @@ let gen_expr e =
 
 let gen_stmt s =
   let gstmt = function
-    | A.Output o -> FT.Printf { format = "%d\n"; f_args = [ gen_expr o ] }
+    | A.Output o -> FT.Printf { format = "%d"; f_args = [ gen_expr o ] }
     | _ -> FT.Integer (Int32.of_int (-1))
   in
   gstmt s
@@ -31,10 +31,17 @@ let gen_prog A.{ main_decl; _ } =
   FT.{ main = gen_main main_decl }
 ;;
 
-let dump fname prog =
+let dump ast_fname ir_fname prog =
+  let oc = open_out ast_fname in
+  let out_fmt = Format.str_formatter in
+  Frontend_pp.pp_program out_fmt prog;
+  let out_str = Format.flush_str_formatter () in
+  output_string oc out_str;
+  close_out oc;
+  
   let encoder = Pbrt.Encoder.create () in
   Frontend_pb.encode_program prog encoder;
-  let oc = open_out fname in
+  let oc = open_out ir_fname in
   output_bytes oc (Pbrt.Encoder.to_bytes encoder);
   close_out oc
 ;;

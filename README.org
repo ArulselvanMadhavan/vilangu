@@ -1,4 +1,7 @@
-* Tlang in OCaml
+* Vilangu in OCaml
+Vilangu is a compiler for the [[https://www.cs.unh.edu/~cs712/T_language_spec/][T-lang]]. Compiler frontend is written in
+OCaml. The backend uses the LLVM infrastructure to generate code for
+any desired architecture.
 ** How to run?
 *** Install OCaml Toolchain
 #+begin_src bash
@@ -21,7 +24,6 @@ make
 #+begin_src bash
 dune exec vilangu
 #+end_src
-
 ** Useful links
   - https://github.com/ksrky/tiger/tree/master
   - [[https://www.cs.columbia.edu/~sedwards/classes/2002/w4115/tiger.pdf][Tiger Lang specs]]

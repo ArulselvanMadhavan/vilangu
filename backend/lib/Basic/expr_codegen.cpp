@@ -7,6 +7,7 @@
 #include <llvm/IR/DerivedTypes.h>
 #include <llvm/IR/Function.h>
 #include <llvm/Support/raw_ostream.h>
+#include <string>
 #include <vector>
 
 llvm::Value *IRCodegenVisitor::codegen(const ExprIntegerIR &expr) {

@@ -11,20 +11,13 @@ let gen_new_file dir base_file ext = Fpath.(add_seg dir (filename base_file) -+ 
 let llvm_dir = build_dir "llvm"
 let exec_dir = build_dir "exec"
 let out_dir = build_dir "out"
-
+let ir_dir = build_dir "ir"
+let ast_dir = build_dir "ast"    
+    
 let list_dir =
   let files = Sys.readdir (Fpath.to_string files_dir) in
   let files = Base.Array.filter ~f:(fun x -> Filename.extension x = ".t") files in
   Base.Array.map files ~f:(fun x -> Fpath.(add_seg files_dir x))
-;;
-
-let ir_dir filename =
-  let parent = Fpath.parent filename in
-  let ir_path = Fpath.add_seg parent "ir" in
-  (try Sys.mkdir (Fpath.to_string ir_path) 0o777 with
-   | Sys_error _ -> ());
-  let ir_path = Fpath.add_seg ir_path (Fpath.filename filename) in
-  Fpath.(ir_path -+ "ir")
 ;;
 
 let log_err filename () =
@@ -71,9 +64,10 @@ let compile_file filename =
   in
   Option.map
     (fun pe ->
-       let ir_file = ir_dir filename in
+       let ir_file = gen_new_file ir_dir filename ".ir" in
+       let ast_file = gen_new_file ast_dir filename ".ast" in
        (* Ast.sexp_of_comp_unit pe |> Sexplib0.Sexp.to_string |> Printf.printf "%s\n"; *)
-      Ir_gen.gen_prog pe |> Ir_gen.dump (Fpath.to_string ir_file);
+      Ir_gen.gen_prog pe |> Ir_gen.dump (Fpath.to_string ast_file) (Fpath.to_string ir_file);
       ir_file)
     parsed_exp
 ;;
