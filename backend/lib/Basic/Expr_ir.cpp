@@ -1,7 +1,22 @@
 #include "tlang/Deserializer/Expr_ir.h"
 #include "frontend.pb.h"
 #include "tlang/Deserializer/Ir_visitor.h"
+#include <llvm-14/llvm/IR/Value.h>
 #include <memory>
+
+enum Unop deserializeUnop(const Frontend_ir::Un_op &op) {
+  switch (op.value_case()) {
+  case Frontend_ir::Un_op::kNeg:
+    return Unop::UnopNeg;
+  case Frontend_ir::Un_op::kNot:
+    return Unop::UnopNot;
+  }
+}
+
+ExprUnopIR::ExprUnopIR(const Frontend_ir::Expr::_Unop &unopExpr) {
+  op = deserializeUnop(unopExpr.op());
+  expr = deserializeExpr(unopExpr.uexpr());
+};
 
 ExprFunctionAppIR::ExprFunctionAppIR(
     const Frontend_ir::Expr::_FunctionApp &expr) {
@@ -26,6 +41,8 @@ std::unique_ptr<ExprIR> deserializeExpr(const Frontend_ir::Expr &expr) {
     return std::unique_ptr<ExprIR>(new ExprFunctionAppIR(expr.functionapp()));
   case Frontend_ir::Expr::kPrintf:
     return std::unique_ptr<ExprIR>(new ExprPrintfIR(expr.printf()));
+  case Frontend_ir::Expr::kUnop:
+    return std::unique_ptr<ExprIR>(new ExprUnopIR(expr.unop()));
   default:
     // FIXME
     return std::unique_ptr<ExprIR>(new ExprIntegerIR(-1));
@@ -43,5 +60,9 @@ llvm::Value *ExprFunctionAppIR::codegen(IRVisitor &visitor) {
 }
 
 llvm::Value *ExprPrintfIR::codegen(IRVisitor &visitor) {
+  return visitor.codegen(*this);
+}
+
+llvm::Value *ExprUnopIR::codegen(IRVisitor &visitor) {
   return visitor.codegen(*this);
 }

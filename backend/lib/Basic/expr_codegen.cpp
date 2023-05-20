@@ -52,3 +52,17 @@ llvm::Value *IRCodegenVisitor::codegen(const ExprPrintfIR &expr) {
   }
   return builder->CreateCall(printf, printfArgs);
 }
+
+llvm::Value *IRCodegenVisitor::codegen(const ExprUnopIR &expr) {
+  llvm::Value *exprVal = expr.expr->codegen(*this);
+  if (exprVal == nullptr) {
+    llvm::outs() << "unop expr is null";
+    return nullptr;
+  }
+  switch (expr.op) {
+  case UnopNot:
+    return builder->CreateNot(exprVal, "not");
+  case UnopNot:
+    return builder->CreateNeg(exprValue, "neg");
+  }
+}

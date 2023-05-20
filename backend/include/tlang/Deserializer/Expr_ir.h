@@ -32,5 +32,14 @@ struct ExprPrintfIR : public ExprIR {
   virtual llvm::Value *codegen(IRVisitor &visitor) override;
 };
 
+enum Unop { UnopNot, UnopNeg };
+
+struct ExprUnopIR : public ExprIR {
+  enum Unop op;
+  std::unique_ptr<ExprIR> expr;
+  ExprUnopIR(const Frontend_ir::Expr::_Unop &expr);
+  virtual llvm::Value *codegen(IRVisitor &visitor) override;
+};
+
 std::unique_ptr<ExprIR> deserializeExpr(const Frontend_ir::Expr &expr);
 #endif

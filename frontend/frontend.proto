@@ -1,5 +1,15 @@
 package Frontend_ir;
 
+message Un_op {
+  message _NotOp {}
+  message _NegOp {}
+
+  oneof value {
+    _NotOp not = 1;
+    _NegOp neg = 2;
+  }
+}
+
 message Expr {
 
   message _FunctionApp {
@@ -11,11 +21,17 @@ message Expr {
     required string format = 1;
     repeated Expr f_args = 2;
   }
+
+  message _Unop {
+    required Un_op op = 1;
+    required Expr uexpr = 2;
+  }
   
   oneof value {
     int32 Integer = 1;
     _FunctionApp FunctionApp = 2;
     _Printf Printf = 3;
+    _Unop Unop = 4;
   }
 }
 

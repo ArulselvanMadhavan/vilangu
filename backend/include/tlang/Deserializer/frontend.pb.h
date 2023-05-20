@@ -47,7 +47,7 @@ struct TableStruct_frontend_2eproto {
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::AuxillaryParseTableField aux[]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
-  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[4]
+  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[8]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::FieldMetadata field_metadata[];
   static const ::PROTOBUF_NAMESPACE_ID::internal::SerializationTable serialization_table[];
@@ -64,19 +64,491 @@ extern Expr__FunctionAppDefaultTypeInternal _Expr__FunctionApp_default_instance_
 class Expr__Printf;
 class Expr__PrintfDefaultTypeInternal;
 extern Expr__PrintfDefaultTypeInternal _Expr__Printf_default_instance_;
+class Expr__Unop;
+class Expr__UnopDefaultTypeInternal;
+extern Expr__UnopDefaultTypeInternal _Expr__Unop_default_instance_;
 class Program;
 class ProgramDefaultTypeInternal;
 extern ProgramDefaultTypeInternal _Program_default_instance_;
+class Un_op;
+class Un_opDefaultTypeInternal;
+extern Un_opDefaultTypeInternal _Un_op_default_instance_;
+class Un_op__NegOp;
+class Un_op__NegOpDefaultTypeInternal;
+extern Un_op__NegOpDefaultTypeInternal _Un_op__NegOp_default_instance_;
+class Un_op__NotOp;
+class Un_op__NotOpDefaultTypeInternal;
+extern Un_op__NotOpDefaultTypeInternal _Un_op__NotOp_default_instance_;
 }  // namespace Frontend_ir
 PROTOBUF_NAMESPACE_OPEN
 template<> ::Frontend_ir::Expr* Arena::CreateMaybeMessage<::Frontend_ir::Expr>(Arena*);
 template<> ::Frontend_ir::Expr__FunctionApp* Arena::CreateMaybeMessage<::Frontend_ir::Expr__FunctionApp>(Arena*);
 template<> ::Frontend_ir::Expr__Printf* Arena::CreateMaybeMessage<::Frontend_ir::Expr__Printf>(Arena*);
+template<> ::Frontend_ir::Expr__Unop* Arena::CreateMaybeMessage<::Frontend_ir::Expr__Unop>(Arena*);
 template<> ::Frontend_ir::Program* Arena::CreateMaybeMessage<::Frontend_ir::Program>(Arena*);
+template<> ::Frontend_ir::Un_op* Arena::CreateMaybeMessage<::Frontend_ir::Un_op>(Arena*);
+template<> ::Frontend_ir::Un_op__NegOp* Arena::CreateMaybeMessage<::Frontend_ir::Un_op__NegOp>(Arena*);
+template<> ::Frontend_ir::Un_op__NotOp* Arena::CreateMaybeMessage<::Frontend_ir::Un_op__NotOp>(Arena*);
 PROTOBUF_NAMESPACE_CLOSE
 namespace Frontend_ir {
 
 // ===================================================================
+
+class Un_op__NotOp PROTOBUF_FINAL :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:Frontend_ir.Un_op._NotOp) */ {
+ public:
+  inline Un_op__NotOp() : Un_op__NotOp(nullptr) {};
+  virtual ~Un_op__NotOp();
+
+  Un_op__NotOp(const Un_op__NotOp& from);
+  Un_op__NotOp(Un_op__NotOp&& from) noexcept
+    : Un_op__NotOp() {
+    *this = ::std::move(from);
+  }
+
+  inline Un_op__NotOp& operator=(const Un_op__NotOp& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline Un_op__NotOp& operator=(Un_op__NotOp&& from) noexcept {
+    if (GetArena() == from.GetArena()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  inline const ::PROTOBUF_NAMESPACE_ID::UnknownFieldSet& unknown_fields() const {
+    return _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance);
+  }
+  inline ::PROTOBUF_NAMESPACE_ID::UnknownFieldSet* mutable_unknown_fields() {
+    return _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const Un_op__NotOp& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const Un_op__NotOp* internal_default_instance() {
+    return reinterpret_cast<const Un_op__NotOp*>(
+               &_Un_op__NotOp_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    0;
+
+  friend void swap(Un_op__NotOp& a, Un_op__NotOp& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(Un_op__NotOp* other) {
+    if (other == this) return;
+    if (GetArena() == other->GetArena()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(Un_op__NotOp* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArena() == other->GetArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline Un_op__NotOp* New() const final {
+    return CreateMaybeMessage<Un_op__NotOp>(nullptr);
+  }
+
+  Un_op__NotOp* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<Un_op__NotOp>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const Un_op__NotOp& from);
+  void MergeFrom(const Un_op__NotOp& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(Un_op__NotOp* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "Frontend_ir.Un_op._NotOp";
+  }
+  protected:
+  explicit Un_op__NotOp(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  private:
+  static void ArenaDtor(void* object);
+  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_frontend_2eproto);
+    return ::descriptor_table_frontend_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // @@protoc_insertion_point(class_scope:Frontend_ir.Un_op._NotOp)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  friend struct ::TableStruct_frontend_2eproto;
+};
+// -------------------------------------------------------------------
+
+class Un_op__NegOp PROTOBUF_FINAL :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:Frontend_ir.Un_op._NegOp) */ {
+ public:
+  inline Un_op__NegOp() : Un_op__NegOp(nullptr) {};
+  virtual ~Un_op__NegOp();
+
+  Un_op__NegOp(const Un_op__NegOp& from);
+  Un_op__NegOp(Un_op__NegOp&& from) noexcept
+    : Un_op__NegOp() {
+    *this = ::std::move(from);
+  }
+
+  inline Un_op__NegOp& operator=(const Un_op__NegOp& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline Un_op__NegOp& operator=(Un_op__NegOp&& from) noexcept {
+    if (GetArena() == from.GetArena()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  inline const ::PROTOBUF_NAMESPACE_ID::UnknownFieldSet& unknown_fields() const {
+    return _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance);
+  }
+  inline ::PROTOBUF_NAMESPACE_ID::UnknownFieldSet* mutable_unknown_fields() {
+    return _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const Un_op__NegOp& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const Un_op__NegOp* internal_default_instance() {
+    return reinterpret_cast<const Un_op__NegOp*>(
+               &_Un_op__NegOp_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    1;
+
+  friend void swap(Un_op__NegOp& a, Un_op__NegOp& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(Un_op__NegOp* other) {
+    if (other == this) return;
+    if (GetArena() == other->GetArena()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(Un_op__NegOp* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArena() == other->GetArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline Un_op__NegOp* New() const final {
+    return CreateMaybeMessage<Un_op__NegOp>(nullptr);
+  }
+
+  Un_op__NegOp* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<Un_op__NegOp>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const Un_op__NegOp& from);
+  void MergeFrom(const Un_op__NegOp& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(Un_op__NegOp* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "Frontend_ir.Un_op._NegOp";
+  }
+  protected:
+  explicit Un_op__NegOp(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  private:
+  static void ArenaDtor(void* object);
+  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_frontend_2eproto);
+    return ::descriptor_table_frontend_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // @@protoc_insertion_point(class_scope:Frontend_ir.Un_op._NegOp)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  friend struct ::TableStruct_frontend_2eproto;
+};
+// -------------------------------------------------------------------
+
+class Un_op PROTOBUF_FINAL :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:Frontend_ir.Un_op) */ {
+ public:
+  inline Un_op() : Un_op(nullptr) {};
+  virtual ~Un_op();
+
+  Un_op(const Un_op& from);
+  Un_op(Un_op&& from) noexcept
+    : Un_op() {
+    *this = ::std::move(from);
+  }
+
+  inline Un_op& operator=(const Un_op& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline Un_op& operator=(Un_op&& from) noexcept {
+    if (GetArena() == from.GetArena()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  inline const ::PROTOBUF_NAMESPACE_ID::UnknownFieldSet& unknown_fields() const {
+    return _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance);
+  }
+  inline ::PROTOBUF_NAMESPACE_ID::UnknownFieldSet* mutable_unknown_fields() {
+    return _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const Un_op& default_instance();
+
+  enum ValueCase {
+    kNot = 1,
+    kNeg = 2,
+    VALUE_NOT_SET = 0,
+  };
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const Un_op* internal_default_instance() {
+    return reinterpret_cast<const Un_op*>(
+               &_Un_op_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    2;
+
+  friend void swap(Un_op& a, Un_op& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(Un_op* other) {
+    if (other == this) return;
+    if (GetArena() == other->GetArena()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(Un_op* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArena() == other->GetArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline Un_op* New() const final {
+    return CreateMaybeMessage<Un_op>(nullptr);
+  }
+
+  Un_op* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<Un_op>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const Un_op& from);
+  void MergeFrom(const Un_op& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(Un_op* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "Frontend_ir.Un_op";
+  }
+  protected:
+  explicit Un_op(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  private:
+  static void ArenaDtor(void* object);
+  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_frontend_2eproto);
+    return ::descriptor_table_frontend_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  typedef Un_op__NotOp _NotOp;
+  typedef Un_op__NegOp _NegOp;
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kNotFieldNumber = 1,
+    kNegFieldNumber = 2,
+  };
+  // .Frontend_ir.Un_op._NotOp not = 1;
+  bool has_not_() const;
+  private:
+  bool _internal_has_not_() const;
+  public:
+  void clear_not_();
+  const ::Frontend_ir::Un_op__NotOp& not_() const;
+  ::Frontend_ir::Un_op__NotOp* release_not_();
+  ::Frontend_ir::Un_op__NotOp* mutable_not_();
+  void set_allocated_not_(::Frontend_ir::Un_op__NotOp* not_);
+  private:
+  const ::Frontend_ir::Un_op__NotOp& _internal_not_() const;
+  ::Frontend_ir::Un_op__NotOp* _internal_mutable_not_();
+  public:
+  void unsafe_arena_set_allocated_not_(
+      ::Frontend_ir::Un_op__NotOp* not_);
+  ::Frontend_ir::Un_op__NotOp* unsafe_arena_release_not_();
+
+  // .Frontend_ir.Un_op._NegOp neg = 2;
+  bool has_neg() const;
+  private:
+  bool _internal_has_neg() const;
+  public:
+  void clear_neg();
+  const ::Frontend_ir::Un_op__NegOp& neg() const;
+  ::Frontend_ir::Un_op__NegOp* release_neg();
+  ::Frontend_ir::Un_op__NegOp* mutable_neg();
+  void set_allocated_neg(::Frontend_ir::Un_op__NegOp* neg);
+  private:
+  const ::Frontend_ir::Un_op__NegOp& _internal_neg() const;
+  ::Frontend_ir::Un_op__NegOp* _internal_mutable_neg();
+  public:
+  void unsafe_arena_set_allocated_neg(
+      ::Frontend_ir::Un_op__NegOp* neg);
+  ::Frontend_ir::Un_op__NegOp* unsafe_arena_release_neg();
+
+  void clear_value();
+  ValueCase value_case() const;
+  // @@protoc_insertion_point(class_scope:Frontend_ir.Un_op)
+ private:
+  class _Internal;
+  void set_has_not_();
+  void set_has_neg();
+
+  inline bool has_value() const;
+  inline void clear_has_value();
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  union ValueUnion {
+    ValueUnion() {}
+    ::Frontend_ir::Un_op__NotOp* not__;
+    ::Frontend_ir::Un_op__NegOp* neg_;
+  } value_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  ::PROTOBUF_NAMESPACE_ID::uint32 _oneof_case_[1];
+
+  friend struct ::TableStruct_frontend_2eproto;
+};
+// -------------------------------------------------------------------
 
 class Expr__FunctionApp PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:Frontend_ir.Expr._FunctionApp) */ {
@@ -127,7 +599,7 @@ class Expr__FunctionApp PROTOBUF_FINAL :
                &_Expr__FunctionApp_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    0;
+    3;
 
   friend void swap(Expr__FunctionApp& a, Expr__FunctionApp& b) {
     a.Swap(&b);
@@ -312,7 +784,7 @@ class Expr__Printf PROTOBUF_FINAL :
                &_Expr__Printf_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    1;
+    4;
 
   friend void swap(Expr__Printf& a, Expr__Printf& b) {
     a.Swap(&b);
@@ -448,6 +920,183 @@ class Expr__Printf PROTOBUF_FINAL :
 };
 // -------------------------------------------------------------------
 
+class Expr__Unop PROTOBUF_FINAL :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:Frontend_ir.Expr._Unop) */ {
+ public:
+  inline Expr__Unop() : Expr__Unop(nullptr) {};
+  virtual ~Expr__Unop();
+
+  Expr__Unop(const Expr__Unop& from);
+  Expr__Unop(Expr__Unop&& from) noexcept
+    : Expr__Unop() {
+    *this = ::std::move(from);
+  }
+
+  inline Expr__Unop& operator=(const Expr__Unop& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline Expr__Unop& operator=(Expr__Unop&& from) noexcept {
+    if (GetArena() == from.GetArena()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  inline const ::PROTOBUF_NAMESPACE_ID::UnknownFieldSet& unknown_fields() const {
+    return _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance);
+  }
+  inline ::PROTOBUF_NAMESPACE_ID::UnknownFieldSet* mutable_unknown_fields() {
+    return _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const Expr__Unop& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const Expr__Unop* internal_default_instance() {
+    return reinterpret_cast<const Expr__Unop*>(
+               &_Expr__Unop_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    5;
+
+  friend void swap(Expr__Unop& a, Expr__Unop& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(Expr__Unop* other) {
+    if (other == this) return;
+    if (GetArena() == other->GetArena()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(Expr__Unop* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArena() == other->GetArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline Expr__Unop* New() const final {
+    return CreateMaybeMessage<Expr__Unop>(nullptr);
+  }
+
+  Expr__Unop* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<Expr__Unop>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const Expr__Unop& from);
+  void MergeFrom(const Expr__Unop& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(Expr__Unop* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "Frontend_ir.Expr._Unop";
+  }
+  protected:
+  explicit Expr__Unop(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  private:
+  static void ArenaDtor(void* object);
+  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_frontend_2eproto);
+    return ::descriptor_table_frontend_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kOpFieldNumber = 1,
+    kUexprFieldNumber = 2,
+  };
+  // required .Frontend_ir.Un_op op = 1;
+  bool has_op() const;
+  private:
+  bool _internal_has_op() const;
+  public:
+  void clear_op();
+  const ::Frontend_ir::Un_op& op() const;
+  ::Frontend_ir::Un_op* release_op();
+  ::Frontend_ir::Un_op* mutable_op();
+  void set_allocated_op(::Frontend_ir::Un_op* op);
+  private:
+  const ::Frontend_ir::Un_op& _internal_op() const;
+  ::Frontend_ir::Un_op* _internal_mutable_op();
+  public:
+  void unsafe_arena_set_allocated_op(
+      ::Frontend_ir::Un_op* op);
+  ::Frontend_ir::Un_op* unsafe_arena_release_op();
+
+  // required .Frontend_ir.Expr uexpr = 2;
+  bool has_uexpr() const;
+  private:
+  bool _internal_has_uexpr() const;
+  public:
+  void clear_uexpr();
+  const ::Frontend_ir::Expr& uexpr() const;
+  ::Frontend_ir::Expr* release_uexpr();
+  ::Frontend_ir::Expr* mutable_uexpr();
+  void set_allocated_uexpr(::Frontend_ir::Expr* uexpr);
+  private:
+  const ::Frontend_ir::Expr& _internal_uexpr() const;
+  ::Frontend_ir::Expr* _internal_mutable_uexpr();
+  public:
+  void unsafe_arena_set_allocated_uexpr(
+      ::Frontend_ir::Expr* uexpr);
+  ::Frontend_ir::Expr* unsafe_arena_release_uexpr();
+
+  // @@protoc_insertion_point(class_scope:Frontend_ir.Expr._Unop)
+ private:
+  class _Internal;
+
+  // helper for ByteSizeLong()
+  size_t RequiredFieldsByteSizeFallback() const;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  ::PROTOBUF_NAMESPACE_ID::internal::HasBits<1> _has_bits_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  ::Frontend_ir::Un_op* op_;
+  ::Frontend_ir::Expr* uexpr_;
+  friend struct ::TableStruct_frontend_2eproto;
+};
+// -------------------------------------------------------------------
+
 class Expr PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:Frontend_ir.Expr) */ {
  public:
@@ -495,6 +1144,7 @@ class Expr PROTOBUF_FINAL :
     kInteger = 1,
     kFunctionApp = 2,
     kPrintf = 3,
+    kUnop = 4,
     VALUE_NOT_SET = 0,
   };
 
@@ -504,7 +1154,7 @@ class Expr PROTOBUF_FINAL :
                &_Expr_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    2;
+    6;
 
   friend void swap(Expr& a, Expr& b) {
     a.Swap(&b);
@@ -574,6 +1224,7 @@ class Expr PROTOBUF_FINAL :
 
   typedef Expr__FunctionApp _FunctionApp;
   typedef Expr__Printf _Printf;
+  typedef Expr__Unop _Unop;
 
   // accessors -------------------------------------------------------
 
@@ -581,6 +1232,7 @@ class Expr PROTOBUF_FINAL :
     kIntegerFieldNumber = 1,
     kFunctionAppFieldNumber = 2,
     kPrintfFieldNumber = 3,
+    kUnopFieldNumber = 4,
   };
   // int32 Integer = 1;
   bool has_integer() const;
@@ -631,6 +1283,24 @@ class Expr PROTOBUF_FINAL :
       ::Frontend_ir::Expr__Printf* printf);
   ::Frontend_ir::Expr__Printf* unsafe_arena_release_printf();
 
+  // .Frontend_ir.Expr._Unop Unop = 4;
+  bool has_unop() const;
+  private:
+  bool _internal_has_unop() const;
+  public:
+  void clear_unop();
+  const ::Frontend_ir::Expr__Unop& unop() const;
+  ::Frontend_ir::Expr__Unop* release_unop();
+  ::Frontend_ir::Expr__Unop* mutable_unop();
+  void set_allocated_unop(::Frontend_ir::Expr__Unop* unop);
+  private:
+  const ::Frontend_ir::Expr__Unop& _internal_unop() const;
+  ::Frontend_ir::Expr__Unop* _internal_mutable_unop();
+  public:
+  void unsafe_arena_set_allocated_unop(
+      ::Frontend_ir::Expr__Unop* unop);
+  ::Frontend_ir::Expr__Unop* unsafe_arena_release_unop();
+
   void clear_value();
   ValueCase value_case() const;
   // @@protoc_insertion_point(class_scope:Frontend_ir.Expr)
@@ -639,6 +1309,7 @@ class Expr PROTOBUF_FINAL :
   void set_has_integer();
   void set_has_functionapp();
   void set_has_printf();
+  void set_has_unop();
 
   inline bool has_value() const;
   inline void clear_has_value();
@@ -651,6 +1322,7 @@ class Expr PROTOBUF_FINAL :
     ::PROTOBUF_NAMESPACE_ID::int32 integer_;
     ::Frontend_ir::Expr__FunctionApp* functionapp_;
     ::Frontend_ir::Expr__Printf* printf_;
+    ::Frontend_ir::Expr__Unop* unop_;
   } value_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   ::PROTOBUF_NAMESPACE_ID::uint32 _oneof_case_[1];
@@ -708,7 +1380,7 @@ class Program PROTOBUF_FINAL :
                &_Program_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    3;
+    7;
 
   friend void swap(Program& a, Program& b) {
     a.Swap(&b);
@@ -819,6 +1491,173 @@ class Program PROTOBUF_FINAL :
   #pragma GCC diagnostic push
   #pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #endif  // __GNUC__
+// Un_op__NotOp
+
+// -------------------------------------------------------------------
+
+// Un_op__NegOp
+
+// -------------------------------------------------------------------
+
+// Un_op
+
+// .Frontend_ir.Un_op._NotOp not = 1;
+inline bool Un_op::_internal_has_not_() const {
+  return value_case() == kNot;
+}
+inline bool Un_op::has_not_() const {
+  return _internal_has_not_();
+}
+inline void Un_op::set_has_not_() {
+  _oneof_case_[0] = kNot;
+}
+inline void Un_op::clear_not_() {
+  if (_internal_has_not_()) {
+    if (GetArena() == nullptr) {
+      delete value_.not__;
+    }
+    clear_has_value();
+  }
+}
+inline ::Frontend_ir::Un_op__NotOp* Un_op::release_not_() {
+  // @@protoc_insertion_point(field_release:Frontend_ir.Un_op.not)
+  if (_internal_has_not_()) {
+    clear_has_value();
+      ::Frontend_ir::Un_op__NotOp* temp = value_.not__;
+    if (GetArena() != nullptr) {
+      temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+    }
+    value_.not__ = nullptr;
+    return temp;
+  } else {
+    return nullptr;
+  }
+}
+inline const ::Frontend_ir::Un_op__NotOp& Un_op::_internal_not_() const {
+  return _internal_has_not_()
+      ? *value_.not__
+      : *reinterpret_cast< ::Frontend_ir::Un_op__NotOp*>(&::Frontend_ir::_Un_op__NotOp_default_instance_);
+}
+inline const ::Frontend_ir::Un_op__NotOp& Un_op::not_() const {
+  // @@protoc_insertion_point(field_get:Frontend_ir.Un_op.not)
+  return _internal_not_();
+}
+inline ::Frontend_ir::Un_op__NotOp* Un_op::unsafe_arena_release_not_() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:Frontend_ir.Un_op.not)
+  if (_internal_has_not_()) {
+    clear_has_value();
+    ::Frontend_ir::Un_op__NotOp* temp = value_.not__;
+    value_.not__ = nullptr;
+    return temp;
+  } else {
+    return nullptr;
+  }
+}
+inline void Un_op::unsafe_arena_set_allocated_not_(::Frontend_ir::Un_op__NotOp* not_) {
+  clear_value();
+  if (not_) {
+    set_has_not_();
+    value_.not__ = not_;
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:Frontend_ir.Un_op.not)
+}
+inline ::Frontend_ir::Un_op__NotOp* Un_op::_internal_mutable_not_() {
+  if (!_internal_has_not_()) {
+    clear_value();
+    set_has_not_();
+    value_.not__ = CreateMaybeMessage< ::Frontend_ir::Un_op__NotOp >(GetArena());
+  }
+  return value_.not__;
+}
+inline ::Frontend_ir::Un_op__NotOp* Un_op::mutable_not_() {
+  // @@protoc_insertion_point(field_mutable:Frontend_ir.Un_op.not)
+  return _internal_mutable_not_();
+}
+
+// .Frontend_ir.Un_op._NegOp neg = 2;
+inline bool Un_op::_internal_has_neg() const {
+  return value_case() == kNeg;
+}
+inline bool Un_op::has_neg() const {
+  return _internal_has_neg();
+}
+inline void Un_op::set_has_neg() {
+  _oneof_case_[0] = kNeg;
+}
+inline void Un_op::clear_neg() {
+  if (_internal_has_neg()) {
+    if (GetArena() == nullptr) {
+      delete value_.neg_;
+    }
+    clear_has_value();
+  }
+}
+inline ::Frontend_ir::Un_op__NegOp* Un_op::release_neg() {
+  // @@protoc_insertion_point(field_release:Frontend_ir.Un_op.neg)
+  if (_internal_has_neg()) {
+    clear_has_value();
+      ::Frontend_ir::Un_op__NegOp* temp = value_.neg_;
+    if (GetArena() != nullptr) {
+      temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+    }
+    value_.neg_ = nullptr;
+    return temp;
+  } else {
+    return nullptr;
+  }
+}
+inline const ::Frontend_ir::Un_op__NegOp& Un_op::_internal_neg() const {
+  return _internal_has_neg()
+      ? *value_.neg_
+      : *reinterpret_cast< ::Frontend_ir::Un_op__NegOp*>(&::Frontend_ir::_Un_op__NegOp_default_instance_);
+}
+inline const ::Frontend_ir::Un_op__NegOp& Un_op::neg() const {
+  // @@protoc_insertion_point(field_get:Frontend_ir.Un_op.neg)
+  return _internal_neg();
+}
+inline ::Frontend_ir::Un_op__NegOp* Un_op::unsafe_arena_release_neg() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:Frontend_ir.Un_op.neg)
+  if (_internal_has_neg()) {
+    clear_has_value();
+    ::Frontend_ir::Un_op__NegOp* temp = value_.neg_;
+    value_.neg_ = nullptr;
+    return temp;
+  } else {
+    return nullptr;
+  }
+}
+inline void Un_op::unsafe_arena_set_allocated_neg(::Frontend_ir::Un_op__NegOp* neg) {
+  clear_value();
+  if (neg) {
+    set_has_neg();
+    value_.neg_ = neg;
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:Frontend_ir.Un_op.neg)
+}
+inline ::Frontend_ir::Un_op__NegOp* Un_op::_internal_mutable_neg() {
+  if (!_internal_has_neg()) {
+    clear_value();
+    set_has_neg();
+    value_.neg_ = CreateMaybeMessage< ::Frontend_ir::Un_op__NegOp >(GetArena());
+  }
+  return value_.neg_;
+}
+inline ::Frontend_ir::Un_op__NegOp* Un_op::mutable_neg() {
+  // @@protoc_insertion_point(field_mutable:Frontend_ir.Un_op.neg)
+  return _internal_mutable_neg();
+}
+
+inline bool Un_op::has_value() const {
+  return value_case() != VALUE_NOT_SET;
+}
+inline void Un_op::clear_has_value() {
+  _oneof_case_[0] = VALUE_NOT_SET;
+}
+inline Un_op::ValueCase Un_op::value_case() const {
+  return Un_op::ValueCase(_oneof_case_[0]);
+}
+// -------------------------------------------------------------------
+
 // Expr__FunctionApp
 
 // required string name = 1;
@@ -1091,6 +1930,172 @@ Expr__Printf::f_args() const {
 
 // -------------------------------------------------------------------
 
+// Expr__Unop
+
+// required .Frontend_ir.Un_op op = 1;
+inline bool Expr__Unop::_internal_has_op() const {
+  bool value = (_has_bits_[0] & 0x00000001u) != 0;
+  PROTOBUF_ASSUME(!value || op_ != nullptr);
+  return value;
+}
+inline bool Expr__Unop::has_op() const {
+  return _internal_has_op();
+}
+inline void Expr__Unop::clear_op() {
+  if (op_ != nullptr) op_->Clear();
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline const ::Frontend_ir::Un_op& Expr__Unop::_internal_op() const {
+  const ::Frontend_ir::Un_op* p = op_;
+  return p != nullptr ? *p : *reinterpret_cast<const ::Frontend_ir::Un_op*>(
+      &::Frontend_ir::_Un_op_default_instance_);
+}
+inline const ::Frontend_ir::Un_op& Expr__Unop::op() const {
+  // @@protoc_insertion_point(field_get:Frontend_ir.Expr._Unop.op)
+  return _internal_op();
+}
+inline void Expr__Unop::unsafe_arena_set_allocated_op(
+    ::Frontend_ir::Un_op* op) {
+  if (GetArena() == nullptr) {
+    delete reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(op_);
+  }
+  op_ = op;
+  if (op) {
+    _has_bits_[0] |= 0x00000001u;
+  } else {
+    _has_bits_[0] &= ~0x00000001u;
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:Frontend_ir.Expr._Unop.op)
+}
+inline ::Frontend_ir::Un_op* Expr__Unop::release_op() {
+  auto temp = unsafe_arena_release_op();
+  if (GetArena() != nullptr) {
+    temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  }
+  return temp;
+}
+inline ::Frontend_ir::Un_op* Expr__Unop::unsafe_arena_release_op() {
+  // @@protoc_insertion_point(field_release:Frontend_ir.Expr._Unop.op)
+  _has_bits_[0] &= ~0x00000001u;
+  ::Frontend_ir::Un_op* temp = op_;
+  op_ = nullptr;
+  return temp;
+}
+inline ::Frontend_ir::Un_op* Expr__Unop::_internal_mutable_op() {
+  _has_bits_[0] |= 0x00000001u;
+  if (op_ == nullptr) {
+    auto* p = CreateMaybeMessage<::Frontend_ir::Un_op>(GetArena());
+    op_ = p;
+  }
+  return op_;
+}
+inline ::Frontend_ir::Un_op* Expr__Unop::mutable_op() {
+  // @@protoc_insertion_point(field_mutable:Frontend_ir.Expr._Unop.op)
+  return _internal_mutable_op();
+}
+inline void Expr__Unop::set_allocated_op(::Frontend_ir::Un_op* op) {
+  ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArena();
+  if (message_arena == nullptr) {
+    delete op_;
+  }
+  if (op) {
+    ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena =
+      ::PROTOBUF_NAMESPACE_ID::Arena::GetArena(op);
+    if (message_arena != submessage_arena) {
+      op = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
+          message_arena, op, submessage_arena);
+    }
+    _has_bits_[0] |= 0x00000001u;
+  } else {
+    _has_bits_[0] &= ~0x00000001u;
+  }
+  op_ = op;
+  // @@protoc_insertion_point(field_set_allocated:Frontend_ir.Expr._Unop.op)
+}
+
+// required .Frontend_ir.Expr uexpr = 2;
+inline bool Expr__Unop::_internal_has_uexpr() const {
+  bool value = (_has_bits_[0] & 0x00000002u) != 0;
+  PROTOBUF_ASSUME(!value || uexpr_ != nullptr);
+  return value;
+}
+inline bool Expr__Unop::has_uexpr() const {
+  return _internal_has_uexpr();
+}
+inline void Expr__Unop::clear_uexpr() {
+  if (uexpr_ != nullptr) uexpr_->Clear();
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline const ::Frontend_ir::Expr& Expr__Unop::_internal_uexpr() const {
+  const ::Frontend_ir::Expr* p = uexpr_;
+  return p != nullptr ? *p : *reinterpret_cast<const ::Frontend_ir::Expr*>(
+      &::Frontend_ir::_Expr_default_instance_);
+}
+inline const ::Frontend_ir::Expr& Expr__Unop::uexpr() const {
+  // @@protoc_insertion_point(field_get:Frontend_ir.Expr._Unop.uexpr)
+  return _internal_uexpr();
+}
+inline void Expr__Unop::unsafe_arena_set_allocated_uexpr(
+    ::Frontend_ir::Expr* uexpr) {
+  if (GetArena() == nullptr) {
+    delete reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(uexpr_);
+  }
+  uexpr_ = uexpr;
+  if (uexpr) {
+    _has_bits_[0] |= 0x00000002u;
+  } else {
+    _has_bits_[0] &= ~0x00000002u;
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:Frontend_ir.Expr._Unop.uexpr)
+}
+inline ::Frontend_ir::Expr* Expr__Unop::release_uexpr() {
+  auto temp = unsafe_arena_release_uexpr();
+  if (GetArena() != nullptr) {
+    temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  }
+  return temp;
+}
+inline ::Frontend_ir::Expr* Expr__Unop::unsafe_arena_release_uexpr() {
+  // @@protoc_insertion_point(field_release:Frontend_ir.Expr._Unop.uexpr)
+  _has_bits_[0] &= ~0x00000002u;
+  ::Frontend_ir::Expr* temp = uexpr_;
+  uexpr_ = nullptr;
+  return temp;
+}
+inline ::Frontend_ir::Expr* Expr__Unop::_internal_mutable_uexpr() {
+  _has_bits_[0] |= 0x00000002u;
+  if (uexpr_ == nullptr) {
+    auto* p = CreateMaybeMessage<::Frontend_ir::Expr>(GetArena());
+    uexpr_ = p;
+  }
+  return uexpr_;
+}
+inline ::Frontend_ir::Expr* Expr__Unop::mutable_uexpr() {
+  // @@protoc_insertion_point(field_mutable:Frontend_ir.Expr._Unop.uexpr)
+  return _internal_mutable_uexpr();
+}
+inline void Expr__Unop::set_allocated_uexpr(::Frontend_ir::Expr* uexpr) {
+  ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArena();
+  if (message_arena == nullptr) {
+    delete uexpr_;
+  }
+  if (uexpr) {
+    ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena =
+      ::PROTOBUF_NAMESPACE_ID::Arena::GetArena(uexpr);
+    if (message_arena != submessage_arena) {
+      uexpr = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
+          message_arena, uexpr, submessage_arena);
+    }
+    _has_bits_[0] |= 0x00000002u;
+  } else {
+    _has_bits_[0] &= ~0x00000002u;
+  }
+  uexpr_ = uexpr;
+  // @@protoc_insertion_point(field_set_allocated:Frontend_ir.Expr._Unop.uexpr)
+}
+
+// -------------------------------------------------------------------
+
 // Expr
 
 // int32 Integer = 1;
@@ -1277,6 +2282,79 @@ inline ::Frontend_ir::Expr__Printf* Expr::mutable_printf() {
   return _internal_mutable_printf();
 }
 
+// .Frontend_ir.Expr._Unop Unop = 4;
+inline bool Expr::_internal_has_unop() const {
+  return value_case() == kUnop;
+}
+inline bool Expr::has_unop() const {
+  return _internal_has_unop();
+}
+inline void Expr::set_has_unop() {
+  _oneof_case_[0] = kUnop;
+}
+inline void Expr::clear_unop() {
+  if (_internal_has_unop()) {
+    if (GetArena() == nullptr) {
+      delete value_.unop_;
+    }
+    clear_has_value();
+  }
+}
+inline ::Frontend_ir::Expr__Unop* Expr::release_unop() {
+  // @@protoc_insertion_point(field_release:Frontend_ir.Expr.Unop)
+  if (_internal_has_unop()) {
+    clear_has_value();
+      ::Frontend_ir::Expr__Unop* temp = value_.unop_;
+    if (GetArena() != nullptr) {
+      temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+    }
+    value_.unop_ = nullptr;
+    return temp;
+  } else {
+    return nullptr;
+  }
+}
+inline const ::Frontend_ir::Expr__Unop& Expr::_internal_unop() const {
+  return _internal_has_unop()
+      ? *value_.unop_
+      : *reinterpret_cast< ::Frontend_ir::Expr__Unop*>(&::Frontend_ir::_Expr__Unop_default_instance_);
+}
+inline const ::Frontend_ir::Expr__Unop& Expr::unop() const {
+  // @@protoc_insertion_point(field_get:Frontend_ir.Expr.Unop)
+  return _internal_unop();
+}
+inline ::Frontend_ir::Expr__Unop* Expr::unsafe_arena_release_unop() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:Frontend_ir.Expr.Unop)
+  if (_internal_has_unop()) {
+    clear_has_value();
+    ::Frontend_ir::Expr__Unop* temp = value_.unop_;
+    value_.unop_ = nullptr;
+    return temp;
+  } else {
+    return nullptr;
+  }
+}
+inline void Expr::unsafe_arena_set_allocated_unop(::Frontend_ir::Expr__Unop* unop) {
+  clear_value();
+  if (unop) {
+    set_has_unop();
+    value_.unop_ = unop;
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:Frontend_ir.Expr.Unop)
+}
+inline ::Frontend_ir::Expr__Unop* Expr::_internal_mutable_unop() {
+  if (!_internal_has_unop()) {
+    clear_value();
+    set_has_unop();
+    value_.unop_ = CreateMaybeMessage< ::Frontend_ir::Expr__Unop >(GetArena());
+  }
+  return value_.unop_;
+}
+inline ::Frontend_ir::Expr__Unop* Expr::mutable_unop() {
+  // @@protoc_insertion_point(field_mutable:Frontend_ir.Expr.Unop)
+  return _internal_mutable_unop();
+}
+
 inline bool Expr::has_value() const {
   return value_case() != VALUE_NOT_SET;
 }
@@ -1332,6 +2410,14 @@ Program::main() const {
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------
