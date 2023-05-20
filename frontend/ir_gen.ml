@@ -4,6 +4,9 @@ module FT = Frontend_types
 let gen_expr e =
   let gexpr = function
     | A.IntLit (i, _) -> FT.Integer i
+    | A.OpExp (op, _) ->
+      Printf.printf "%s\n" (A.sexp_of_operator op |> Sexplib0.Sexp.to_string);
+      FT.Integer (Int32.of_int (-1))
     | _ -> FT.Integer (Int32.of_int (-1))
   in
   gexpr e
