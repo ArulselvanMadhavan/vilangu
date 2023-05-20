@@ -30,5 +30,6 @@ public:
   virtual llvm::Value *codegen(const ExprIntegerIR &expr) override;
   virtual llvm::Value *codegen(const ExprFunctionAppIR &expr) override;
   virtual llvm::Value *codegen(const ExprPrintfIR &expr) override;
+  virtual llvm::Value *codegen(const ExprUnopIR &expr) override;
 };
 #endif

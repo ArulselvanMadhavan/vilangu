@@ -13,7 +13,7 @@ let gen_expr e =
 
 let gen_stmt s =
   let gstmt = function
-    | A.Output o -> FT.Printf { format = "%d"; f_args = [ gen_expr o ] }
+    | A.Output o -> FT.Printf { format = "%d\n"; f_args = [ gen_expr o ] }
     | _ -> FT.Integer (Int32.of_int (-1))
   in
   gstmt s

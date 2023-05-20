@@ -1,7 +1,8 @@
 #include "tlang/Deserializer/Expr_ir.h"
 #include "frontend.pb.h"
 #include "tlang/Deserializer/Ir_visitor.h"
-#include <llvm-14/llvm/IR/Value.h>
+#include "llvm/IR/Value.h"
+#include "llvm/Support/raw_ostream.h"
 #include <memory>
 
 enum Unop deserializeUnop(const Frontend_ir::Un_op &op) {
@@ -9,6 +10,9 @@ enum Unop deserializeUnop(const Frontend_ir::Un_op &op) {
   case Frontend_ir::Un_op::kNeg:
     return Unop::UnopNeg;
   case Frontend_ir::Un_op::kNot:
+    return Unop::UnopNot;
+  default:
+    llvm::outs() << "Unmatched unary op\n";
     return Unop::UnopNot;
   }
 }

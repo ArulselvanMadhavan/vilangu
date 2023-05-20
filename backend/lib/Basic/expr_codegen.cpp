@@ -62,7 +62,7 @@ llvm::Value *IRCodegenVisitor::codegen(const ExprUnopIR &expr) {
   switch (expr.op) {
   case UnopNot:
     return builder->CreateNot(exprVal, "not");
-  case UnopNot:
-    return builder->CreateNeg(exprValue, "neg");
+  case UnopNeg:
+    return builder->CreateNeg(exprVal, "neg");
   }
 }
