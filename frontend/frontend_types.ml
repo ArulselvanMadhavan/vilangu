@@ -4,6 +4,8 @@ type un_op =
   | Not
   | Neg
 
+type bin_op = Plus
+
 type expr_p_function_app =
   { name : string
   ; args : expr list
@@ -14,6 +16,7 @@ and expr =
   | Function_app of expr_p_function_app
   | Printf of expr_p_printf
   | Unop of expr_p_unop
+  | Binop of expr_p_binop
 
 and expr_p_printf =
   { format : string
@@ -25,9 +28,16 @@ and expr_p_unop =
   ; uexpr : expr
   }
 
+and expr_p_binop =
+  { bin_op : bin_op
+  ; lexpr : expr
+  ; rexpr : expr
+  }
+
 type program = { main : expr list }
 
 let rec default_un_op () : un_op = Not
+let rec default_bin_op () : bin_op = Plus
 
 let rec default_expr_p_function_app ?(name : string = "") ?(args : expr list = []) ()
   : expr_p_function_app
@@ -48,6 +58,15 @@ and default_expr_p_unop
   : expr_p_unop
   =
   { op; uexpr }
+
+and default_expr_p_binop
+  ?(bin_op : bin_op = default_bin_op ())
+  ?(lexpr : expr = default_expr ())
+  ?(rexpr : expr = default_expr ())
+  ()
+  : expr_p_binop
+  =
+  { bin_op; lexpr; rexpr }
 ;;
 
 let rec default_program ?(main : expr list = []) () : program = { main }

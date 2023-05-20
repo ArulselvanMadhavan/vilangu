@@ -10,6 +10,13 @@ message Un_op {
   }
 }
 
+message Bin_op {
+  message _PlusOp {}
+  oneof value {
+    _PlusOp plus = 1;
+  }
+}
+
 message Expr {
 
   message _FunctionApp {
@@ -26,12 +33,19 @@ message Expr {
     required Un_op op = 1;
     required Expr uexpr = 2;
   }
+
+  message _Binop {
+    required Bin_op bin_op = 1;
+    required Expr lexpr = 2;
+    required Expr rexpr = 3;
+  }
   
   oneof value {
     int32 Integer = 1;
     _FunctionApp FunctionApp = 2;
     _Printf Printf = 3;
     _Unop Unop = 4;
+    _Binop Binop = 5;
   }
 }
 

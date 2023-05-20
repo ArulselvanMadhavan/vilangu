@@ -6,7 +6,10 @@ let gen_expr e =
     | A.IntLit (i, _) -> FT.Integer i
     | A.OpExp (A.UnaryOp { oper = A.NegateOp; exp }, _) ->
       FT.Unop { op = FT.Neg; uexpr = gexpr exp }
-    | _ -> FT.Integer (Int32.of_int (-1))
+    | A.OpExp (A.BinaryOp { oper = A.PlusOp; left; right }, _) ->
+      FT.Binop { bin_op = FT.Plus; lexpr = gexpr left; rexpr = gexpr right }
+    | _ ->
+      FT.Integer (Int32.of_int (-1))
   in
   gexpr e
 ;;

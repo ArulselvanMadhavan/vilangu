@@ -71,7 +71,8 @@ let compile_file filename =
   in
   Option.map
     (fun pe ->
-      let ir_file = ir_dir filename in
+       let ir_file = ir_dir filename in
+       (* Ast.sexp_of_comp_unit pe |> Sexplib0.Sexp.to_string |> Printf.printf "%s\n"; *)
       Ir_gen.gen_prog pe |> Ir_gen.dump (Fpath.to_string ir_file);
       ir_file)
     parsed_exp

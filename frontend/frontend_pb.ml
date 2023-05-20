@@ -27,6 +27,19 @@ let default_expr_p_unop_mutable () : expr_p_unop_mutable =
   { op = Frontend_types.default_un_op (); uexpr = Frontend_types.default_expr () }
 ;;
 
+type expr_p_binop_mutable =
+  { mutable bin_op : Frontend_types.bin_op
+  ; mutable lexpr : Frontend_types.expr
+  ; mutable rexpr : Frontend_types.expr
+  }
+
+let default_expr_p_binop_mutable () : expr_p_binop_mutable =
+  { bin_op = Frontend_types.default_bin_op ()
+  ; lexpr = Frontend_types.default_expr ()
+  ; rexpr = Frontend_types.default_expr ()
+  }
+;;
+
 type program_mutable = { mutable main : Frontend_types.expr list }
 
 let default_program_mutable () : program_mutable = { main = [] }
@@ -42,6 +55,23 @@ let rec decode_un_op d =
       | Some (2, _) ->
         Pbrt.Decoder.empty_nested d;
         (Frontend_types.Neg : Frontend_types.un_op)
+      | Some (n, payload_kind) ->
+        Pbrt.Decoder.skip d payload_kind;
+        loop ()
+    in
+    ret
+  in
+  loop ()
+;;
+
+let rec decode_bin_op d =
+  let rec loop () =
+    let ret : Frontend_types.bin_op =
+      match Pbrt.Decoder.key d with
+      | None -> Pbrt.Decoder.malformed_variant "bin_op"
+      | Some (1, _) ->
+        Pbrt.Decoder.empty_nested d;
+        (Frontend_types.Plus : Frontend_types.bin_op)
       | Some (n, payload_kind) ->
         Pbrt.Decoder.skip d payload_kind;
         loop ()
@@ -89,6 +119,9 @@ and decode_expr d =
           : Frontend_types.expr)
       | Some (4, _) ->
         (Frontend_types.Unop (decode_expr_p_unop (Pbrt.Decoder.nested d))
+          : Frontend_types.expr)
+      | Some (5, _) ->
+        (Frontend_types.Binop (decode_expr_p_binop (Pbrt.Decoder.nested d))
           : Frontend_types.expr)
       | Some (n, payload_kind) ->
         Pbrt.Decoder.skip d payload_kind;
@@ -145,6 +178,40 @@ and decode_expr_p_unop d =
   if not !op_is_set then Pbrt.Decoder.missing_field "op";
   ({ Frontend_types.op = v.op; Frontend_types.uexpr = v.uexpr }
     : Frontend_types.expr_p_unop)
+
+and decode_expr_p_binop d =
+  let v = default_expr_p_binop_mutable () in
+  let continue__ = ref true in
+  let rexpr_is_set = ref false in
+  let lexpr_is_set = ref false in
+  let bin_op_is_set = ref false in
+  while !continue__ do
+    match Pbrt.Decoder.key d with
+    | None ->
+      ();
+      continue__ := false
+    | Some (1, Pbrt.Bytes) ->
+      v.bin_op <- decode_bin_op (Pbrt.Decoder.nested d);
+      bin_op_is_set := true
+    | Some (1, pk) -> Pbrt.Decoder.unexpected_payload "Message(expr_p_binop), field(1)" pk
+    | Some (2, Pbrt.Bytes) ->
+      v.lexpr <- decode_expr (Pbrt.Decoder.nested d);
+      lexpr_is_set := true
+    | Some (2, pk) -> Pbrt.Decoder.unexpected_payload "Message(expr_p_binop), field(2)" pk
+    | Some (3, Pbrt.Bytes) ->
+      v.rexpr <- decode_expr (Pbrt.Decoder.nested d);
+      rexpr_is_set := true
+    | Some (3, pk) -> Pbrt.Decoder.unexpected_payload "Message(expr_p_binop), field(3)" pk
+    | Some (_, payload_kind) -> Pbrt.Decoder.skip d payload_kind
+  done;
+  if not !rexpr_is_set then Pbrt.Decoder.missing_field "rexpr";
+  if not !lexpr_is_set then Pbrt.Decoder.missing_field "lexpr";
+  if not !bin_op_is_set then Pbrt.Decoder.missing_field "bin_op";
+  ({ Frontend_types.bin_op = v.bin_op
+   ; Frontend_types.lexpr = v.lexpr
+   ; Frontend_types.rexpr = v.rexpr
+   }
+    : Frontend_types.expr_p_binop)
 ;;
 
 let rec decode_program d =
@@ -172,6 +239,13 @@ let rec encode_un_op (v : Frontend_types.un_op) encoder =
     Pbrt.Encoder.empty_nested encoder
 ;;
 
+let rec encode_bin_op (v : Frontend_types.bin_op) encoder =
+  match v with
+  | Frontend_types.Plus ->
+    Pbrt.Encoder.key (1, Pbrt.Bytes) encoder;
+    Pbrt.Encoder.empty_nested encoder
+;;
+
 let rec encode_expr_p_function_app (v : Frontend_types.expr_p_function_app) encoder =
   Pbrt.Encoder.key (1, Pbrt.Bytes) encoder;
   Pbrt.Encoder.string v.Frontend_types.name encoder;
@@ -196,6 +270,9 @@ and encode_expr (v : Frontend_types.expr) encoder =
   | Frontend_types.Unop x ->
     Pbrt.Encoder.key (4, Pbrt.Bytes) encoder;
     Pbrt.Encoder.nested (encode_expr_p_unop x) encoder
+  | Frontend_types.Binop x ->
+    Pbrt.Encoder.key (5, Pbrt.Bytes) encoder;
+    Pbrt.Encoder.nested (encode_expr_p_binop x) encoder
 
 and encode_expr_p_printf (v : Frontend_types.expr_p_printf) encoder =
   Pbrt.Encoder.key (1, Pbrt.Bytes) encoder;
@@ -212,6 +289,15 @@ and encode_expr_p_unop (v : Frontend_types.expr_p_unop) encoder =
   Pbrt.Encoder.nested (encode_un_op v.Frontend_types.op) encoder;
   Pbrt.Encoder.key (2, Pbrt.Bytes) encoder;
   Pbrt.Encoder.nested (encode_expr v.Frontend_types.uexpr) encoder;
+  ()
+
+and encode_expr_p_binop (v : Frontend_types.expr_p_binop) encoder =
+  Pbrt.Encoder.key (1, Pbrt.Bytes) encoder;
+  Pbrt.Encoder.nested (encode_bin_op v.Frontend_types.bin_op) encoder;
+  Pbrt.Encoder.key (2, Pbrt.Bytes) encoder;
+  Pbrt.Encoder.nested (encode_expr v.Frontend_types.lexpr) encoder;
+  Pbrt.Encoder.key (3, Pbrt.Bytes) encoder;
+  Pbrt.Encoder.nested (encode_expr v.Frontend_types.rexpr) encoder;
   ()
 ;;
 

@@ -66,3 +66,16 @@ llvm::Value *IRCodegenVisitor::codegen(const ExprUnopIR &expr) {
     return builder->CreateNeg(exprVal, "neg");
   }
 }
+
+llvm::Value *IRCodegenVisitor::codegen(const ExprBinOpIR &expr) {
+  llvm::Value *lexpr = expr.lexpr->codegen(*this);
+  llvm::Value *rexpr = expr.rexpr->codegen(*this);
+  if (lexpr == nullptr || rexpr == nullptr) {
+    llvm::outs() << "bin op operand is null";
+    return nullptr;
+  }
+  switch (expr.op) {
+  case BinOpPlus:
+    return builder->CreateAdd(lexpr, rexpr, "add");
+  }
+}

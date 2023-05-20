@@ -41,5 +41,15 @@ struct ExprUnopIR : public ExprIR {
   virtual llvm::Value *codegen(IRVisitor &visitor) override;
 };
 
+enum BinOp { BinOpPlus };
+
+struct ExprBinOpIR : public ExprIR {
+  enum BinOp op;
+  std::unique_ptr<ExprIR> lexpr;
+  std::unique_ptr<ExprIR> rexpr;
+  ExprBinOpIR(const Frontend_ir::Expr::_Binop &expr);
+  virtual llvm::Value *codegen(IRVisitor &visitor) override;
+};
+
 std::unique_ptr<ExprIR> deserializeExpr(const Frontend_ir::Expr &expr);
 #endif

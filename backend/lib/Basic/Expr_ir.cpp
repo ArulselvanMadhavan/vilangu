@@ -17,9 +17,25 @@ enum Unop deserializeUnop(const Frontend_ir::Un_op &op) {
   }
 }
 
+enum BinOp deserializeBinOp(const Frontend_ir::Bin_op &op) {
+  switch (op.value_case()) {
+  case Frontend_ir::Bin_op::kPlus:
+    return BinOp::BinOpPlus;
+  default:
+    llvm::outs() << "Unmatched unary op\n";
+    return BinOp::BinOpPlus;
+  }
+}
+
 ExprUnopIR::ExprUnopIR(const Frontend_ir::Expr::_Unop &unopExpr) {
   op = deserializeUnop(unopExpr.op());
   expr = deserializeExpr(unopExpr.uexpr());
+};
+
+ExprBinOpIR::ExprBinOpIR(const Frontend_ir::Expr::_Binop &binopExpr) {
+  op = deserializeBinOp(binopExpr.bin_op());
+  lexpr = deserializeExpr(binopExpr.lexpr());
+  rexpr = deserializeExpr(binopExpr.rexpr());
 };
 
 ExprFunctionAppIR::ExprFunctionAppIR(
@@ -47,6 +63,8 @@ std::unique_ptr<ExprIR> deserializeExpr(const Frontend_ir::Expr &expr) {
     return std::unique_ptr<ExprIR>(new ExprPrintfIR(expr.printf()));
   case Frontend_ir::Expr::kUnop:
     return std::unique_ptr<ExprIR>(new ExprUnopIR(expr.unop()));
+  case Frontend_ir::Expr::kBinop:
+    return std::unique_ptr<ExprIR>(new ExprBinOpIR(expr.binop()));
   default:
     // FIXME
     return std::unique_ptr<ExprIR>(new ExprIntegerIR(-1));
@@ -68,5 +86,9 @@ llvm::Value *ExprPrintfIR::codegen(IRVisitor &visitor) {
 }
 
 llvm::Value *ExprUnopIR::codegen(IRVisitor &visitor) {
+  return visitor.codegen(*this);
+}
+
+llvm::Value *ExprBinOpIR::codegen(IRVisitor &visitor) {
   return visitor.codegen(*this);
 }
