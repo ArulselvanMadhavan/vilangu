@@ -92,7 +92,7 @@ and stmt =
 
 and exp =
   | Identifier of symbol * pos
-  | IntLit of int * pos
+  | IntLit of int32 * pos
   | OpExp of operator * pos
   | ArrayCreationExp of
       { type_ : type_

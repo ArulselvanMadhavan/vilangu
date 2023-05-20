@@ -3,7 +3,7 @@ module FT = Frontend_types
 
 let gen_expr e =
   let gexpr = function
-    | A.IntLit (i, _) -> FT.Integer (Int32.of_int i)
+    | A.IntLit (i, _) -> FT.Integer i
     | _ -> FT.Integer (Int32.of_int (-1))
   in
   gexpr e

@@ -1,6 +1,16 @@
-open Tlang
-
 let files_dir = Fpath.v "examples"
+
+let build_dir dir_name =
+  let llvm_ir_path = Fpath.add_seg files_dir dir_name in
+  (try Sys.mkdir (Fpath.to_string llvm_ir_path) 0o777 with
+   | Sys_error _ -> ());
+  llvm_ir_path
+;;
+
+let gen_new_file dir base_file ext = Fpath.(add_seg dir (filename base_file) -+ ext)
+let llvm_dir = build_dir "llvm"
+let exec_dir = build_dir "exec"
+let out_dir = build_dir "out"
 
 let list_dir =
   let files = Sys.readdir (Fpath.to_string files_dir) in
@@ -17,7 +27,21 @@ let ir_dir filename =
   Fpath.(ir_path -+ "ir")
 ;;
 
+let log_err filename () =
+  let err_file = gen_new_file out_dir filename ".err" in
+  Tlang.Error_msg.log_err (Fpath.to_string err_file);
+  None
+;;
+
+let check_types parsed_ast () =
+  let open Tlang in
+  let Semant.{ ty; _ } = Semant.trans_prog parsed_ast in
+  Printf.printf "Result type:%s\n" (Types.type2str ty);
+  Some parsed_ast
+;;
+
 let compile_file filename =
+  let open Tlang in
   let in_ch = open_in (Fpath.to_string filename) in
   Error_msg.reset ();
   Error_msg.set_filename (Fpath.to_string filename);
@@ -26,21 +50,25 @@ let compile_file filename =
   let err_str = ref "" in
   let parsed_exp =
     try Parser.prog Lexer.token lexbuf |> Option.some with
-    | Lexer.Error (((sl, sr), (el, er)), msg) ->
+    | Lexer.Error (pos, msg) ->
+      let (sl, sr), (el, er) = pos in
       err_str := Printf.sprintf "Error at (%d:%d)-(%d:%d). %s" sl sr el er msg;
+      Error_msg.error pos !err_str;
       None
     | Parser.Error ->
       err_str := "Parser Error occured";
+      Error_msg.error ((-1, -1), (-1, -1)) !err_str;
       None
     | _ ->
       err_str := "Unexpected error";
+      Error_msg.error ((-1, -1), (-1, -1)) !err_str;
       None
   in
-  Option.iter
-    (fun pe ->
-      let Semant.{ ty; _ } = Semant.trans_prog pe in
-      Printf.printf "Result type:%s\n" (Types.type2str ty))
-    parsed_exp;
+  let parsed_exp =
+    if Error_msg.has_errors ()
+    then log_err filename ()
+    else Option.fold ~none:(log_err filename) ~some:check_types parsed_exp ()
+  in
   Option.map
     (fun pe ->
       let ir_file = ir_dir filename in
@@ -50,17 +78,6 @@ let compile_file filename =
 ;;
 
 let backend_exec = "backend/build/tools/driver/tlang"
-
-let build_dir dir_name =
-  let llvm_ir_path = Fpath.add_seg files_dir dir_name in
-  (try Sys.mkdir (Fpath.to_string llvm_ir_path) 0o777 with
-   | Sys_error _ -> ());
-  llvm_ir_path
-;;
-
-let llvm_dir = build_dir "llvm"
-let exec_dir = build_dir "exec"
-let out_dir = build_dir "out"
 
 let clang_command llvm_file out_file =
   "clang -O3 " ^ Fpath.to_string llvm_file ^ " -o " ^ Fpath.to_string out_file
@@ -74,10 +91,9 @@ let print_cmd cmd = Printf.printf "%s\n" cmd
 
 let ir_to_backend ir_file =
   let is_avail = Sys.file_exists backend_exec in
-  let llvm_ir_file = Fpath.add_seg llvm_dir (Fpath.filename ir_file) in
-  let llvm_ir_file = Fpath.(llvm_ir_file -+ ".ll") in
-  let exec_file = Fpath.(add_seg exec_dir (filename ir_file) -+ ".exe") in
-  let out_file = Fpath.(add_seg out_dir (filename ir_file) -+ ".out") in
+  let llvm_ir_file = gen_new_file llvm_dir ir_file ".ll" in
+  let exec_file = gen_new_file exec_dir ir_file ".exe" in
+  let out_file = gen_new_file out_dir ir_file ".out" in
   let cmd =
     backend_exec ^ " " ^ Fpath.to_string ir_file ^ " > " ^ Fpath.to_string llvm_ir_file
   in

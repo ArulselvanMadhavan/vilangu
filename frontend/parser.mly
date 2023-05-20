@@ -11,7 +11,7 @@ open Ast
 %token BREAK CONTINUE
 %token NULL
 %token <string> ID
-%token <int> NUM
+%token <int32> NUM
 %token ASSIGN_OP
 %token LT GT EQUALS
 %token PLUS MINUS
@@ -319,7 +319,8 @@ let arr_type :=
   | (rank, dim)=arr_type; dimension; {(rank + 1, dim)}
 
 let literal :=
-  | int=NUM; { IntLit (int, lp($loc))}
+  | intval=NUM; { IntLit (intval, lp($loc))
+                  }
   | NULL; { NullLit (lp($loc)) }
 
 let id :=
