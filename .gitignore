@@ -3,3 +3,6 @@ artifacts/
 backend/build/**
 backend/.cache/**
 backend/compile_commands.json
+examples/ir/*
+examples/llvm/*
+examples/out/*
