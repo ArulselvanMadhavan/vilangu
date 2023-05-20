@@ -1,18 +1,27 @@
 * Tlang in OCaml
-** Specs
-- [[https://www.cs.unh.edu/~cs712/T_language_spec/grammar.y][specs]]
-** TODO
- - [ ] Symbol table is global. Need Env specific symbol tables
- - [ ] Add position to AST
- - [ ] Add support for error reporting
- - [ ] AST for this, super is confusing
- - [ ] Is this grammar for real?
- #+begin_src yacc
- MethodDeclarator
-	 : Identifier FormalParameters
-	 | MethodDeclarator Dimension
-	 ;
- #+end_src
+** How to run?
+*** Install OCaml Toolchain
+#+begin_src bash
+bash -c "sh <(curl -fsSL https://raw.githubusercontent.com/ocaml/opam/master/shell/install.sh)"
+opam init
+opam switch create vilangu 4.14.1
+opam install --deps-only
+#+end_src
+*** Install LLVM toolchain (14 or higher)
+- [[https://apt.llvm.org/][Follow the official instructions here]]
+*** Generate the tlang backend
+#+begin_src bash
+cd backend
+mkdir build
+cd build
+cmake ../
+make
+#+end_src
+*** Run the compiler
+#+begin_src bash
+dune exec vilangu
+#+end_src
+
 ** Useful links
   - https://github.com/ksrky/tiger/tree/master
   - [[https://www.cs.columbia.edu/~sedwards/classes/2002/w4115/tiger.pdf][Tiger Lang specs]]
