@@ -3,8 +3,7 @@ protobuf_generate_cpp(GENERATED_SRC GENERATED_HEADER
 ../../../frontend/frontend.proto)
 
 add_tlang_library(tlangBasic Version.cpp Protobuf_utils.cpp
-Program_ir.cpp Expr_ir.cpp Ir_codegen_visitor.cpp expr_codegen.cpp extern_functions_codegen.cpp
-${GENERATED_SRC})
+Program_ir.cpp Expr_ir.cpp ${GENERATED_SRC})
 
 add_custom_command(TARGET tlangBasic POST_BUILD
                    COMMAND ${CMAKE_COMMAND} -E copy
