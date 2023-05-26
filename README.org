@@ -28,7 +28,11 @@ Generating frontend/frontend_pb.ml
 Generating frontend/frontend_pp.mli
 Generating frontend/frontend_pp.ml
 #+end_src
-- 
+- Install protobuf compiler
+  #+begin_src bash
+    sudo apt-get install -y protobuf-compiler
+    protoc --version
+  #+end_src
 *** Generate the tlang backend
 #+begin_src bash
 cd backend
