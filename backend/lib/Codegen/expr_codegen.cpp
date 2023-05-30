@@ -83,6 +83,7 @@ llvm::Value *IRCodegenVisitor::codegen(const ExprBinOpIR &expr) {
 }
 
 llvm::Value *IRCodegenVisitor::codegen(const ExprVarDeclIR &expr) {
+  // TODO: Get type of variable
   llvm::Value *boundVal =
       llvm::ConstantInt::getSigned((llvm::Type::getInt32Ty(*context)), 0);
   llvm::Function *parentFunction = builder->GetInsertBlock()->getParent();
@@ -120,8 +121,9 @@ llvm::Value *IRCodegenVisitor::codegen(const ExprIdentifierIR &expr) {
     llvm::outs() << "Identifier not found: " + expr.identifier->varName;
     return nullptr;
   }
-  llvm::outs() << id->getName();
-  llvm::Value *idVal = builder->CreateLoad(id->getType(), id);
+
+  llvm::Type *idType = id->getType()->isPointerTy() ? id->getType()->getPointerElementType() : id->getType();
+  llvm::Value *idVal = builder->CreateLoad(idType, id);
   if (idVal == nullptr) {
     llvm::outs() << "Identifier not loaded: " + expr.identifier->varName;
     return nullptr;

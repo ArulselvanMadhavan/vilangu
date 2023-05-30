@@ -2353,6 +2353,7 @@ class Expr PROTOBUF_FINAL :
     kBinop = 5,
     kVarDecl = 6,
     kAssign = 7,
+    kExprId = 8,
     VALUE_NOT_SET = 0,
   };
 
@@ -2447,6 +2448,7 @@ class Expr PROTOBUF_FINAL :
     kBinopFieldNumber = 5,
     kVarDeclFieldNumber = 6,
     kAssignFieldNumber = 7,
+    kExprIdFieldNumber = 8,
   };
   // int32 Integer = 1;
   bool has_integer() const;
@@ -2569,6 +2571,24 @@ class Expr PROTOBUF_FINAL :
       ::Frontend_ir::Expr__Assign* assign);
   ::Frontend_ir::Expr__Assign* unsafe_arena_release_assign();
 
+  // .Frontend_ir.Identifier ExprId = 8;
+  bool has_exprid() const;
+  private:
+  bool _internal_has_exprid() const;
+  public:
+  void clear_exprid();
+  const ::Frontend_ir::Identifier& exprid() const;
+  ::Frontend_ir::Identifier* release_exprid();
+  ::Frontend_ir::Identifier* mutable_exprid();
+  void set_allocated_exprid(::Frontend_ir::Identifier* exprid);
+  private:
+  const ::Frontend_ir::Identifier& _internal_exprid() const;
+  ::Frontend_ir::Identifier* _internal_mutable_exprid();
+  public:
+  void unsafe_arena_set_allocated_exprid(
+      ::Frontend_ir::Identifier* exprid);
+  ::Frontend_ir::Identifier* unsafe_arena_release_exprid();
+
   void clear_value();
   ValueCase value_case() const;
   // @@protoc_insertion_point(class_scope:Frontend_ir.Expr)
@@ -2581,6 +2601,7 @@ class Expr PROTOBUF_FINAL :
   void set_has_binop();
   void set_has_vardecl();
   void set_has_assign();
+  void set_has_exprid();
 
   inline bool has_value() const;
   inline void clear_has_value();
@@ -2597,6 +2618,7 @@ class Expr PROTOBUF_FINAL :
     ::Frontend_ir::Expr__Binop* binop_;
     ::Frontend_ir::Expr__VarDecl* vardecl_;
     ::Frontend_ir::Expr__Assign* assign_;
+    ::Frontend_ir::Identifier* exprid_;
   } value_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   ::PROTOBUF_NAMESPACE_ID::uint32 _oneof_case_[1];
@@ -4629,6 +4651,79 @@ inline ::Frontend_ir::Expr__Assign* Expr::_internal_mutable_assign() {
 inline ::Frontend_ir::Expr__Assign* Expr::mutable_assign() {
   // @@protoc_insertion_point(field_mutable:Frontend_ir.Expr.Assign)
   return _internal_mutable_assign();
+}
+
+// .Frontend_ir.Identifier ExprId = 8;
+inline bool Expr::_internal_has_exprid() const {
+  return value_case() == kExprId;
+}
+inline bool Expr::has_exprid() const {
+  return _internal_has_exprid();
+}
+inline void Expr::set_has_exprid() {
+  _oneof_case_[0] = kExprId;
+}
+inline void Expr::clear_exprid() {
+  if (_internal_has_exprid()) {
+    if (GetArena() == nullptr) {
+      delete value_.exprid_;
+    }
+    clear_has_value();
+  }
+}
+inline ::Frontend_ir::Identifier* Expr::release_exprid() {
+  // @@protoc_insertion_point(field_release:Frontend_ir.Expr.ExprId)
+  if (_internal_has_exprid()) {
+    clear_has_value();
+      ::Frontend_ir::Identifier* temp = value_.exprid_;
+    if (GetArena() != nullptr) {
+      temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+    }
+    value_.exprid_ = nullptr;
+    return temp;
+  } else {
+    return nullptr;
+  }
+}
+inline const ::Frontend_ir::Identifier& Expr::_internal_exprid() const {
+  return _internal_has_exprid()
+      ? *value_.exprid_
+      : *reinterpret_cast< ::Frontend_ir::Identifier*>(&::Frontend_ir::_Identifier_default_instance_);
+}
+inline const ::Frontend_ir::Identifier& Expr::exprid() const {
+  // @@protoc_insertion_point(field_get:Frontend_ir.Expr.ExprId)
+  return _internal_exprid();
+}
+inline ::Frontend_ir::Identifier* Expr::unsafe_arena_release_exprid() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:Frontend_ir.Expr.ExprId)
+  if (_internal_has_exprid()) {
+    clear_has_value();
+    ::Frontend_ir::Identifier* temp = value_.exprid_;
+    value_.exprid_ = nullptr;
+    return temp;
+  } else {
+    return nullptr;
+  }
+}
+inline void Expr::unsafe_arena_set_allocated_exprid(::Frontend_ir::Identifier* exprid) {
+  clear_value();
+  if (exprid) {
+    set_has_exprid();
+    value_.exprid_ = exprid;
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:Frontend_ir.Expr.ExprId)
+}
+inline ::Frontend_ir::Identifier* Expr::_internal_mutable_exprid() {
+  if (!_internal_has_exprid()) {
+    clear_value();
+    set_has_exprid();
+    value_.exprid_ = CreateMaybeMessage< ::Frontend_ir::Identifier >(GetArena());
+  }
+  return value_.exprid_;
+}
+inline ::Frontend_ir::Identifier* Expr::mutable_exprid() {
+  // @@protoc_insertion_point(field_mutable:Frontend_ir.Expr.ExprId)
+  return _internal_mutable_exprid();
 }
 
 inline bool Expr::has_value() const {

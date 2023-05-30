@@ -76,6 +76,8 @@ std::unique_ptr<ExprIR> deserializeExpr(const Frontend_ir::Expr &expr) {
     return std::unique_ptr<ExprIR>(new ExprVarDeclIR(expr.vardecl()));
   case Frontend_ir::Expr::kAssign:
     return std::unique_ptr<ExprIR>(new ExprAssignIR(expr.assign()));
+  case Frontend_ir::Expr::kExprId:
+    return std::unique_ptr<ExprIR>(new ExprIdentifierIR(expr.exprid()));
   default:
     // FIXME
     return std::unique_ptr<ExprIR>(new ExprIntegerIR(-1));

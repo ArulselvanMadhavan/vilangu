@@ -24,6 +24,7 @@ and expr =
   | Binop of expr_p_binop
   | Var_decl of expr_p_var_decl
   | Assign of expr_p_assign
+  | Expr_id of identifier
 
 and expr_p_printf =
   { format : string

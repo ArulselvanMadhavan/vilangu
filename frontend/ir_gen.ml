@@ -10,6 +10,7 @@ let gen_expr e =
       FT.Binop { bin_op = FT.Plus; lexpr = gexpr left; rexpr = gexpr right }
     | A.Assignment { lhs = SimpleVar ((sym_name, _), _); exp; _ } ->
       FT.Assign { lhs = FT.Var { var_name = sym_name }; rhs = gexpr exp }
+    | A.Identifier ((sym_name, _), _) -> FT.Expr_id (FT.Var { var_name = sym_name })
     | _ -> FT.Integer (Int32.of_int (-1))
   in
   gexpr e

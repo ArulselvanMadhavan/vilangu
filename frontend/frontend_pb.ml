@@ -203,6 +203,9 @@ and decode_expr d =
       | Some (7, _) ->
         (Frontend_types.Assign (decode_expr_p_assign (Pbrt.Decoder.nested d))
           : Frontend_types.expr)
+      | Some (8, _) ->
+        (Frontend_types.Expr_id (decode_identifier (Pbrt.Decoder.nested d))
+          : Frontend_types.expr)
       | Some (n, payload_kind) ->
         Pbrt.Decoder.skip d payload_kind;
         loop ()
@@ -405,6 +408,9 @@ and encode_expr (v : Frontend_types.expr) encoder =
   | Frontend_types.Assign x ->
     Pbrt.Encoder.key (7, Pbrt.Bytes) encoder;
     Pbrt.Encoder.nested (encode_expr_p_assign x) encoder
+  | Frontend_types.Expr_id x ->
+    Pbrt.Encoder.key (8, Pbrt.Bytes) encoder;
+    Pbrt.Encoder.nested (encode_identifier x) encoder
 
 and encode_expr_p_printf (v : Frontend_types.expr_p_printf) encoder =
   Pbrt.Encoder.key (1, Pbrt.Bytes) encoder;

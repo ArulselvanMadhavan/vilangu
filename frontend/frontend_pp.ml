@@ -66,6 +66,8 @@ and pp_expr fmt (v : Frontend_types.expr) =
     Format.fprintf fmt "@[<hv2>Var_decl(@,%a)@]" pp_expr_p_var_decl x
   | Frontend_types.Assign x ->
     Format.fprintf fmt "@[<hv2>Assign(@,%a)@]" pp_expr_p_assign x
+  | Frontend_types.Expr_id x ->
+    Format.fprintf fmt "@[<hv2>Expr_id(@,%a)@]" pp_identifier x
 
 and pp_expr_p_printf fmt (v : Frontend_types.expr_p_printf) =
   let pp_i fmt () =
