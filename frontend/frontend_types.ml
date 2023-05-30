@@ -8,6 +8,17 @@ type un_op =
 type bin_op =
   | Plus
 
+type identifier_p_var = {
+  var_name : string;
+}
+
+type identifier =
+  | Var of identifier_p_var
+
+type expr_p_var_decl = {
+  var_id : string;
+}
+
 type expr_p_function_app = {
   name : string;
   args : expr list;
@@ -19,6 +30,7 @@ and expr =
   | Printf of expr_p_printf
   | Unop of expr_p_unop
   | Binop of expr_p_binop
+  | Var_decl of expr_p_var_decl
 
 and expr_p_printf = {
   format : string;
@@ -43,6 +55,20 @@ type program = {
 let rec default_un_op (): un_op = Not
 
 let rec default_bin_op (): bin_op = Plus
+
+let rec default_identifier_p_var 
+  ?var_name:((var_name:string) = "")
+  () : identifier_p_var  = {
+  var_name;
+}
+
+let rec default_identifier () : identifier = Var (default_identifier_p_var ())
+
+let rec default_expr_p_var_decl 
+  ?var_id:((var_id:string) = "")
+  () : expr_p_var_decl  = {
+  var_id;
+}
 
 let rec default_expr_p_function_app 
   ?name:((name:string) = "")

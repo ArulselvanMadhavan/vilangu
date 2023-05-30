@@ -51,5 +51,27 @@ struct ExprBinOpIR : public ExprIR {
   virtual llvm::Value *codegen(IRVisitor &visitor) override;
 };
 
+// struct IdentifierIR {
+//   std::string varName;
+//   virtual ~IdentifierIR() = default;
+//   virtual llvm::Value *codegen(IRVisitor &visitor) = 0;
+// };
+
+// struct IdentifierVarIR : public IdentifierIR {
+//   IdentifierVarIR(const std::string &name);
+//   virtual llvm::Value *codegen(IRVisitor &visitor) override;
+// };
+
+struct ExprVarDeclIR : public ExprIR {
+  std::string varName;
+  ExprVarDeclIR(const Frontend_ir::Expr::_VarDecl &expr);
+  virtual llvm::Value *codegen(IRVisitor &visitor) override;
+};
+// struct ExprIdentifierIR : public ExprIR {
+//   std::unique_ptr<IdentifierIR> identifier;
+//   ExprIdentifierIR(const Frontend_ir::Expr::_VarDecl &expr);
+//   virtual llvm::Value *codegen(IRVisitor &visitor) override;
+// };
+
 std::unique_ptr<ExprIR> deserializeExpr(const Frontend_ir::Expr &expr);
 #endif

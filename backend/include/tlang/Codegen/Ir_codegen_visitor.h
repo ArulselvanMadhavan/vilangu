@@ -32,5 +32,7 @@ public:
   virtual llvm::Value *codegen(const ExprPrintfIR &expr) override;
   virtual llvm::Value *codegen(const ExprUnopIR &expr) override;
   virtual llvm::Value *codegen(const ExprBinOpIR &expr) override;
+  virtual llvm::Value *codegen(const ExprVarDeclIR &expr) override;
+  // virtual llvm::Value *codegen(const ExprIdentifierIR &expr) override;
 };
 #endif

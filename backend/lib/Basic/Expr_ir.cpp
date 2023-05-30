@@ -55,6 +55,13 @@ ExprPrintfIR::ExprPrintfIR(const Frontend_ir::Expr::_Printf &expr) {
   }
 };
 
+ExprVarDeclIR::ExprVarDeclIR(const Frontend_ir::Expr::_VarDecl &expr) {
+  varName = expr.var_id();
+}
+
+// IdentifierVarIR::IdentifierVarIR(const std::string &name) { varName = name;
+// };
+
 std::unique_ptr<ExprIR> deserializeExpr(const Frontend_ir::Expr &expr) {
   switch (expr.value_case()) {
   case Frontend_ir::Expr::kInteger:
@@ -67,11 +74,29 @@ std::unique_ptr<ExprIR> deserializeExpr(const Frontend_ir::Expr &expr) {
     return std::unique_ptr<ExprIR>(new ExprUnopIR(expr.unop()));
   case Frontend_ir::Expr::kBinop:
     return std::unique_ptr<ExprIR>(new ExprBinOpIR(expr.binop()));
+  case Frontend_ir::Expr::kVarDecl:
+    return std::unique_ptr<ExprIR>(new ExprVarDeclIR(expr.vardecl()));
   default:
     // FIXME
     return std::unique_ptr<ExprIR>(new ExprIntegerIR(-1));
   }
 }
+
+// std::unique_ptr<IdentifierIR>
+// deserializeIdentifier(const Frontend_ir::Identifier &identifier) {
+//   switch (identifier.value_case()) {
+//   case Frontend_ir::Identifier::kVar:
+//     return std::unique_ptr<IdentifierIR>(
+//         new IdentifierVarIR(identifier.var().var_name()));
+//   default:
+//     return std::unique_ptr<IdentifierIR>(new IdentifierVarIR("null"));
+//     break;
+//   }
+// }
+
+// ExprIdentifierIR::ExprIdentifierIR(const Frontend_ir::Expr::_VarDecl &expr) {
+//   identifier = deserializeIdentifier(expr.var_id());
+// }
 
 // Codegen impl
 
@@ -94,3 +119,11 @@ llvm::Value *ExprUnopIR::codegen(IRVisitor &visitor) {
 llvm::Value *ExprBinOpIR::codegen(IRVisitor &visitor) {
   return visitor.codegen(*this);
 }
+
+llvm::Value *ExprVarDeclIR::codegen(IRVisitor &visitor) {
+  return visitor.codegen(*this);
+}
+
+// llvm::Value *ExprIdentifierIR::codegen(IRVisitor &visitor) {
+//   return visitor.codegen(*this);
+// }

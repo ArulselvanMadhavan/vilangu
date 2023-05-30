@@ -1,5 +1,21 @@
 [@@@ocaml.warning "-27-30-39"]
 
+type identifier_p_var_mutable = {
+  mutable var_name : string;
+}
+
+let default_identifier_p_var_mutable () : identifier_p_var_mutable = {
+  var_name = "";
+}
+
+type expr_p_var_decl_mutable = {
+  mutable var_id : string;
+}
+
+let default_expr_p_var_decl_mutable () : expr_p_var_decl_mutable = {
+  var_id = "";
+}
+
 type expr_p_function_app_mutable = {
   mutable name : string;
   mutable args : Frontend_types.expr list;
@@ -89,6 +105,60 @@ let rec decode_bin_op d =
   in
   loop ()
 
+let rec decode_identifier_p_var d =
+  let v = default_identifier_p_var_mutable () in
+  let continue__= ref true in
+  let var_name_is_set = ref false in
+  while !continue__ do
+    match Pbrt.Decoder.key d with
+    | None -> (
+    ); continue__ := false
+    | Some (1, Pbrt.Bytes) -> begin
+      v.var_name <- Pbrt.Decoder.string d; var_name_is_set := true;
+    end
+    | Some (1, pk) -> 
+      Pbrt.Decoder.unexpected_payload "Message(identifier_p_var), field(1)" pk
+    | Some (_, payload_kind) -> Pbrt.Decoder.skip d payload_kind
+  done;
+  begin if not !var_name_is_set then Pbrt.Decoder.missing_field "var_name" end;
+  ({
+    Frontend_types.var_name = v.var_name;
+  } : Frontend_types.identifier_p_var)
+
+let rec decode_identifier d = 
+  let rec loop () = 
+    let ret:Frontend_types.identifier = match Pbrt.Decoder.key d with
+      | None -> Pbrt.Decoder.malformed_variant "identifier"
+      | Some (1, _) -> (Frontend_types.Var (decode_identifier_p_var (Pbrt.Decoder.nested d)) : Frontend_types.identifier) 
+      | Some (n, payload_kind) -> (
+        Pbrt.Decoder.skip d payload_kind; 
+        loop () 
+      )
+    in
+    ret
+  in
+  loop ()
+
+let rec decode_expr_p_var_decl d =
+  let v = default_expr_p_var_decl_mutable () in
+  let continue__= ref true in
+  let var_id_is_set = ref false in
+  while !continue__ do
+    match Pbrt.Decoder.key d with
+    | None -> (
+    ); continue__ := false
+    | Some (1, Pbrt.Bytes) -> begin
+      v.var_id <- Pbrt.Decoder.string d; var_id_is_set := true;
+    end
+    | Some (1, pk) -> 
+      Pbrt.Decoder.unexpected_payload "Message(expr_p_var_decl), field(1)" pk
+    | Some (_, payload_kind) -> Pbrt.Decoder.skip d payload_kind
+  done;
+  begin if not !var_id_is_set then Pbrt.Decoder.missing_field "var_id" end;
+  ({
+    Frontend_types.var_id = v.var_id;
+  } : Frontend_types.expr_p_var_decl)
+
 let rec decode_expr_p_function_app d =
   let v = default_expr_p_function_app_mutable () in
   let continue__= ref true in
@@ -125,6 +195,7 @@ and decode_expr d =
       | Some (3, _) -> (Frontend_types.Printf (decode_expr_p_printf (Pbrt.Decoder.nested d)) : Frontend_types.expr) 
       | Some (4, _) -> (Frontend_types.Unop (decode_expr_p_unop (Pbrt.Decoder.nested d)) : Frontend_types.expr) 
       | Some (5, _) -> (Frontend_types.Binop (decode_expr_p_binop (Pbrt.Decoder.nested d)) : Frontend_types.expr) 
+      | Some (6, _) -> (Frontend_types.Var_decl (decode_expr_p_var_decl (Pbrt.Decoder.nested d)) : Frontend_types.expr) 
       | Some (n, payload_kind) -> (
         Pbrt.Decoder.skip d payload_kind; 
         loop () 
@@ -261,6 +332,23 @@ let rec encode_bin_op (v:Frontend_types.bin_op) encoder =
     Pbrt.Encoder.empty_nested encoder
   end
 
+let rec encode_identifier_p_var (v:Frontend_types.identifier_p_var) encoder = 
+  Pbrt.Encoder.key (1, Pbrt.Bytes) encoder; 
+  Pbrt.Encoder.string v.Frontend_types.var_name encoder;
+  ()
+
+let rec encode_identifier (v:Frontend_types.identifier) encoder = 
+  begin match v with
+  | Frontend_types.Var x ->
+    Pbrt.Encoder.key (1, Pbrt.Bytes) encoder; 
+    Pbrt.Encoder.nested (encode_identifier_p_var x) encoder;
+  end
+
+let rec encode_expr_p_var_decl (v:Frontend_types.expr_p_var_decl) encoder = 
+  Pbrt.Encoder.key (1, Pbrt.Bytes) encoder; 
+  Pbrt.Encoder.string v.Frontend_types.var_id encoder;
+  ()
+
 let rec encode_expr_p_function_app (v:Frontend_types.expr_p_function_app) encoder = 
   Pbrt.Encoder.key (1, Pbrt.Bytes) encoder; 
   Pbrt.Encoder.string v.Frontend_types.name encoder;
@@ -287,6 +375,9 @@ and encode_expr (v:Frontend_types.expr) encoder =
   | Frontend_types.Binop x ->
     Pbrt.Encoder.key (5, Pbrt.Bytes) encoder; 
     Pbrt.Encoder.nested (encode_expr_p_binop x) encoder;
+  | Frontend_types.Var_decl x ->
+    Pbrt.Encoder.key (6, Pbrt.Bytes) encoder; 
+    Pbrt.Encoder.nested (encode_expr_p_var_decl x) encoder;
   end
 
 and encode_expr_p_printf (v:Frontend_types.expr_p_printf) encoder = 

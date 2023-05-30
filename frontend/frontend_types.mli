@@ -11,6 +11,17 @@ type un_op =
 type bin_op =
   | Plus
 
+type identifier_p_var = {
+  var_name : string;
+}
+
+type identifier =
+  | Var of identifier_p_var
+
+type expr_p_var_decl = {
+  var_id : string;
+}
+
 type expr_p_function_app = {
   name : string;
   args : expr list;
@@ -22,6 +33,7 @@ and expr =
   | Printf of expr_p_printf
   | Unop of expr_p_unop
   | Binop of expr_p_binop
+  | Var_decl of expr_p_var_decl
 
 and expr_p_printf = {
   format : string;
@@ -51,6 +63,21 @@ val default_un_op : unit -> un_op
 
 val default_bin_op : unit -> bin_op
 (** [default_bin_op ()] is the default value for type [bin_op] *)
+
+val default_identifier_p_var : 
+  ?var_name:string ->
+  unit ->
+  identifier_p_var
+(** [default_identifier_p_var ()] is the default value for type [identifier_p_var] *)
+
+val default_identifier : unit -> identifier
+(** [default_identifier ()] is the default value for type [identifier] *)
+
+val default_expr_p_var_decl : 
+  ?var_id:string ->
+  unit ->
+  expr_p_var_decl
+(** [default_expr_p_var_decl ()] is the default value for type [expr_p_var_decl] *)
 
 val default_expr_p_function_app : 
   ?name:string ->

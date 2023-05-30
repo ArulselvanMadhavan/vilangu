@@ -8,8 +8,7 @@ let gen_expr e =
       FT.Unop { op = FT.Neg; uexpr = gexpr exp }
     | A.OpExp (A.BinaryOp { oper = A.PlusOp; left; right }, _) ->
       FT.Binop { bin_op = FT.Plus; lexpr = gexpr left; rexpr = gexpr right }
-    | _ ->
-      FT.Integer (Int32.of_int (-1))
+    | _ -> FT.Integer (Int32.of_int (-1))
   in
   gexpr e
 ;;
@@ -22,10 +21,19 @@ let gen_stmt s =
   gstmt s
 ;;
 
+let gen_decls xs =
+  let rec gen_dec = function
+    | [] -> []
+    | A.{ id = sym_name, _sym_id; _ } :: xs ->
+      FT.Var_decl { var_id = sym_name } :: gen_dec xs
+  in
+  gen_dec xs
+;;
+
 let gen_prog A.{ main_decl; _ } =
   let rec gen_main = function
     | [] -> []
-    | A.VariableDecl _ :: xs -> FT.Integer (Int32.of_int (-1)) :: gen_main xs
+    | A.VariableDecl decls :: xs -> gen_decls decls @ gen_main xs
     | A.MainStmt s :: xs -> gen_stmt s :: gen_main xs
   in
   FT.{ main = gen_main main_decl }
@@ -38,7 +46,6 @@ let dump ast_fname ir_fname prog =
   let out_str = Format.flush_str_formatter () in
   output_string oc out_str;
   close_out oc;
-  
   let encoder = Pbrt.Encoder.create () in
   Frontend_pb.encode_program prog encoder;
   let oc = open_out ir_fname in

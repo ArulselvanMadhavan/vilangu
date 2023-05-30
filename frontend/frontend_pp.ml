@@ -9,6 +9,22 @@ let rec pp_bin_op fmt (v:Frontend_types.bin_op) =
   match v with
   | Frontend_types.Plus  -> Format.fprintf fmt "Plus"
 
+let rec pp_identifier_p_var fmt (v:Frontend_types.identifier_p_var) = 
+  let pp_i fmt () =
+    Pbrt.Pp.pp_record_field ~first:true "var_name" Pbrt.Pp.pp_string fmt v.Frontend_types.var_name;
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+
+let rec pp_identifier fmt (v:Frontend_types.identifier) =
+  match v with
+  | Frontend_types.Var x -> Format.fprintf fmt "@[<hv2>Var(@,%a)@]" pp_identifier_p_var x
+
+let rec pp_expr_p_var_decl fmt (v:Frontend_types.expr_p_var_decl) = 
+  let pp_i fmt () =
+    Pbrt.Pp.pp_record_field ~first:true "var_id" Pbrt.Pp.pp_string fmt v.Frontend_types.var_id;
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+
 let rec pp_expr_p_function_app fmt (v:Frontend_types.expr_p_function_app) = 
   let pp_i fmt () =
     Pbrt.Pp.pp_record_field ~first:true "name" Pbrt.Pp.pp_string fmt v.Frontend_types.name;
@@ -23,6 +39,7 @@ and pp_expr fmt (v:Frontend_types.expr) =
   | Frontend_types.Printf x -> Format.fprintf fmt "@[<hv2>Printf(@,%a)@]" pp_expr_p_printf x
   | Frontend_types.Unop x -> Format.fprintf fmt "@[<hv2>Unop(@,%a)@]" pp_expr_p_unop x
   | Frontend_types.Binop x -> Format.fprintf fmt "@[<hv2>Binop(@,%a)@]" pp_expr_p_binop x
+  | Frontend_types.Var_decl x -> Format.fprintf fmt "@[<hv2>Var_decl(@,%a)@]" pp_expr_p_var_decl x
 
 and pp_expr_p_printf fmt (v:Frontend_types.expr_p_printf) = 
   let pp_i fmt () =

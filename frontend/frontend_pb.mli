@@ -9,6 +9,15 @@ val encode_un_op : Frontend_types.un_op -> Pbrt.Encoder.t -> unit
 val encode_bin_op : Frontend_types.bin_op -> Pbrt.Encoder.t -> unit
 (** [encode_bin_op v encoder] encodes [v] with the given [encoder] *)
 
+val encode_identifier_p_var : Frontend_types.identifier_p_var -> Pbrt.Encoder.t -> unit
+(** [encode_identifier_p_var v encoder] encodes [v] with the given [encoder] *)
+
+val encode_identifier : Frontend_types.identifier -> Pbrt.Encoder.t -> unit
+(** [encode_identifier v encoder] encodes [v] with the given [encoder] *)
+
+val encode_expr_p_var_decl : Frontend_types.expr_p_var_decl -> Pbrt.Encoder.t -> unit
+(** [encode_expr_p_var_decl v encoder] encodes [v] with the given [encoder] *)
+
 val encode_expr_p_function_app : Frontend_types.expr_p_function_app -> Pbrt.Encoder.t -> unit
 (** [encode_expr_p_function_app v encoder] encodes [v] with the given [encoder] *)
 
@@ -35,6 +44,15 @@ val decode_un_op : Pbrt.Decoder.t -> Frontend_types.un_op
 
 val decode_bin_op : Pbrt.Decoder.t -> Frontend_types.bin_op
 (** [decode_bin_op decoder] decodes a [bin_op] value from [decoder] *)
+
+val decode_identifier_p_var : Pbrt.Decoder.t -> Frontend_types.identifier_p_var
+(** [decode_identifier_p_var decoder] decodes a [identifier_p_var] value from [decoder] *)
+
+val decode_identifier : Pbrt.Decoder.t -> Frontend_types.identifier
+(** [decode_identifier decoder] decodes a [identifier] value from [decoder] *)
+
+val decode_expr_p_var_decl : Pbrt.Decoder.t -> Frontend_types.expr_p_var_decl
+(** [decode_expr_p_var_decl decoder] decodes a [expr_p_var_decl] value from [decoder] *)
 
 val decode_expr_p_function_app : Pbrt.Decoder.t -> Frontend_types.expr_p_function_app
 (** [decode_expr_p_function_app decoder] decodes a [expr_p_function_app] value from [decoder] *)

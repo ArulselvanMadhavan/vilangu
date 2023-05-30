@@ -3,6 +3,7 @@
 #include "llvm/IR/Constants.h"
 #include "llvm/IR/Type.h"
 #include "llvm/IR/Value.h"
+#include <llvm-14/llvm/IR/Instructions.h>
 #include <llvm/ADT/StringRef.h>
 #include <llvm/IR/DerivedTypes.h>
 #include <llvm/IR/Function.h>
@@ -79,4 +80,17 @@ llvm::Value *IRCodegenVisitor::codegen(const ExprBinOpIR &expr) {
   case BinOpPlus:
     return builder->CreateAdd(lexpr, rexpr, "add");
   }
+}
+
+llvm::Value *IRCodegenVisitor::codegen(const ExprVarDeclIR &expr) {
+  llvm::Value *boundVal =
+      llvm::ConstantInt::getSigned((llvm::Type::getInt32Ty(*context)), 0);
+  llvm::Function *parentFunction = builder->GetInsertBlock()->getParent();
+  llvm::IRBuilder<> TmpBuilder(&(parentFunction->getEntryBlock()),
+                               parentFunction->getEntryBlock().begin());
+  llvm::AllocaInst *var = TmpBuilder.CreateAlloca(boundVal->getType(), nullptr,
+                                                  llvm::Twine(expr.varName));
+  varEnv[expr.varName] = var;
+  builder->CreateStore(boundVal, var);
+  return boundVal;
 }

@@ -17,6 +17,15 @@ message Bin_op {
   }
 }
 
+message Identifier {
+  message _Var {
+    required string var_name = 1;
+  }
+  oneof value {
+    _Var var = 1;
+  }
+}
+
 message Expr {
 
   message _FunctionApp {
@@ -39,6 +48,11 @@ message Expr {
     required Expr lexpr = 2;
     required Expr rexpr = 3;
   }
+
+  message _VarDecl {
+    required string var_id = 1;
+    // type + dim info
+  }
   
   oneof value {
     int32 Integer = 1;
@@ -46,6 +60,7 @@ message Expr {
     _Printf Printf = 3;
     _Unop Unop = 4;
     _Binop Binop = 5;
+    _VarDecl VarDecl = 6;
   }
 }
 
