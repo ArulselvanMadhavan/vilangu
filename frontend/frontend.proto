@@ -53,6 +53,11 @@ message Expr {
     required string var_id = 1;
     // type + dim info
   }
+
+  message _Assign {
+    required Identifier lhs = 1;
+    required Expr rhs = 2;
+  }
   
   oneof value {
     int32 Integer = 1;
@@ -61,6 +66,7 @@ message Expr {
     _Unop Unop = 4;
     _Binop Binop = 5;
     _VarDecl VarDecl = 6;
+    _Assign Assign = 7;
   }
 }
 

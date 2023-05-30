@@ -8,6 +8,8 @@ let gen_expr e =
       FT.Unop { op = FT.Neg; uexpr = gexpr exp }
     | A.OpExp (A.BinaryOp { oper = A.PlusOp; left; right }, _) ->
       FT.Binop { bin_op = FT.Plus; lexpr = gexpr left; rexpr = gexpr right }
+    | A.Assignment { lhs = SimpleVar ((sym_name, _), _); exp; _ } ->
+      FT.Assign { lhs = FT.Var { var_name = sym_name }; rhs = gexpr exp }
     | _ -> FT.Integer (Int32.of_int (-1))
   in
   gexpr e
@@ -16,6 +18,7 @@ let gen_expr e =
 let gen_stmt s =
   let gstmt = function
     | A.Output o -> FT.Printf { format = "%d"; f_args = [ gen_expr o ] }
+    | ExprStmt e -> gen_expr e
     | _ -> FT.Integer (Int32.of_int (-1))
   in
   gstmt s
