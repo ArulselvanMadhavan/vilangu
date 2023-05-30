@@ -67,6 +67,7 @@ message Expr {
     _Binop Binop = 5;
     _VarDecl VarDecl = 6;
     _Assign Assign = 7;
+    Identifier ExprId = 8;
   }
 }
 

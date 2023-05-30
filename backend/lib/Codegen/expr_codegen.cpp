@@ -94,3 +94,37 @@ llvm::Value *IRCodegenVisitor::codegen(const ExprVarDeclIR &expr) {
   builder->CreateStore(boundVal, var);
   return boundVal;
 }
+
+llvm::Value *IRCodegenVisitor::codegen(const ExprAssignIR &expr) {
+  llvm::Value *assignedVal = expr.assignedExpr->codegen(*this);
+  llvm::Value *id = expr.identifier->codegen(*this);
+  if (id == nullptr) {
+    llvm::outs() << "Trying to assign to a null id";
+    return nullptr;
+  }
+  builder->CreateStore(assignedVal, id);
+  return assignedVal;
+}
+
+llvm::Value *IRCodegenVisitor::codegen(const IdentifierVarIR &var) {
+  llvm::Value *val = varEnv[var.varName];
+  if (val == nullptr) {
+    llvm::outs() << "Var not found: " + var.varName;
+  }
+  return val;
+}
+
+llvm::Value *IRCodegenVisitor::codegen(const ExprIdentifierIR &expr) {
+  llvm::Value *id = expr.identifier->codegen(*this);
+  if (id == nullptr) {
+    llvm::outs() << "Identifier not found: " + expr.identifier->varName;
+    return nullptr;
+  }
+  llvm::outs() << id->getName();
+  llvm::Value *idVal = builder->CreateLoad(id->getType(), id);
+  if (idVal == nullptr) {
+    llvm::outs() << "Identifier not loaded: " + expr.identifier->varName;
+    return nullptr;
+  }
+  return idVal;
+}

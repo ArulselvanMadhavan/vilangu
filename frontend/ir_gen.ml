@@ -18,7 +18,7 @@ let gen_expr e =
 let gen_stmt s =
   let gstmt = function
     | A.Output o -> FT.Printf { format = "%d"; f_args = [ gen_expr o ] }
-    | ExprStmt e -> gen_expr e
+    | A.ExprStmt e -> gen_expr e
     | _ -> FT.Integer (Int32.of_int (-1))
   in
   gstmt s

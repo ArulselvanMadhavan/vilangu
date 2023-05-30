@@ -1,6 +1,7 @@
 #include "tlang/Deserializer/Expr_ir.h"
 #include "frontend.pb.h"
 #include "tlang/Deserializer/Ir_visitor.h"
+#include "tlang/Deserializer/frontend.pb.h"
 #include "llvm/IR/Value.h"
 #include "llvm/Support/raw_ostream.h"
 #include <memory>
@@ -59,9 +60,6 @@ ExprVarDeclIR::ExprVarDeclIR(const Frontend_ir::Expr::_VarDecl &expr) {
   varName = expr.var_id();
 }
 
-// IdentifierVarIR::IdentifierVarIR(const std::string &name) { varName = name;
-// };
-
 std::unique_ptr<ExprIR> deserializeExpr(const Frontend_ir::Expr &expr) {
   switch (expr.value_case()) {
   case Frontend_ir::Expr::kInteger:
@@ -76,28 +74,36 @@ std::unique_ptr<ExprIR> deserializeExpr(const Frontend_ir::Expr &expr) {
     return std::unique_ptr<ExprIR>(new ExprBinOpIR(expr.binop()));
   case Frontend_ir::Expr::kVarDecl:
     return std::unique_ptr<ExprIR>(new ExprVarDeclIR(expr.vardecl()));
+  case Frontend_ir::Expr::kAssign:
+    return std::unique_ptr<ExprIR>(new ExprAssignIR(expr.assign()));
   default:
     // FIXME
     return std::unique_ptr<ExprIR>(new ExprIntegerIR(-1));
   }
 }
 
-// std::unique_ptr<IdentifierIR>
-// deserializeIdentifier(const Frontend_ir::Identifier &identifier) {
-//   switch (identifier.value_case()) {
-//   case Frontend_ir::Identifier::kVar:
-//     return std::unique_ptr<IdentifierIR>(
-//         new IdentifierVarIR(identifier.var().var_name()));
-//   default:
-//     return std::unique_ptr<IdentifierIR>(new IdentifierVarIR("null"));
-//     break;
-//   }
-// }
+IdentifierVarIR::IdentifierVarIR(const std::string &name) { varName = name; };
 
-// ExprIdentifierIR::ExprIdentifierIR(const Frontend_ir::Expr::_VarDecl &expr) {
-//   identifier = deserializeIdentifier(expr.var_id());
-// }
+std::unique_ptr<IdentifierIR>
+deserializeIdentifier(const Frontend_ir::Identifier &identifier) {
+  switch (identifier.value_case()) {
+  case Frontend_ir::Identifier::kVar:
+    return std::unique_ptr<IdentifierIR>(
+        new IdentifierVarIR(identifier.var().var_name()));
+  default:
+    return std::unique_ptr<IdentifierIR>(new IdentifierVarIR("null"));
+    break;
+  }
+}
 
+ExprIdentifierIR::ExprIdentifierIR(const Frontend_ir::Identifier &expr) {
+  identifier = deserializeIdentifier(expr);
+}
+
+ExprAssignIR::ExprAssignIR(const Frontend_ir::Expr::_Assign &expr) {
+  identifier = deserializeIdentifier(expr.lhs());
+  assignedExpr = deserializeExpr(expr.rhs());
+}
 // Codegen impl
 
 llvm::Value *ExprIntegerIR::codegen(IRVisitor &visitor) {
@@ -124,6 +130,14 @@ llvm::Value *ExprVarDeclIR::codegen(IRVisitor &visitor) {
   return visitor.codegen(*this);
 }
 
-// llvm::Value *ExprIdentifierIR::codegen(IRVisitor &visitor) {
-//   return visitor.codegen(*this);
-// }
+llvm::Value *ExprIdentifierIR::codegen(IRVisitor &visitor) {
+  return visitor.codegen(*this);
+}
+
+llvm::Value *ExprAssignIR::codegen(IRVisitor &visitor) {
+  return visitor.codegen(*this);
+}
+
+llvm::Value *IdentifierVarIR::codegen(IRVisitor &visitor) {
+  return visitor.codegen(*this);
+}
