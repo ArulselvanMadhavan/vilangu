@@ -17,6 +17,7 @@ public:
   virtual llvm::Value *codegen(const ExprIdentifierIR &expr) = 0;
   virtual llvm::Value *codegen(const ExprAssignIR &expr) = 0;
   virtual llvm::Value *codegen(const IdentifierVarIR &expr) = 0;
+  virtual llvm::Value *codegen(const ExprBlockIR &expr) = 0;
   virtual llvm::Type *codegen(const TypeIntIR &texpr) = 0;
   virtual ~IRVisitor() = default;
 };

@@ -84,5 +84,11 @@ struct ExprAssignIR : public ExprIR {
   virtual llvm::Value *codegen(IRVisitor &visitor) override;
 };
 
+struct ExprBlockIR : public ExprIR {
+  std::vector<std::unique_ptr<ExprIR>> exprs;
+  ExprBlockIR(const Frontend_ir::Expr::_Block &expr);
+  virtual llvm::Value *codegen(IRVisitor &visitor) override;
+};
+
 std::unique_ptr<ExprIR> deserializeExpr(const Frontend_ir::Expr &expr);
 #endif

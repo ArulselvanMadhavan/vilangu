@@ -107,6 +107,12 @@ ExprAssignIR::ExprAssignIR(const Frontend_ir::Expr::_Assign &expr) {
   identifier = deserializeIdentifier(expr.lhs());
   assignedExpr = deserializeExpr(expr.rhs());
 }
+
+ExprBlockIR::ExprBlockIR(const Frontend_ir::Expr::_Block &expr) {
+  for (int i = 0; i < expr.expr_list_size(); i++) {
+    exprs.push_back(deserializeExpr(expr.expr_list(i)));
+  }
+}
 // Codegen impl
 
 llvm::Value *ExprIntegerIR::codegen(IRVisitor &visitor) {
@@ -142,5 +148,9 @@ llvm::Value *ExprAssignIR::codegen(IRVisitor &visitor) {
 }
 
 llvm::Value *IdentifierVarIR::codegen(IRVisitor &visitor) {
+  return visitor.codegen(*this);
+}
+
+llvm::Value *ExprBlockIR::codegen(IRVisitor &visitor) {
   return visitor.codegen(*this);
 }

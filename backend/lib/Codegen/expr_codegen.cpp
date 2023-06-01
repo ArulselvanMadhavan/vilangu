@@ -130,3 +130,11 @@ llvm::Value *IRCodegenVisitor::codegen(const ExprIdentifierIR &expr) {
   }
   return idVal;
 }
+
+llvm::Value *IRCodegenVisitor::codegen(const ExprBlockIR &expr){
+  llvm::Value *lastExprVal;
+  for(auto &e : expr.exprs){
+    lastExprVal = (e->codegen(*this));
+  }
+  return lastExprVal;
+}
