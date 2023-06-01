@@ -1,6 +1,7 @@
 #ifndef TLANG_IR_VISITOR_H
 #define TLANG_IR_VISITOR_H
 #include "Expr_ir.h"
+#include "tlang/Deserializer/Type_ir.h"
 #include "llvm/IR/Value.h"
 
 /* Interface - An Abstract base class with pure virtual functions with no
@@ -16,6 +17,7 @@ public:
   virtual llvm::Value *codegen(const ExprIdentifierIR &expr) = 0;
   virtual llvm::Value *codegen(const ExprAssignIR &expr) = 0;
   virtual llvm::Value *codegen(const IdentifierVarIR &expr) = 0;
+  virtual llvm::Type *codegen(const TypeIntIR &texpr) = 0;
   virtual ~IRVisitor() = default;
 };
 

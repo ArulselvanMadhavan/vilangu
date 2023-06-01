@@ -3,6 +3,7 @@
 #include "tlang/Deserializer/Expr_ir.h"
 #include "tlang/Deserializer/Ir_visitor.h"
 #include "tlang/Deserializer/Program_ir.h"
+#include "tlang/Deserializer/Type_ir.h"
 #include "llvm/IR/IRBuilder.h"
 #include "llvm/IR/Instructions.h"
 #include "llvm/IR/LLVMContext.h"
@@ -36,5 +37,6 @@ public:
   virtual llvm::Value *codegen(const ExprIdentifierIR &expr) override;
   virtual llvm::Value *codegen(const ExprAssignIR &expr) override;
   virtual llvm::Value *codegen(const IdentifierVarIR &expr) override;
+  virtual llvm::Type *codegen(const TypeIntIR &texpr) override;
 };
 #endif

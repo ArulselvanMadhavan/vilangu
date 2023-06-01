@@ -1,4 +1,6 @@
 #include "tlang/Deserializer/Type_ir.h"
+#include "tlang/Deserializer/Ir_visitor.h"
+#include "llvm/IR/Type.h"
 #include <memory>
 
 std::unique_ptr<TypeIR> deserializeType(const Frontend_ir::Type_expr &texpr) {
