@@ -26,6 +26,17 @@ message Identifier {
   }
 }
 
+message Type_expr {
+  
+  message _Int32 {
+    required int32 rank = 1;
+  }
+  
+  oneof value {
+    _Int32 Int32Ty = 1;
+  }
+}
+
 message Expr {
 
   message _FunctionApp {
@@ -51,6 +62,7 @@ message Expr {
 
   message _VarDecl {
     required string var_id = 1;
+    required Type_expr texpr = 2;
     // type + dim info
   }
 
