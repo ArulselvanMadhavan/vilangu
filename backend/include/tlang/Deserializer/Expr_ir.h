@@ -2,7 +2,9 @@
 #define TLANG_EXPR_IR_H
 
 #include "frontend.pb.h"
+#include "tlang/Deserializer/Type_ir.h"
 #include "llvm/IR/Value.h"
+#include <memory>
 #include <stdlib.h>
 #include <string>
 
@@ -64,6 +66,7 @@ struct IdentifierVarIR : public IdentifierIR {
 
 struct ExprVarDeclIR : public ExprIR {
   std::string varName;
+  std::unique_ptr<TypeIR> varType;
   ExprVarDeclIR(const Frontend_ir::Expr::_VarDecl &expr);
   virtual llvm::Value *codegen(IRVisitor &visitor) override;
 };

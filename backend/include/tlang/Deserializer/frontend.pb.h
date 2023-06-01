@@ -94,9 +94,9 @@ extern ProgramDefaultTypeInternal _Program_default_instance_;
 class Type_expr;
 class Type_exprDefaultTypeInternal;
 extern Type_exprDefaultTypeInternal _Type_expr_default_instance_;
-class Type_expr__Int32;
-class Type_expr__Int32DefaultTypeInternal;
-extern Type_expr__Int32DefaultTypeInternal _Type_expr__Int32_default_instance_;
+class Type_expr__RankedType;
+class Type_expr__RankedTypeDefaultTypeInternal;
+extern Type_expr__RankedTypeDefaultTypeInternal _Type_expr__RankedType_default_instance_;
 class Un_op;
 class Un_opDefaultTypeInternal;
 extern Un_opDefaultTypeInternal _Un_op_default_instance_;
@@ -121,7 +121,7 @@ template<> ::Frontend_ir::Identifier* Arena::CreateMaybeMessage<::Frontend_ir::I
 template<> ::Frontend_ir::Identifier__Var* Arena::CreateMaybeMessage<::Frontend_ir::Identifier__Var>(Arena*);
 template<> ::Frontend_ir::Program* Arena::CreateMaybeMessage<::Frontend_ir::Program>(Arena*);
 template<> ::Frontend_ir::Type_expr* Arena::CreateMaybeMessage<::Frontend_ir::Type_expr>(Arena*);
-template<> ::Frontend_ir::Type_expr__Int32* Arena::CreateMaybeMessage<::Frontend_ir::Type_expr__Int32>(Arena*);
+template<> ::Frontend_ir::Type_expr__RankedType* Arena::CreateMaybeMessage<::Frontend_ir::Type_expr__RankedType>(Arena*);
 template<> ::Frontend_ir::Un_op* Arena::CreateMaybeMessage<::Frontend_ir::Un_op>(Arena*);
 template<> ::Frontend_ir::Un_op__NegOp* Arena::CreateMaybeMessage<::Frontend_ir::Un_op__NegOp>(Arena*);
 template<> ::Frontend_ir::Un_op__NotOp* Arena::CreateMaybeMessage<::Frontend_ir::Un_op__NotOp>(Arena*);
@@ -1224,23 +1224,23 @@ class Identifier PROTOBUF_FINAL :
 };
 // -------------------------------------------------------------------
 
-class Type_expr__Int32 PROTOBUF_FINAL :
-    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:Frontend_ir.Type_expr._Int32) */ {
+class Type_expr__RankedType PROTOBUF_FINAL :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:Frontend_ir.Type_expr._RankedType) */ {
  public:
-  inline Type_expr__Int32() : Type_expr__Int32(nullptr) {};
-  virtual ~Type_expr__Int32();
+  inline Type_expr__RankedType() : Type_expr__RankedType(nullptr) {};
+  virtual ~Type_expr__RankedType();
 
-  Type_expr__Int32(const Type_expr__Int32& from);
-  Type_expr__Int32(Type_expr__Int32&& from) noexcept
-    : Type_expr__Int32() {
+  Type_expr__RankedType(const Type_expr__RankedType& from);
+  Type_expr__RankedType(Type_expr__RankedType&& from) noexcept
+    : Type_expr__RankedType() {
     *this = ::std::move(from);
   }
 
-  inline Type_expr__Int32& operator=(const Type_expr__Int32& from) {
+  inline Type_expr__RankedType& operator=(const Type_expr__RankedType& from) {
     CopyFrom(from);
     return *this;
   }
-  inline Type_expr__Int32& operator=(Type_expr__Int32&& from) noexcept {
+  inline Type_expr__RankedType& operator=(Type_expr__RankedType&& from) noexcept {
     if (GetArena() == from.GetArena()) {
       if (this != &from) InternalSwap(&from);
     } else {
@@ -1265,20 +1265,20 @@ class Type_expr__Int32 PROTOBUF_FINAL :
   static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
     return GetMetadataStatic().reflection;
   }
-  static const Type_expr__Int32& default_instance();
+  static const Type_expr__RankedType& default_instance();
 
   static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
-  static inline const Type_expr__Int32* internal_default_instance() {
-    return reinterpret_cast<const Type_expr__Int32*>(
-               &_Type_expr__Int32_default_instance_);
+  static inline const Type_expr__RankedType* internal_default_instance() {
+    return reinterpret_cast<const Type_expr__RankedType*>(
+               &_Type_expr__RankedType_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
     7;
 
-  friend void swap(Type_expr__Int32& a, Type_expr__Int32& b) {
+  friend void swap(Type_expr__RankedType& a, Type_expr__RankedType& b) {
     a.Swap(&b);
   }
-  inline void Swap(Type_expr__Int32* other) {
+  inline void Swap(Type_expr__RankedType* other) {
     if (other == this) return;
     if (GetArena() == other->GetArena()) {
       InternalSwap(other);
@@ -1286,7 +1286,7 @@ class Type_expr__Int32 PROTOBUF_FINAL :
       ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
     }
   }
-  void UnsafeArenaSwap(Type_expr__Int32* other) {
+  void UnsafeArenaSwap(Type_expr__RankedType* other) {
     if (other == this) return;
     GOOGLE_DCHECK(GetArena() == other->GetArena());
     InternalSwap(other);
@@ -1294,17 +1294,17 @@ class Type_expr__Int32 PROTOBUF_FINAL :
 
   // implements Message ----------------------------------------------
 
-  inline Type_expr__Int32* New() const final {
-    return CreateMaybeMessage<Type_expr__Int32>(nullptr);
+  inline Type_expr__RankedType* New() const final {
+    return CreateMaybeMessage<Type_expr__RankedType>(nullptr);
   }
 
-  Type_expr__Int32* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
-    return CreateMaybeMessage<Type_expr__Int32>(arena);
+  Type_expr__RankedType* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<Type_expr__RankedType>(arena);
   }
   void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
   void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void CopyFrom(const Type_expr__Int32& from);
-  void MergeFrom(const Type_expr__Int32& from);
+  void CopyFrom(const Type_expr__RankedType& from);
+  void MergeFrom(const Type_expr__RankedType& from);
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
@@ -1318,13 +1318,13 @@ class Type_expr__Int32 PROTOBUF_FINAL :
   inline void SharedCtor();
   inline void SharedDtor();
   void SetCachedSize(int size) const final;
-  void InternalSwap(Type_expr__Int32* other);
+  void InternalSwap(Type_expr__RankedType* other);
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
-    return "Frontend_ir.Type_expr._Int32";
+    return "Frontend_ir.Type_expr._RankedType";
   }
   protected:
-  explicit Type_expr__Int32(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  explicit Type_expr__RankedType(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   private:
   static void ArenaDtor(void* object);
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
@@ -1359,7 +1359,7 @@ class Type_expr__Int32 PROTOBUF_FINAL :
   void _internal_set_rank(::PROTOBUF_NAMESPACE_ID::int32 value);
   public:
 
-  // @@protoc_insertion_point(class_scope:Frontend_ir.Type_expr._Int32)
+  // @@protoc_insertion_point(class_scope:Frontend_ir.Type_expr._RankedType)
  private:
   class _Internal;
 
@@ -1495,30 +1495,30 @@ class Type_expr PROTOBUF_FINAL :
 
   // nested types ----------------------------------------------------
 
-  typedef Type_expr__Int32 _Int32;
+  typedef Type_expr__RankedType _RankedType;
 
   // accessors -------------------------------------------------------
 
   enum : int {
     kInt32TyFieldNumber = 1,
   };
-  // .Frontend_ir.Type_expr._Int32 Int32Ty = 1;
+  // .Frontend_ir.Type_expr._RankedType Int32Ty = 1;
   bool has_int32ty() const;
   private:
   bool _internal_has_int32ty() const;
   public:
   void clear_int32ty();
-  const ::Frontend_ir::Type_expr__Int32& int32ty() const;
-  ::Frontend_ir::Type_expr__Int32* release_int32ty();
-  ::Frontend_ir::Type_expr__Int32* mutable_int32ty();
-  void set_allocated_int32ty(::Frontend_ir::Type_expr__Int32* int32ty);
+  const ::Frontend_ir::Type_expr__RankedType& int32ty() const;
+  ::Frontend_ir::Type_expr__RankedType* release_int32ty();
+  ::Frontend_ir::Type_expr__RankedType* mutable_int32ty();
+  void set_allocated_int32ty(::Frontend_ir::Type_expr__RankedType* int32ty);
   private:
-  const ::Frontend_ir::Type_expr__Int32& _internal_int32ty() const;
-  ::Frontend_ir::Type_expr__Int32* _internal_mutable_int32ty();
+  const ::Frontend_ir::Type_expr__RankedType& _internal_int32ty() const;
+  ::Frontend_ir::Type_expr__RankedType* _internal_mutable_int32ty();
   public:
   void unsafe_arena_set_allocated_int32ty(
-      ::Frontend_ir::Type_expr__Int32* int32ty);
-  ::Frontend_ir::Type_expr__Int32* unsafe_arena_release_int32ty();
+      ::Frontend_ir::Type_expr__RankedType* int32ty);
+  ::Frontend_ir::Type_expr__RankedType* unsafe_arena_release_int32ty();
 
   void clear_value();
   ValueCase value_case() const;
@@ -1535,7 +1535,7 @@ class Type_expr PROTOBUF_FINAL :
   typedef void DestructorSkippable_;
   union ValueUnion {
     ValueUnion() {}
-    ::Frontend_ir::Type_expr__Int32* int32ty_;
+    ::Frontend_ir::Type_expr__RankedType* int32ty_;
   } value_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   ::PROTOBUF_NAMESPACE_ID::uint32 _oneof_case_[1];
@@ -3578,41 +3578,41 @@ inline Identifier::ValueCase Identifier::value_case() const {
 }
 // -------------------------------------------------------------------
 
-// Type_expr__Int32
+// Type_expr__RankedType
 
 // required int32 rank = 1;
-inline bool Type_expr__Int32::_internal_has_rank() const {
+inline bool Type_expr__RankedType::_internal_has_rank() const {
   bool value = (_has_bits_[0] & 0x00000001u) != 0;
   return value;
 }
-inline bool Type_expr__Int32::has_rank() const {
+inline bool Type_expr__RankedType::has_rank() const {
   return _internal_has_rank();
 }
-inline void Type_expr__Int32::clear_rank() {
+inline void Type_expr__RankedType::clear_rank() {
   rank_ = 0;
   _has_bits_[0] &= ~0x00000001u;
 }
-inline ::PROTOBUF_NAMESPACE_ID::int32 Type_expr__Int32::_internal_rank() const {
+inline ::PROTOBUF_NAMESPACE_ID::int32 Type_expr__RankedType::_internal_rank() const {
   return rank_;
 }
-inline ::PROTOBUF_NAMESPACE_ID::int32 Type_expr__Int32::rank() const {
-  // @@protoc_insertion_point(field_get:Frontend_ir.Type_expr._Int32.rank)
+inline ::PROTOBUF_NAMESPACE_ID::int32 Type_expr__RankedType::rank() const {
+  // @@protoc_insertion_point(field_get:Frontend_ir.Type_expr._RankedType.rank)
   return _internal_rank();
 }
-inline void Type_expr__Int32::_internal_set_rank(::PROTOBUF_NAMESPACE_ID::int32 value) {
+inline void Type_expr__RankedType::_internal_set_rank(::PROTOBUF_NAMESPACE_ID::int32 value) {
   _has_bits_[0] |= 0x00000001u;
   rank_ = value;
 }
-inline void Type_expr__Int32::set_rank(::PROTOBUF_NAMESPACE_ID::int32 value) {
+inline void Type_expr__RankedType::set_rank(::PROTOBUF_NAMESPACE_ID::int32 value) {
   _internal_set_rank(value);
-  // @@protoc_insertion_point(field_set:Frontend_ir.Type_expr._Int32.rank)
+  // @@protoc_insertion_point(field_set:Frontend_ir.Type_expr._RankedType.rank)
 }
 
 // -------------------------------------------------------------------
 
 // Type_expr
 
-// .Frontend_ir.Type_expr._Int32 Int32Ty = 1;
+// .Frontend_ir.Type_expr._RankedType Int32Ty = 1;
 inline bool Type_expr::_internal_has_int32ty() const {
   return value_case() == kInt32Ty;
 }
@@ -3630,11 +3630,11 @@ inline void Type_expr::clear_int32ty() {
     clear_has_value();
   }
 }
-inline ::Frontend_ir::Type_expr__Int32* Type_expr::release_int32ty() {
+inline ::Frontend_ir::Type_expr__RankedType* Type_expr::release_int32ty() {
   // @@protoc_insertion_point(field_release:Frontend_ir.Type_expr.Int32Ty)
   if (_internal_has_int32ty()) {
     clear_has_value();
-      ::Frontend_ir::Type_expr__Int32* temp = value_.int32ty_;
+      ::Frontend_ir::Type_expr__RankedType* temp = value_.int32ty_;
     if (GetArena() != nullptr) {
       temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
     }
@@ -3644,27 +3644,27 @@ inline ::Frontend_ir::Type_expr__Int32* Type_expr::release_int32ty() {
     return nullptr;
   }
 }
-inline const ::Frontend_ir::Type_expr__Int32& Type_expr::_internal_int32ty() const {
+inline const ::Frontend_ir::Type_expr__RankedType& Type_expr::_internal_int32ty() const {
   return _internal_has_int32ty()
       ? *value_.int32ty_
-      : *reinterpret_cast< ::Frontend_ir::Type_expr__Int32*>(&::Frontend_ir::_Type_expr__Int32_default_instance_);
+      : *reinterpret_cast< ::Frontend_ir::Type_expr__RankedType*>(&::Frontend_ir::_Type_expr__RankedType_default_instance_);
 }
-inline const ::Frontend_ir::Type_expr__Int32& Type_expr::int32ty() const {
+inline const ::Frontend_ir::Type_expr__RankedType& Type_expr::int32ty() const {
   // @@protoc_insertion_point(field_get:Frontend_ir.Type_expr.Int32Ty)
   return _internal_int32ty();
 }
-inline ::Frontend_ir::Type_expr__Int32* Type_expr::unsafe_arena_release_int32ty() {
+inline ::Frontend_ir::Type_expr__RankedType* Type_expr::unsafe_arena_release_int32ty() {
   // @@protoc_insertion_point(field_unsafe_arena_release:Frontend_ir.Type_expr.Int32Ty)
   if (_internal_has_int32ty()) {
     clear_has_value();
-    ::Frontend_ir::Type_expr__Int32* temp = value_.int32ty_;
+    ::Frontend_ir::Type_expr__RankedType* temp = value_.int32ty_;
     value_.int32ty_ = nullptr;
     return temp;
   } else {
     return nullptr;
   }
 }
-inline void Type_expr::unsafe_arena_set_allocated_int32ty(::Frontend_ir::Type_expr__Int32* int32ty) {
+inline void Type_expr::unsafe_arena_set_allocated_int32ty(::Frontend_ir::Type_expr__RankedType* int32ty) {
   clear_value();
   if (int32ty) {
     set_has_int32ty();
@@ -3672,15 +3672,15 @@ inline void Type_expr::unsafe_arena_set_allocated_int32ty(::Frontend_ir::Type_ex
   }
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:Frontend_ir.Type_expr.Int32Ty)
 }
-inline ::Frontend_ir::Type_expr__Int32* Type_expr::_internal_mutable_int32ty() {
+inline ::Frontend_ir::Type_expr__RankedType* Type_expr::_internal_mutable_int32ty() {
   if (!_internal_has_int32ty()) {
     clear_value();
     set_has_int32ty();
-    value_.int32ty_ = CreateMaybeMessage< ::Frontend_ir::Type_expr__Int32 >(GetArena());
+    value_.int32ty_ = CreateMaybeMessage< ::Frontend_ir::Type_expr__RankedType >(GetArena());
   }
   return value_.int32ty_;
 }
-inline ::Frontend_ir::Type_expr__Int32* Type_expr::mutable_int32ty() {
+inline ::Frontend_ir::Type_expr__RankedType* Type_expr::mutable_int32ty() {
   // @@protoc_insertion_point(field_mutable:Frontend_ir.Type_expr.Int32Ty)
   return _internal_mutable_int32ty();
 }

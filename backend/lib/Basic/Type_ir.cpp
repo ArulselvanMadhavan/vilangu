@@ -6,7 +6,7 @@
 std::unique_ptr<TypeIR> deserializeType(const Frontend_ir::Type_expr &texpr) {
   switch (texpr.value_case()) {
   case Frontend_ir::Type_expr::kInt32Ty:
-    return std::unique_ptr<TypeIR>(new TypeIntIR());
+    return std::unique_ptr<TypeIR>(new TypeIntIR(texpr.int32ty().rank()));
   default:
     return nullptr;
   }

@@ -1,6 +1,7 @@
 #include "tlang/Deserializer/Expr_ir.h"
 #include "frontend.pb.h"
 #include "tlang/Deserializer/Ir_visitor.h"
+#include "tlang/Deserializer/Type_ir.h"
 #include "llvm/IR/Value.h"
 #include "llvm/Support/raw_ostream.h"
 #include <memory>
@@ -57,6 +58,7 @@ ExprPrintfIR::ExprPrintfIR(const Frontend_ir::Expr::_Printf &expr) {
 
 ExprVarDeclIR::ExprVarDeclIR(const Frontend_ir::Expr::_VarDecl &expr) {
   varName = expr.var_id();
+  varType = deserializeType(expr.texpr());
 }
 
 std::unique_ptr<ExprIR> deserializeExpr(const Frontend_ir::Expr &expr) {

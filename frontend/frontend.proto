@@ -28,12 +28,12 @@ message Identifier {
 
 message Type_expr {
   
-  message _Int32 {
+  message _RankedType {
     required int32 rank = 1;
   }
   
   oneof value {
-    _Int32 Int32Ty = 1;
+    _RankedType Int32Ty = 1;
   }
 }
 

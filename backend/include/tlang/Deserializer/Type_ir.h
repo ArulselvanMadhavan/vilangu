@@ -3,6 +3,7 @@
 
 #include "frontend.pb.h"
 #include "llvm/IR/Type.h"
+#include <cstdint>
 
 class IRVisitor;
 
@@ -14,6 +15,8 @@ struct TypeIR {
 std::unique_ptr<TypeIR> deserializeType(const Frontend_ir::Type_expr &texpr);
 
 struct TypeIntIR : public TypeIR {
+  int rank;
+  TypeIntIR(const int &i) : rank(i){};
   virtual llvm::Type *codegen(IRVisitor &visitor) override;
 };
 #endif

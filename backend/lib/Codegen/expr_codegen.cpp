@@ -85,7 +85,7 @@ llvm::Value *IRCodegenVisitor::codegen(const ExprBinOpIR &expr) {
 llvm::Value *IRCodegenVisitor::codegen(const ExprVarDeclIR &expr) {
   // TODO: Get type of variable
   llvm::Value *boundVal =
-      llvm::ConstantInt::getSigned((llvm::Type::getInt32Ty(*context)), 0);
+    llvm::ConstantInt::getSigned(expr.varType->codegen(*this), 0);
   llvm::Function *parentFunction = builder->GetInsertBlock()->getParent();
   llvm::IRBuilder<> TmpBuilder(&(parentFunction->getEntryBlock()),
                                parentFunction->getEntryBlock().begin());
