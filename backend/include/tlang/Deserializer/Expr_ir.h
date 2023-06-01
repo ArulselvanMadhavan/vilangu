@@ -43,7 +43,7 @@ struct ExprUnopIR : public ExprIR {
   virtual llvm::Value *codegen(IRVisitor &visitor) override;
 };
 
-enum BinOp { BinOpPlus };
+enum BinOp { BinOpPlus, BinOpEquals };
 
 struct ExprBinOpIR : public ExprIR {
   enum BinOp op;

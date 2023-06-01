@@ -79,6 +79,8 @@ llvm::Value *IRCodegenVisitor::codegen(const ExprBinOpIR &expr) {
   switch (expr.op) {
   case BinOpPlus:
     return builder->CreateAdd(lexpr, rexpr, "add");
+  case BinOpEquals:
+    return builder->CreateICmpEQ(lexpr, rexpr, "equal");
   }
 }
 
@@ -137,4 +139,52 @@ llvm::Value *IRCodegenVisitor::codegen(const ExprBlockIR &expr){
     lastExprVal = (e->codegen(*this));
   }
   return lastExprVal;
+}
+
+llvm::Value *IRCodegenVisitor::codegen(const ExprIfElseIR &expr){
+  llvm::Value *condValue = expr.condExpr->codegen(*this);
+  if(condValue == nullptr){
+    llvm::outs() << "Null cond expression in if-else statement.";
+  }
+  llvm::Function *parentFunction = builder->GetInsertBlock()->getParent();
+
+  llvm::BasicBlock *thenBB = llvm::BasicBlock::Create(*context, "then", parentFunction);
+  llvm::BasicBlock *elseBB = llvm::BasicBlock::Create(*context, "else");
+  llvm::BasicBlock *mergeBB = llvm::BasicBlock::Create(*context, "ifcont");
+  builder->CreateCondBr(condValue, thenBB, elseBB);
+
+  builder->SetInsertPoint(thenBB);
+  llvm::Value *thenVal = expr.thenExpr->codegen(*this);
+  if(thenVal == nullptr){
+    llvm::outs() << "Then block evaluates to null in if-else statement.";
+      return nullptr;
+  }
+  thenBB = builder->GetInsertBlock();
+  builder->CreateBr(mergeBB);
+
+  parentFunction->getBasicBlockList().push_back(elseBB);
+  builder->SetInsertPoint(elseBB);
+  llvm::Value *elseVal = expr.elseExpr->codegen(*this);
+  if(elseVal == nullptr){
+    llvm::outs() << "Else block evaluates to null in if-else statement.";
+    return nullptr;
+  }
+  elseBB = builder->GetInsertBlock();
+  builder->CreateBr(mergeBB);
+
+  // merge block
+  parentFunction->getBasicBlockList().push_back(mergeBB);
+  builder->SetInsertPoint(mergeBB);
+
+  // if either is void or their types don't match (which indicates one of them
+  // returned the null value for void, then don't construct a phi node)
+  if (thenVal->getType() == llvm::Type::getVoidTy(*context) ||
+      elseVal->getType() == llvm::Type::getVoidTy(*context) ||
+      (thenVal->getType() != elseVal->getType())) {
+    return llvm::Constant::getNullValue(llvm::Type::getInt32Ty(*context));
+  }
+  llvm::PHINode *phiNode = builder->CreatePHI(thenVal->getType(), 2, "iftmp");
+  phiNode->addIncoming(thenVal, thenBB);
+  phiNode->addIncoming(elseVal, elseBB);
+  return phiNode;
 }

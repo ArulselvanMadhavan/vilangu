@@ -24,6 +24,8 @@ enum BinOp deserializeBinOp(const Frontend_ir::Bin_op &op) {
   switch (op.value_case()) {
   case Frontend_ir::Bin_op::kPlus:
     return BinOp::BinOpPlus;
+  case Frontend_ir::Bin_op::kEquals:
+    return BinOp::BinOpEquals;
   default:
     llvm::outs() << "Unmatched unary op\n";
     return BinOp::BinOpPlus;
@@ -163,5 +165,9 @@ llvm::Value *IdentifierVarIR::codegen(IRVisitor &visitor) {
 }
 
 llvm::Value *ExprBlockIR::codegen(IRVisitor &visitor) {
+  return visitor.codegen(*this);
+}
+
+llvm::Value *ExprIfElseIR::codegen(IRVisitor &visitor) {
   return visitor.codegen(*this);
 }
