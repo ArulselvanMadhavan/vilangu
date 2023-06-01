@@ -2,6 +2,7 @@
 #include "frontend.pb.h"
 #include "tlang/Deserializer/Ir_visitor.h"
 #include "tlang/Deserializer/Type_ir.h"
+#include "tlang/Deserializer/frontend.pb.h"
 #include "llvm/IR/Value.h"
 #include "llvm/Support/raw_ostream.h"
 #include <memory>
@@ -79,6 +80,10 @@ std::unique_ptr<ExprIR> deserializeExpr(const Frontend_ir::Expr &expr) {
     return std::unique_ptr<ExprIR>(new ExprAssignIR(expr.assign()));
   case Frontend_ir::Expr::kExprId:
     return std::unique_ptr<ExprIR>(new ExprIdentifierIR(expr.exprid()));
+  case Frontend_ir::Expr::kIfExpr:
+    return std::unique_ptr<ExprIR>(new ExprIfElseIR(expr.ifexpr()));
+  case Frontend_ir::Expr::kBlockExpr:
+    return std::unique_ptr<ExprBlockIR>(new ExprBlockIR(expr.blockexpr()));
   default:
     // FIXME
     return std::unique_ptr<ExprIR>(new ExprIntegerIR(-1));
@@ -112,6 +117,12 @@ ExprBlockIR::ExprBlockIR(const Frontend_ir::Expr::_Block &expr) {
   for (int i = 0; i < expr.expr_list_size(); i++) {
     exprs.push_back(deserializeExpr(expr.expr_list(i)));
   }
+}
+
+ExprIfElseIR::ExprIfElseIR(const Frontend_ir::Expr::_If_expr &expr) {
+  condExpr = deserializeExpr(expr.eval());
+  thenExpr = deserializeExpr(expr.if_expr());
+  elseExpr = deserializeExpr(expr.else_expr());
 }
 // Codegen impl
 

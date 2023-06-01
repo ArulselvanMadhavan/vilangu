@@ -92,8 +92,8 @@ struct ExprBlockIR : public ExprIR {
 
 struct ExprIfElseIR : public ExprIR {
   std::unique_ptr<ExprIR> condExpr;
-  std::vector<std::unique_ptr<ExprIR>> thenExpr;
-  std::vector<std::unique_ptr<ExprIR>> elseExpr;
+  std::unique_ptr<ExprIR> thenExpr;
+  std::unique_ptr<ExprIR> elseExpr;
   ExprIfElseIR(const Frontend_ir::Expr::_If_expr &expr);
   virtual llvm::Value *codegen(IRVisitor &visitor) override;
 };
