@@ -2,13 +2,19 @@ module A = Ast
 module FT = Frontend_types
 module S = Symbol
 
+let gen_binop = function
+  | A.PlusOp -> FT.Plus
+  | A.EqualsOp -> FT.Equals
+  | _ -> FT.Plus
+;;
+
 let gen_expr e =
   let rec gexpr = function
     | A.IntLit (i, _) -> FT.Integer i
     | A.OpExp (A.UnaryOp { oper = A.NegateOp; exp }, _) ->
       FT.Unop { op = FT.Neg; uexpr = gexpr exp }
-    | A.OpExp (A.BinaryOp { oper = A.PlusOp; left; right }, _) ->
-      FT.Binop { bin_op = FT.Plus; lexpr = gexpr left; rexpr = gexpr right }
+    | A.OpExp (A.BinaryOp { oper; left; right }, _) ->
+      FT.Binop { bin_op = gen_binop oper; lexpr = gexpr left; rexpr = gexpr right }
     | A.Assignment { lhs = SimpleVar ((sym_name, _), _); exp; _ } ->
       FT.Assign { lhs = FT.Var { var_name = sym_name }; rhs = gexpr exp }
     | A.Identifier ((sym_name, _), _) -> FT.Expr_id (FT.Var { var_name = sym_name })
@@ -18,9 +24,12 @@ let gen_expr e =
 ;;
 
 let gen_stmt s =
-  let gstmt = function
+  let rec gstmt = function
     | A.Output o -> FT.Printf { format = "%d"; f_args = [ gen_expr o ] }
     | A.ExprStmt e -> gen_expr e
+    | A.IfElse { exp; istmt; estmt } ->
+      FT.If_expr { eval = gen_expr exp; if_expr = gstmt istmt; else_expr = gstmt estmt }
+    | A.Block xs -> FT.Block_expr { expr_list = List.map gstmt xs }
     | _ -> FT.Integer (Int32.of_int (-1))
   in
   gstmt s

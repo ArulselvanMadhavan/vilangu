@@ -12,8 +12,10 @@ message Un_op {
 
 message Bin_op {
   message _PlusOp {}
+  message _EqualsOp {}
   oneof value {
     _PlusOp plus = 1;
+    _EqualsOp equals = 2;
   }
 }
 
@@ -69,6 +71,16 @@ message Expr {
     required Identifier lhs = 1;
     required Expr rhs = 2;
   }
+
+  message _If_expr {
+    required Expr eval = 1;
+    required Expr if_expr = 2;
+    required Expr else_expr = 3;
+  }
+
+  message _Block {
+    repeated Expr expr_list = 1;
+  }
   
   oneof value {
     int32 Integer = 1;
@@ -79,6 +91,8 @@ message Expr {
     _VarDecl VarDecl = 6;
     _Assign Assign = 7;
     Identifier ExprId = 8;
+    _If_expr IfExpr = 9;
+    _Block BlockExpr = 10;
   }
 }
 
