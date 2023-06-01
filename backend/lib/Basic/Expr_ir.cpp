@@ -1,7 +1,6 @@
 #include "tlang/Deserializer/Expr_ir.h"
 #include "frontend.pb.h"
 #include "tlang/Deserializer/Ir_visitor.h"
-#include "tlang/Deserializer/frontend.pb.h"
 #include "llvm/IR/Value.h"
 #include "llvm/Support/raw_ostream.h"
 #include <memory>
