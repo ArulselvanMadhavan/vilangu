@@ -28,6 +28,19 @@ let rec pp_identifier fmt (v : Frontend_types.identifier) =
   | Frontend_types.Var x -> Format.fprintf fmt "@[<hv2>Var(@,%a)@]" pp_identifier_p_var x
 ;;
 
+let rec pp_type_expr_p_int32 fmt (v : Frontend_types.type_expr_p_int32) =
+  let pp_i fmt () =
+    Pbrt.Pp.pp_record_field ~first:true "rank" Pbrt.Pp.pp_int32 fmt v.Frontend_types.rank
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+;;
+
+let rec pp_type_expr fmt (v : Frontend_types.type_expr) =
+  match v with
+  | Frontend_types.Int32_ty x ->
+    Format.fprintf fmt "@[<hv2>Int32_ty(@,%a)@]" pp_type_expr_p_int32 x
+;;
+
 let rec pp_expr_p_var_decl fmt (v : Frontend_types.expr_p_var_decl) =
   let pp_i fmt () =
     Pbrt.Pp.pp_record_field
@@ -35,7 +48,8 @@ let rec pp_expr_p_var_decl fmt (v : Frontend_types.expr_p_var_decl) =
       "var_id"
       Pbrt.Pp.pp_string
       fmt
-      v.Frontend_types.var_id
+      v.Frontend_types.var_id;
+    Pbrt.Pp.pp_record_field ~first:false "texpr" pp_type_expr fmt v.Frontend_types.texpr
   in
   Pbrt.Pp.pp_brk pp_i fmt ()
 ;;

@@ -1,5 +1,6 @@
 module A = Ast
 module FT = Frontend_types
+module S = Symbol
 
 let gen_expr e =
   let rec gexpr = function
@@ -25,11 +26,21 @@ let gen_stmt s =
   gstmt s
 ;;
 
+exception NoMatchingTypeExpr
+
+let gen_texpr rank = function
+  | A.NameTy (typ, _) ->
+    (match S.look (Env.base_tenv, typ) with
+     | Some Types.INT -> FT.Int32_ty { rank }
+     | _ -> raise NoMatchingTypeExpr)
+;;
+
 let gen_decls xs =
   let rec gen_dec = function
     | [] -> []
-    | A.{ id = sym_name, _sym_id; _ } :: xs ->
-      FT.Var_decl { var_id = sym_name } :: gen_dec xs
+    | A.{ id = sym_name, _sym_id; type_; rank } :: xs ->
+      FT.Var_decl { var_id = sym_name; texpr = gen_texpr (Int32.of_int rank) type_ }
+      :: gen_dec xs
   in
   gen_dec xs
 ;;

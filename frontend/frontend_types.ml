@@ -7,7 +7,13 @@ type un_op =
 type bin_op = Plus
 type identifier_p_var = { var_name : string }
 type identifier = Var of identifier_p_var
-type expr_p_var_decl = { var_id : string }
+type type_expr_p_int32 = { rank : int32 }
+type type_expr = Int32_ty of type_expr_p_int32
+
+type expr_p_var_decl =
+  { var_id : string
+  ; texpr : type_expr
+  }
 
 type expr_p_function_app =
   { name : string
@@ -55,7 +61,17 @@ let rec default_identifier_p_var ?(var_name : string = "") () : identifier_p_var
 ;;
 
 let rec default_identifier () : identifier = Var (default_identifier_p_var ())
-let rec default_expr_p_var_decl ?(var_id : string = "") () : expr_p_var_decl = { var_id }
+let rec default_type_expr_p_int32 ?(rank : int32 = 0l) () : type_expr_p_int32 = { rank }
+let rec default_type_expr () : type_expr = Int32_ty (default_type_expr_p_int32 ())
+
+let rec default_expr_p_var_decl
+  ?(var_id : string = "")
+  ?(texpr : type_expr = default_type_expr ())
+  ()
+  : expr_p_var_decl
+  =
+  { var_id; texpr }
+;;
 
 let rec default_expr_p_function_app ?(name : string = "") ?(args : expr list = []) ()
   : expr_p_function_app

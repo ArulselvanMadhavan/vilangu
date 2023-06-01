@@ -14,6 +14,12 @@ val pp_identifier_p_var : Format.formatter -> Frontend_types.identifier_p_var ->
 (** [pp_identifier v] formats v *)
 val pp_identifier : Format.formatter -> Frontend_types.identifier -> unit
 
+(** [pp_type_expr_p_int32 v] formats v *)
+val pp_type_expr_p_int32 : Format.formatter -> Frontend_types.type_expr_p_int32 -> unit
+
+(** [pp_type_expr v] formats v *)
+val pp_type_expr : Format.formatter -> Frontend_types.type_expr -> unit
+
 (** [pp_expr_p_var_decl v] formats v *)
 val pp_expr_p_var_decl : Format.formatter -> Frontend_types.expr_p_var_decl -> unit
 

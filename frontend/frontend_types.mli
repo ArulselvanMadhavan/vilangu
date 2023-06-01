@@ -9,7 +9,13 @@ type un_op =
 type bin_op = Plus
 type identifier_p_var = { var_name : string }
 type identifier = Var of identifier_p_var
-type expr_p_var_decl = { var_id : string }
+type type_expr_p_int32 = { rank : int32 }
+type type_expr = Int32_ty of type_expr_p_int32
+
+type expr_p_var_decl =
+  { var_id : string
+  ; texpr : type_expr
+  }
 
 type expr_p_function_app =
   { name : string
@@ -63,8 +69,18 @@ val default_identifier_p_var : ?var_name:string -> unit -> identifier_p_var
 (** [default_identifier ()] is the default value for type [identifier] *)
 val default_identifier : unit -> identifier
 
+(** [default_type_expr_p_int32 ()] is the default value for type [type_expr_p_int32] *)
+val default_type_expr_p_int32 : ?rank:int32 -> unit -> type_expr_p_int32
+
+(** [default_type_expr ()] is the default value for type [type_expr] *)
+val default_type_expr : unit -> type_expr
+
 (** [default_expr_p_var_decl ()] is the default value for type [expr_p_var_decl] *)
-val default_expr_p_var_decl : ?var_id:string -> unit -> expr_p_var_decl
+val default_expr_p_var_decl
+  :  ?var_id:string
+  -> ?texpr:type_expr
+  -> unit
+  -> expr_p_var_decl
 
 (** [default_expr_p_function_app ()] is the default value for type [expr_p_function_app] *)
 val default_expr_p_function_app

@@ -63,7 +63,6 @@ message Expr {
   message _VarDecl {
     required string var_id = 1;
     required Type_expr texpr = 2;
-    // type + dim info
   }
 
   message _Assign {

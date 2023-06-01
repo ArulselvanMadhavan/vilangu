@@ -4,9 +4,18 @@ type identifier_p_var_mutable = { mutable var_name : string }
 
 let default_identifier_p_var_mutable () : identifier_p_var_mutable = { var_name = "" }
 
-type expr_p_var_decl_mutable = { mutable var_id : string }
+type type_expr_p_int32_mutable = { mutable rank : int32 }
 
-let default_expr_p_var_decl_mutable () : expr_p_var_decl_mutable = { var_id = "" }
+let default_type_expr_p_int32_mutable () : type_expr_p_int32_mutable = { rank = 0l }
+
+type expr_p_var_decl_mutable =
+  { mutable var_id : string
+  ; mutable texpr : Frontend_types.type_expr
+  }
+
+let default_expr_p_var_decl_mutable () : expr_p_var_decl_mutable =
+  { var_id = ""; texpr = Frontend_types.default_type_expr () }
+;;
 
 type expr_p_function_app_mutable =
   { mutable name : string
@@ -135,9 +144,47 @@ let rec decode_identifier d =
   loop ()
 ;;
 
+let rec decode_type_expr_p_int32 d =
+  let v = default_type_expr_p_int32_mutable () in
+  let continue__ = ref true in
+  let rank_is_set = ref false in
+  while !continue__ do
+    match Pbrt.Decoder.key d with
+    | None ->
+      ();
+      continue__ := false
+    | Some (1, Pbrt.Varint) ->
+      v.rank <- Pbrt.Decoder.int32_as_varint d;
+      rank_is_set := true
+    | Some (1, pk) ->
+      Pbrt.Decoder.unexpected_payload "Message(type_expr_p_int32), field(1)" pk
+    | Some (_, payload_kind) -> Pbrt.Decoder.skip d payload_kind
+  done;
+  if not !rank_is_set then Pbrt.Decoder.missing_field "rank";
+  ({ Frontend_types.rank = v.rank } : Frontend_types.type_expr_p_int32)
+;;
+
+let rec decode_type_expr d =
+  let rec loop () =
+    let ret : Frontend_types.type_expr =
+      match Pbrt.Decoder.key d with
+      | None -> Pbrt.Decoder.malformed_variant "type_expr"
+      | Some (1, _) ->
+        (Frontend_types.Int32_ty (decode_type_expr_p_int32 (Pbrt.Decoder.nested d))
+          : Frontend_types.type_expr)
+      | Some (n, payload_kind) ->
+        Pbrt.Decoder.skip d payload_kind;
+        loop ()
+    in
+    ret
+  in
+  loop ()
+;;
+
 let rec decode_expr_p_var_decl d =
   let v = default_expr_p_var_decl_mutable () in
   let continue__ = ref true in
+  let texpr_is_set = ref false in
   let var_id_is_set = ref false in
   while !continue__ do
     match Pbrt.Decoder.key d with
@@ -149,10 +196,17 @@ let rec decode_expr_p_var_decl d =
       var_id_is_set := true
     | Some (1, pk) ->
       Pbrt.Decoder.unexpected_payload "Message(expr_p_var_decl), field(1)" pk
+    | Some (2, Pbrt.Bytes) ->
+      v.texpr <- decode_type_expr (Pbrt.Decoder.nested d);
+      texpr_is_set := true
+    | Some (2, pk) ->
+      Pbrt.Decoder.unexpected_payload "Message(expr_p_var_decl), field(2)" pk
     | Some (_, payload_kind) -> Pbrt.Decoder.skip d payload_kind
   done;
+  if not !texpr_is_set then Pbrt.Decoder.missing_field "texpr";
   if not !var_id_is_set then Pbrt.Decoder.missing_field "var_id";
-  ({ Frontend_types.var_id = v.var_id } : Frontend_types.expr_p_var_decl)
+  ({ Frontend_types.var_id = v.var_id; Frontend_types.texpr = v.texpr }
+    : Frontend_types.expr_p_var_decl)
 ;;
 
 let rec decode_expr_p_function_app d =
@@ -369,9 +423,24 @@ let rec encode_identifier (v : Frontend_types.identifier) encoder =
     Pbrt.Encoder.nested (encode_identifier_p_var x) encoder
 ;;
 
+let rec encode_type_expr_p_int32 (v : Frontend_types.type_expr_p_int32) encoder =
+  Pbrt.Encoder.key (1, Pbrt.Varint) encoder;
+  Pbrt.Encoder.int32_as_varint v.Frontend_types.rank encoder;
+  ()
+;;
+
+let rec encode_type_expr (v : Frontend_types.type_expr) encoder =
+  match v with
+  | Frontend_types.Int32_ty x ->
+    Pbrt.Encoder.key (1, Pbrt.Bytes) encoder;
+    Pbrt.Encoder.nested (encode_type_expr_p_int32 x) encoder
+;;
+
 let rec encode_expr_p_var_decl (v : Frontend_types.expr_p_var_decl) encoder =
   Pbrt.Encoder.key (1, Pbrt.Bytes) encoder;
   Pbrt.Encoder.string v.Frontend_types.var_id encoder;
+  Pbrt.Encoder.key (2, Pbrt.Bytes) encoder;
+  Pbrt.Encoder.nested (encode_type_expr v.Frontend_types.texpr) encoder;
   ()
 ;;
 
