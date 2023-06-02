@@ -2,7 +2,6 @@
 #include "frontend.pb.h"
 #include "tlang/Deserializer/Ir_visitor.h"
 #include "tlang/Deserializer/Type_ir.h"
-#include "tlang/Deserializer/frontend.pb.h"
 #include "llvm/IR/Value.h"
 #include "llvm/Support/raw_ostream.h"
 #include <memory>
@@ -26,6 +25,8 @@ enum BinOp deserializeBinOp(const Frontend_ir::Bin_op &op) {
     return BinOp::BinOpPlus;
   case Frontend_ir::Bin_op::kEquals:
     return BinOp::BinOpEquals;
+  case Frontend_ir::Bin_op::kLessthan:
+    return BinOp::BinOpLessThan;
   default:
     llvm::outs() << "Unmatched unary op\n";
     return BinOp::BinOpPlus;
@@ -86,6 +87,8 @@ std::unique_ptr<ExprIR> deserializeExpr(const Frontend_ir::Expr &expr) {
     return std::unique_ptr<ExprIR>(new ExprIfElseIR(expr.ifexpr()));
   case Frontend_ir::Expr::kBlockExpr:
     return std::unique_ptr<ExprBlockIR>(new ExprBlockIR(expr.blockexpr()));
+  case Frontend_ir::Expr::kWhileExpr:
+    return std::unique_ptr<ExprWhileIR>(new ExprWhileIR(expr.whileexpr()));
   default:
     // FIXME
     return std::unique_ptr<ExprIR>(new ExprIntegerIR(-1));
@@ -125,6 +128,11 @@ ExprIfElseIR::ExprIfElseIR(const Frontend_ir::Expr::_If_expr &expr) {
   condExpr = deserializeExpr(expr.eval());
   thenExpr = deserializeExpr(expr.if_expr());
   elseExpr = deserializeExpr(expr.else_expr());
+}
+
+ExprWhileIR::ExprWhileIR(const Frontend_ir::Expr::_While_expr &expr) {
+  condExpr = deserializeExpr(expr.while_cond());
+  loopExpr = deserializeExpr(expr.while_block());
 }
 // Codegen impl
 
@@ -169,5 +177,9 @@ llvm::Value *ExprBlockIR::codegen(IRVisitor &visitor) {
 }
 
 llvm::Value *ExprIfElseIR::codegen(IRVisitor &visitor) {
+  return visitor.codegen(*this);
+}
+
+llvm::Value *ExprWhileIR::codegen(IRVisitor &visitor) {
   return visitor.codegen(*this);
 }

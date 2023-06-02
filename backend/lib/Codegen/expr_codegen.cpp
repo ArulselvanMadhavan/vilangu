@@ -81,6 +81,8 @@ llvm::Value *IRCodegenVisitor::codegen(const ExprBinOpIR &expr) {
     return builder->CreateAdd(lexpr, rexpr, "add");
   case BinOpEquals:
     return builder->CreateICmpEQ(lexpr, rexpr, "equal");
+  case BinOpLessThan:
+    return builder->CreateICmpSLT(lexpr, rexpr, "signedLessThan");
   }
 }
 
@@ -187,4 +189,37 @@ llvm::Value *IRCodegenVisitor::codegen(const ExprIfElseIR &expr){
   phiNode->addIncoming(thenVal, thenBB);
   phiNode->addIncoming(elseVal, elseBB);
   return phiNode;
+}
+
+llvm::Value *IRCodegenVisitor::codegen(const ExprWhileIR &expr) {
+  llvm::Value *condValue = expr.condExpr->codegen(*this);
+  if(condValue == nullptr){
+    llvm::outs() << "Null condition expr for while statement";
+    return nullptr;
+  }
+  llvm::Function *parentFunc = builder->GetInsertBlock()->getParent();
+
+  // BB
+  llvm::BasicBlock *loopBB = llvm::BasicBlock::Create(*context, "loop");
+  llvm::BasicBlock *loopEndBB = llvm::BasicBlock::Create(*context, "loopend");
+
+  builder->CreateCondBr(condValue, loopBB, loopEndBB);
+
+  // loopBB
+  parentFunc->getBasicBlockList().push_back(loopBB);
+  builder->SetInsertPoint(loopBB);
+  expr.loopExpr->codegen(*this);
+
+  condValue = expr.condExpr->codegen(*this);
+  if(condValue == nullptr){
+    llvm::outs() << "Null condition expr for while statement";
+    return nullptr;
+  }  
+  loopBB = builder->GetInsertBlock();
+  builder->CreateCondBr(condValue, loopBB, loopEndBB);
+
+  parentFunc->getBasicBlockList().push_back(loopEndBB);
+  builder->SetInsertPoint(loopEndBB);
+
+  return llvm::Constant::getNullValue(llvm::Type::getInt32Ty(*context));
 }

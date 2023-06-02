@@ -39,6 +39,7 @@ public:
   virtual llvm::Value *codegen(const IdentifierVarIR &expr) override;
   virtual llvm::Value *codegen(const ExprBlockIR &expr) override;
   virtual llvm::Value *codegen(const ExprIfElseIR &expr) override;
+  virtual llvm::Value *codegen(const ExprWhileIR &expr) override;
   virtual llvm::Type *codegen(const TypeIntIR &texpr) override;
 };
 #endif

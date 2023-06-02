@@ -47,7 +47,7 @@ struct TableStruct_frontend_2eproto {
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::AuxillaryParseTableField aux[]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
-  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[20]
+  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[22]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::FieldMetadata field_metadata[];
   static const ::PROTOBUF_NAMESPACE_ID::internal::SerializationTable serialization_table[];
@@ -61,6 +61,9 @@ extern Bin_opDefaultTypeInternal _Bin_op_default_instance_;
 class Bin_op__EqualsOp;
 class Bin_op__EqualsOpDefaultTypeInternal;
 extern Bin_op__EqualsOpDefaultTypeInternal _Bin_op__EqualsOp_default_instance_;
+class Bin_op__LessThanOp;
+class Bin_op__LessThanOpDefaultTypeInternal;
+extern Bin_op__LessThanOpDefaultTypeInternal _Bin_op__LessThanOp_default_instance_;
 class Bin_op__PlusOp;
 class Bin_op__PlusOpDefaultTypeInternal;
 extern Bin_op__PlusOpDefaultTypeInternal _Bin_op__PlusOp_default_instance_;
@@ -91,6 +94,9 @@ extern Expr__UnopDefaultTypeInternal _Expr__Unop_default_instance_;
 class Expr__VarDecl;
 class Expr__VarDeclDefaultTypeInternal;
 extern Expr__VarDeclDefaultTypeInternal _Expr__VarDecl_default_instance_;
+class Expr__While_expr;
+class Expr__While_exprDefaultTypeInternal;
+extern Expr__While_exprDefaultTypeInternal _Expr__While_expr_default_instance_;
 class Identifier;
 class IdentifierDefaultTypeInternal;
 extern IdentifierDefaultTypeInternal _Identifier_default_instance_;
@@ -119,6 +125,7 @@ extern Un_op__NotOpDefaultTypeInternal _Un_op__NotOp_default_instance_;
 PROTOBUF_NAMESPACE_OPEN
 template<> ::Frontend_ir::Bin_op* Arena::CreateMaybeMessage<::Frontend_ir::Bin_op>(Arena*);
 template<> ::Frontend_ir::Bin_op__EqualsOp* Arena::CreateMaybeMessage<::Frontend_ir::Bin_op__EqualsOp>(Arena*);
+template<> ::Frontend_ir::Bin_op__LessThanOp* Arena::CreateMaybeMessage<::Frontend_ir::Bin_op__LessThanOp>(Arena*);
 template<> ::Frontend_ir::Bin_op__PlusOp* Arena::CreateMaybeMessage<::Frontend_ir::Bin_op__PlusOp>(Arena*);
 template<> ::Frontend_ir::Expr* Arena::CreateMaybeMessage<::Frontend_ir::Expr>(Arena*);
 template<> ::Frontend_ir::Expr__Assign* Arena::CreateMaybeMessage<::Frontend_ir::Expr__Assign>(Arena*);
@@ -129,6 +136,7 @@ template<> ::Frontend_ir::Expr__If_expr* Arena::CreateMaybeMessage<::Frontend_ir
 template<> ::Frontend_ir::Expr__Printf* Arena::CreateMaybeMessage<::Frontend_ir::Expr__Printf>(Arena*);
 template<> ::Frontend_ir::Expr__Unop* Arena::CreateMaybeMessage<::Frontend_ir::Expr__Unop>(Arena*);
 template<> ::Frontend_ir::Expr__VarDecl* Arena::CreateMaybeMessage<::Frontend_ir::Expr__VarDecl>(Arena*);
+template<> ::Frontend_ir::Expr__While_expr* Arena::CreateMaybeMessage<::Frontend_ir::Expr__While_expr>(Arena*);
 template<> ::Frontend_ir::Identifier* Arena::CreateMaybeMessage<::Frontend_ir::Identifier>(Arena*);
 template<> ::Frontend_ir::Identifier__Var* Arena::CreateMaybeMessage<::Frontend_ir::Identifier__Var>(Arena*);
 template<> ::Frontend_ir::Program* Arena::CreateMaybeMessage<::Frontend_ir::Program>(Arena*);
@@ -860,6 +868,137 @@ class Bin_op__EqualsOp PROTOBUF_FINAL :
 };
 // -------------------------------------------------------------------
 
+class Bin_op__LessThanOp PROTOBUF_FINAL :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:Frontend_ir.Bin_op._LessThanOp) */ {
+ public:
+  inline Bin_op__LessThanOp() : Bin_op__LessThanOp(nullptr) {};
+  virtual ~Bin_op__LessThanOp();
+
+  Bin_op__LessThanOp(const Bin_op__LessThanOp& from);
+  Bin_op__LessThanOp(Bin_op__LessThanOp&& from) noexcept
+    : Bin_op__LessThanOp() {
+    *this = ::std::move(from);
+  }
+
+  inline Bin_op__LessThanOp& operator=(const Bin_op__LessThanOp& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline Bin_op__LessThanOp& operator=(Bin_op__LessThanOp&& from) noexcept {
+    if (GetArena() == from.GetArena()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  inline const ::PROTOBUF_NAMESPACE_ID::UnknownFieldSet& unknown_fields() const {
+    return _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance);
+  }
+  inline ::PROTOBUF_NAMESPACE_ID::UnknownFieldSet* mutable_unknown_fields() {
+    return _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const Bin_op__LessThanOp& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const Bin_op__LessThanOp* internal_default_instance() {
+    return reinterpret_cast<const Bin_op__LessThanOp*>(
+               &_Bin_op__LessThanOp_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    5;
+
+  friend void swap(Bin_op__LessThanOp& a, Bin_op__LessThanOp& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(Bin_op__LessThanOp* other) {
+    if (other == this) return;
+    if (GetArena() == other->GetArena()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(Bin_op__LessThanOp* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArena() == other->GetArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline Bin_op__LessThanOp* New() const final {
+    return CreateMaybeMessage<Bin_op__LessThanOp>(nullptr);
+  }
+
+  Bin_op__LessThanOp* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<Bin_op__LessThanOp>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const Bin_op__LessThanOp& from);
+  void MergeFrom(const Bin_op__LessThanOp& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(Bin_op__LessThanOp* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "Frontend_ir.Bin_op._LessThanOp";
+  }
+  protected:
+  explicit Bin_op__LessThanOp(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  private:
+  static void ArenaDtor(void* object);
+  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_frontend_2eproto);
+    return ::descriptor_table_frontend_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // @@protoc_insertion_point(class_scope:Frontend_ir.Bin_op._LessThanOp)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  friend struct ::TableStruct_frontend_2eproto;
+};
+// -------------------------------------------------------------------
+
 class Bin_op PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:Frontend_ir.Bin_op) */ {
  public:
@@ -906,6 +1045,7 @@ class Bin_op PROTOBUF_FINAL :
   enum ValueCase {
     kPlus = 1,
     kEquals = 2,
+    kLessthan = 3,
     VALUE_NOT_SET = 0,
   };
 
@@ -915,7 +1055,7 @@ class Bin_op PROTOBUF_FINAL :
                &_Bin_op_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    5;
+    6;
 
   friend void swap(Bin_op& a, Bin_op& b) {
     a.Swap(&b);
@@ -985,12 +1125,14 @@ class Bin_op PROTOBUF_FINAL :
 
   typedef Bin_op__PlusOp _PlusOp;
   typedef Bin_op__EqualsOp _EqualsOp;
+  typedef Bin_op__LessThanOp _LessThanOp;
 
   // accessors -------------------------------------------------------
 
   enum : int {
     kPlusFieldNumber = 1,
     kEqualsFieldNumber = 2,
+    kLessthanFieldNumber = 3,
   };
   // .Frontend_ir.Bin_op._PlusOp plus = 1;
   bool has_plus() const;
@@ -1028,6 +1170,24 @@ class Bin_op PROTOBUF_FINAL :
       ::Frontend_ir::Bin_op__EqualsOp* equals);
   ::Frontend_ir::Bin_op__EqualsOp* unsafe_arena_release_equals();
 
+  // .Frontend_ir.Bin_op._LessThanOp lessthan = 3;
+  bool has_lessthan() const;
+  private:
+  bool _internal_has_lessthan() const;
+  public:
+  void clear_lessthan();
+  const ::Frontend_ir::Bin_op__LessThanOp& lessthan() const;
+  ::Frontend_ir::Bin_op__LessThanOp* release_lessthan();
+  ::Frontend_ir::Bin_op__LessThanOp* mutable_lessthan();
+  void set_allocated_lessthan(::Frontend_ir::Bin_op__LessThanOp* lessthan);
+  private:
+  const ::Frontend_ir::Bin_op__LessThanOp& _internal_lessthan() const;
+  ::Frontend_ir::Bin_op__LessThanOp* _internal_mutable_lessthan();
+  public:
+  void unsafe_arena_set_allocated_lessthan(
+      ::Frontend_ir::Bin_op__LessThanOp* lessthan);
+  ::Frontend_ir::Bin_op__LessThanOp* unsafe_arena_release_lessthan();
+
   void clear_value();
   ValueCase value_case() const;
   // @@protoc_insertion_point(class_scope:Frontend_ir.Bin_op)
@@ -1035,6 +1195,7 @@ class Bin_op PROTOBUF_FINAL :
   class _Internal;
   void set_has_plus();
   void set_has_equals();
+  void set_has_lessthan();
 
   inline bool has_value() const;
   inline void clear_has_value();
@@ -1046,6 +1207,7 @@ class Bin_op PROTOBUF_FINAL :
     ValueUnion() {}
     ::Frontend_ir::Bin_op__PlusOp* plus_;
     ::Frontend_ir::Bin_op__EqualsOp* equals_;
+    ::Frontend_ir::Bin_op__LessThanOp* lessthan_;
   } value_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   ::PROTOBUF_NAMESPACE_ID::uint32 _oneof_case_[1];
@@ -1103,7 +1265,7 @@ class Identifier__Var PROTOBUF_FINAL :
                &_Identifier__Var_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    6;
+    7;
 
   friend void swap(Identifier__Var& a, Identifier__Var& b) {
     a.Swap(&b);
@@ -1273,7 +1435,7 @@ class Identifier PROTOBUF_FINAL :
                &_Identifier_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    7;
+    8;
 
   friend void swap(Identifier& a, Identifier& b) {
     a.Swap(&b);
@@ -1439,7 +1601,7 @@ class Type_expr__RankedType PROTOBUF_FINAL :
                &_Type_expr__RankedType_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    8;
+    9;
 
   friend void swap(Type_expr__RankedType& a, Type_expr__RankedType& b) {
     a.Swap(&b);
@@ -1593,7 +1755,7 @@ class Type_expr PROTOBUF_FINAL :
                &_Type_expr_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    9;
+    10;
 
   friend void swap(Type_expr& a, Type_expr& b) {
     a.Swap(&b);
@@ -1759,7 +1921,7 @@ class Expr__FunctionApp PROTOBUF_FINAL :
                &_Expr__FunctionApp_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    10;
+    11;
 
   friend void swap(Expr__FunctionApp& a, Expr__FunctionApp& b) {
     a.Swap(&b);
@@ -1944,7 +2106,7 @@ class Expr__Printf PROTOBUF_FINAL :
                &_Expr__Printf_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    11;
+    12;
 
   friend void swap(Expr__Printf& a, Expr__Printf& b) {
     a.Swap(&b);
@@ -2129,7 +2291,7 @@ class Expr__Unop PROTOBUF_FINAL :
                &_Expr__Unop_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    12;
+    13;
 
   friend void swap(Expr__Unop& a, Expr__Unop& b) {
     a.Swap(&b);
@@ -2306,7 +2468,7 @@ class Expr__Binop PROTOBUF_FINAL :
                &_Expr__Binop_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    13;
+    14;
 
   friend void swap(Expr__Binop& a, Expr__Binop& b) {
     a.Swap(&b);
@@ -2503,7 +2665,7 @@ class Expr__VarDecl PROTOBUF_FINAL :
                &_Expr__VarDecl_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    14;
+    15;
 
   friend void swap(Expr__VarDecl& a, Expr__VarDecl& b) {
     a.Swap(&b);
@@ -2691,7 +2853,7 @@ class Expr__Assign PROTOBUF_FINAL :
                &_Expr__Assign_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    15;
+    16;
 
   friend void swap(Expr__Assign& a, Expr__Assign& b) {
     a.Swap(&b);
@@ -2868,7 +3030,7 @@ class Expr__If_expr PROTOBUF_FINAL :
                &_Expr__If_expr_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    16;
+    17;
 
   friend void swap(Expr__If_expr& a, Expr__If_expr& b) {
     a.Swap(&b);
@@ -3065,7 +3227,7 @@ class Expr__Block PROTOBUF_FINAL :
                &_Expr__Block_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    17;
+    18;
 
   friend void swap(Expr__Block& a, Expr__Block& b) {
     a.Swap(&b);
@@ -3169,6 +3331,183 @@ class Expr__Block PROTOBUF_FINAL :
 };
 // -------------------------------------------------------------------
 
+class Expr__While_expr PROTOBUF_FINAL :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:Frontend_ir.Expr._While_expr) */ {
+ public:
+  inline Expr__While_expr() : Expr__While_expr(nullptr) {};
+  virtual ~Expr__While_expr();
+
+  Expr__While_expr(const Expr__While_expr& from);
+  Expr__While_expr(Expr__While_expr&& from) noexcept
+    : Expr__While_expr() {
+    *this = ::std::move(from);
+  }
+
+  inline Expr__While_expr& operator=(const Expr__While_expr& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline Expr__While_expr& operator=(Expr__While_expr&& from) noexcept {
+    if (GetArena() == from.GetArena()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  inline const ::PROTOBUF_NAMESPACE_ID::UnknownFieldSet& unknown_fields() const {
+    return _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance);
+  }
+  inline ::PROTOBUF_NAMESPACE_ID::UnknownFieldSet* mutable_unknown_fields() {
+    return _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const Expr__While_expr& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const Expr__While_expr* internal_default_instance() {
+    return reinterpret_cast<const Expr__While_expr*>(
+               &_Expr__While_expr_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    19;
+
+  friend void swap(Expr__While_expr& a, Expr__While_expr& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(Expr__While_expr* other) {
+    if (other == this) return;
+    if (GetArena() == other->GetArena()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(Expr__While_expr* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArena() == other->GetArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline Expr__While_expr* New() const final {
+    return CreateMaybeMessage<Expr__While_expr>(nullptr);
+  }
+
+  Expr__While_expr* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<Expr__While_expr>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const Expr__While_expr& from);
+  void MergeFrom(const Expr__While_expr& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(Expr__While_expr* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "Frontend_ir.Expr._While_expr";
+  }
+  protected:
+  explicit Expr__While_expr(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  private:
+  static void ArenaDtor(void* object);
+  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_frontend_2eproto);
+    return ::descriptor_table_frontend_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kWhileCondFieldNumber = 1,
+    kWhileBlockFieldNumber = 2,
+  };
+  // required .Frontend_ir.Expr while_cond = 1;
+  bool has_while_cond() const;
+  private:
+  bool _internal_has_while_cond() const;
+  public:
+  void clear_while_cond();
+  const ::Frontend_ir::Expr& while_cond() const;
+  ::Frontend_ir::Expr* release_while_cond();
+  ::Frontend_ir::Expr* mutable_while_cond();
+  void set_allocated_while_cond(::Frontend_ir::Expr* while_cond);
+  private:
+  const ::Frontend_ir::Expr& _internal_while_cond() const;
+  ::Frontend_ir::Expr* _internal_mutable_while_cond();
+  public:
+  void unsafe_arena_set_allocated_while_cond(
+      ::Frontend_ir::Expr* while_cond);
+  ::Frontend_ir::Expr* unsafe_arena_release_while_cond();
+
+  // required .Frontend_ir.Expr while_block = 2;
+  bool has_while_block() const;
+  private:
+  bool _internal_has_while_block() const;
+  public:
+  void clear_while_block();
+  const ::Frontend_ir::Expr& while_block() const;
+  ::Frontend_ir::Expr* release_while_block();
+  ::Frontend_ir::Expr* mutable_while_block();
+  void set_allocated_while_block(::Frontend_ir::Expr* while_block);
+  private:
+  const ::Frontend_ir::Expr& _internal_while_block() const;
+  ::Frontend_ir::Expr* _internal_mutable_while_block();
+  public:
+  void unsafe_arena_set_allocated_while_block(
+      ::Frontend_ir::Expr* while_block);
+  ::Frontend_ir::Expr* unsafe_arena_release_while_block();
+
+  // @@protoc_insertion_point(class_scope:Frontend_ir.Expr._While_expr)
+ private:
+  class _Internal;
+
+  // helper for ByteSizeLong()
+  size_t RequiredFieldsByteSizeFallback() const;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  ::PROTOBUF_NAMESPACE_ID::internal::HasBits<1> _has_bits_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  ::Frontend_ir::Expr* while_cond_;
+  ::Frontend_ir::Expr* while_block_;
+  friend struct ::TableStruct_frontend_2eproto;
+};
+// -------------------------------------------------------------------
+
 class Expr PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:Frontend_ir.Expr) */ {
  public:
@@ -3223,6 +3562,7 @@ class Expr PROTOBUF_FINAL :
     kExprId = 8,
     kIfExpr = 9,
     kBlockExpr = 10,
+    kWhileExpr = 11,
     VALUE_NOT_SET = 0,
   };
 
@@ -3232,7 +3572,7 @@ class Expr PROTOBUF_FINAL :
                &_Expr_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    18;
+    20;
 
   friend void swap(Expr& a, Expr& b) {
     a.Swap(&b);
@@ -3308,6 +3648,7 @@ class Expr PROTOBUF_FINAL :
   typedef Expr__Assign _Assign;
   typedef Expr__If_expr _If_expr;
   typedef Expr__Block _Block;
+  typedef Expr__While_expr _While_expr;
 
   // accessors -------------------------------------------------------
 
@@ -3322,6 +3663,7 @@ class Expr PROTOBUF_FINAL :
     kExprIdFieldNumber = 8,
     kIfExprFieldNumber = 9,
     kBlockExprFieldNumber = 10,
+    kWhileExprFieldNumber = 11,
   };
   // int32 Integer = 1;
   bool has_integer() const;
@@ -3498,6 +3840,24 @@ class Expr PROTOBUF_FINAL :
       ::Frontend_ir::Expr__Block* blockexpr);
   ::Frontend_ir::Expr__Block* unsafe_arena_release_blockexpr();
 
+  // .Frontend_ir.Expr._While_expr WhileExpr = 11;
+  bool has_whileexpr() const;
+  private:
+  bool _internal_has_whileexpr() const;
+  public:
+  void clear_whileexpr();
+  const ::Frontend_ir::Expr__While_expr& whileexpr() const;
+  ::Frontend_ir::Expr__While_expr* release_whileexpr();
+  ::Frontend_ir::Expr__While_expr* mutable_whileexpr();
+  void set_allocated_whileexpr(::Frontend_ir::Expr__While_expr* whileexpr);
+  private:
+  const ::Frontend_ir::Expr__While_expr& _internal_whileexpr() const;
+  ::Frontend_ir::Expr__While_expr* _internal_mutable_whileexpr();
+  public:
+  void unsafe_arena_set_allocated_whileexpr(
+      ::Frontend_ir::Expr__While_expr* whileexpr);
+  ::Frontend_ir::Expr__While_expr* unsafe_arena_release_whileexpr();
+
   void clear_value();
   ValueCase value_case() const;
   // @@protoc_insertion_point(class_scope:Frontend_ir.Expr)
@@ -3513,6 +3873,7 @@ class Expr PROTOBUF_FINAL :
   void set_has_exprid();
   void set_has_ifexpr();
   void set_has_blockexpr();
+  void set_has_whileexpr();
 
   inline bool has_value() const;
   inline void clear_has_value();
@@ -3532,6 +3893,7 @@ class Expr PROTOBUF_FINAL :
     ::Frontend_ir::Identifier* exprid_;
     ::Frontend_ir::Expr__If_expr* ifexpr_;
     ::Frontend_ir::Expr__Block* blockexpr_;
+    ::Frontend_ir::Expr__While_expr* whileexpr_;
   } value_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   ::PROTOBUF_NAMESPACE_ID::uint32 _oneof_case_[1];
@@ -3589,7 +3951,7 @@ class Program PROTOBUF_FINAL :
                &_Program_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    19;
+    21;
 
   friend void swap(Program& a, Program& b) {
     a.Swap(&b);
@@ -3875,6 +4237,10 @@ inline Un_op::ValueCase Un_op::value_case() const {
 
 // -------------------------------------------------------------------
 
+// Bin_op__LessThanOp
+
+// -------------------------------------------------------------------
+
 // Bin_op
 
 // .Frontend_ir.Bin_op._PlusOp plus = 1;
@@ -4021,6 +4387,79 @@ inline ::Frontend_ir::Bin_op__EqualsOp* Bin_op::_internal_mutable_equals() {
 inline ::Frontend_ir::Bin_op__EqualsOp* Bin_op::mutable_equals() {
   // @@protoc_insertion_point(field_mutable:Frontend_ir.Bin_op.equals)
   return _internal_mutable_equals();
+}
+
+// .Frontend_ir.Bin_op._LessThanOp lessthan = 3;
+inline bool Bin_op::_internal_has_lessthan() const {
+  return value_case() == kLessthan;
+}
+inline bool Bin_op::has_lessthan() const {
+  return _internal_has_lessthan();
+}
+inline void Bin_op::set_has_lessthan() {
+  _oneof_case_[0] = kLessthan;
+}
+inline void Bin_op::clear_lessthan() {
+  if (_internal_has_lessthan()) {
+    if (GetArena() == nullptr) {
+      delete value_.lessthan_;
+    }
+    clear_has_value();
+  }
+}
+inline ::Frontend_ir::Bin_op__LessThanOp* Bin_op::release_lessthan() {
+  // @@protoc_insertion_point(field_release:Frontend_ir.Bin_op.lessthan)
+  if (_internal_has_lessthan()) {
+    clear_has_value();
+      ::Frontend_ir::Bin_op__LessThanOp* temp = value_.lessthan_;
+    if (GetArena() != nullptr) {
+      temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+    }
+    value_.lessthan_ = nullptr;
+    return temp;
+  } else {
+    return nullptr;
+  }
+}
+inline const ::Frontend_ir::Bin_op__LessThanOp& Bin_op::_internal_lessthan() const {
+  return _internal_has_lessthan()
+      ? *value_.lessthan_
+      : *reinterpret_cast< ::Frontend_ir::Bin_op__LessThanOp*>(&::Frontend_ir::_Bin_op__LessThanOp_default_instance_);
+}
+inline const ::Frontend_ir::Bin_op__LessThanOp& Bin_op::lessthan() const {
+  // @@protoc_insertion_point(field_get:Frontend_ir.Bin_op.lessthan)
+  return _internal_lessthan();
+}
+inline ::Frontend_ir::Bin_op__LessThanOp* Bin_op::unsafe_arena_release_lessthan() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:Frontend_ir.Bin_op.lessthan)
+  if (_internal_has_lessthan()) {
+    clear_has_value();
+    ::Frontend_ir::Bin_op__LessThanOp* temp = value_.lessthan_;
+    value_.lessthan_ = nullptr;
+    return temp;
+  } else {
+    return nullptr;
+  }
+}
+inline void Bin_op::unsafe_arena_set_allocated_lessthan(::Frontend_ir::Bin_op__LessThanOp* lessthan) {
+  clear_value();
+  if (lessthan) {
+    set_has_lessthan();
+    value_.lessthan_ = lessthan;
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:Frontend_ir.Bin_op.lessthan)
+}
+inline ::Frontend_ir::Bin_op__LessThanOp* Bin_op::_internal_mutable_lessthan() {
+  if (!_internal_has_lessthan()) {
+    clear_value();
+    set_has_lessthan();
+    value_.lessthan_ = CreateMaybeMessage< ::Frontend_ir::Bin_op__LessThanOp >(GetArena());
+  }
+  return value_.lessthan_;
+}
+inline ::Frontend_ir::Bin_op__LessThanOp* Bin_op::mutable_lessthan() {
+  // @@protoc_insertion_point(field_mutable:Frontend_ir.Bin_op.lessthan)
+  return _internal_mutable_lessthan();
 }
 
 inline bool Bin_op::has_value() const {
@@ -5654,6 +6093,172 @@ Expr__Block::expr_list() const {
 
 // -------------------------------------------------------------------
 
+// Expr__While_expr
+
+// required .Frontend_ir.Expr while_cond = 1;
+inline bool Expr__While_expr::_internal_has_while_cond() const {
+  bool value = (_has_bits_[0] & 0x00000001u) != 0;
+  PROTOBUF_ASSUME(!value || while_cond_ != nullptr);
+  return value;
+}
+inline bool Expr__While_expr::has_while_cond() const {
+  return _internal_has_while_cond();
+}
+inline void Expr__While_expr::clear_while_cond() {
+  if (while_cond_ != nullptr) while_cond_->Clear();
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline const ::Frontend_ir::Expr& Expr__While_expr::_internal_while_cond() const {
+  const ::Frontend_ir::Expr* p = while_cond_;
+  return p != nullptr ? *p : *reinterpret_cast<const ::Frontend_ir::Expr*>(
+      &::Frontend_ir::_Expr_default_instance_);
+}
+inline const ::Frontend_ir::Expr& Expr__While_expr::while_cond() const {
+  // @@protoc_insertion_point(field_get:Frontend_ir.Expr._While_expr.while_cond)
+  return _internal_while_cond();
+}
+inline void Expr__While_expr::unsafe_arena_set_allocated_while_cond(
+    ::Frontend_ir::Expr* while_cond) {
+  if (GetArena() == nullptr) {
+    delete reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(while_cond_);
+  }
+  while_cond_ = while_cond;
+  if (while_cond) {
+    _has_bits_[0] |= 0x00000001u;
+  } else {
+    _has_bits_[0] &= ~0x00000001u;
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:Frontend_ir.Expr._While_expr.while_cond)
+}
+inline ::Frontend_ir::Expr* Expr__While_expr::release_while_cond() {
+  auto temp = unsafe_arena_release_while_cond();
+  if (GetArena() != nullptr) {
+    temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  }
+  return temp;
+}
+inline ::Frontend_ir::Expr* Expr__While_expr::unsafe_arena_release_while_cond() {
+  // @@protoc_insertion_point(field_release:Frontend_ir.Expr._While_expr.while_cond)
+  _has_bits_[0] &= ~0x00000001u;
+  ::Frontend_ir::Expr* temp = while_cond_;
+  while_cond_ = nullptr;
+  return temp;
+}
+inline ::Frontend_ir::Expr* Expr__While_expr::_internal_mutable_while_cond() {
+  _has_bits_[0] |= 0x00000001u;
+  if (while_cond_ == nullptr) {
+    auto* p = CreateMaybeMessage<::Frontend_ir::Expr>(GetArena());
+    while_cond_ = p;
+  }
+  return while_cond_;
+}
+inline ::Frontend_ir::Expr* Expr__While_expr::mutable_while_cond() {
+  // @@protoc_insertion_point(field_mutable:Frontend_ir.Expr._While_expr.while_cond)
+  return _internal_mutable_while_cond();
+}
+inline void Expr__While_expr::set_allocated_while_cond(::Frontend_ir::Expr* while_cond) {
+  ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArena();
+  if (message_arena == nullptr) {
+    delete while_cond_;
+  }
+  if (while_cond) {
+    ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena =
+      ::PROTOBUF_NAMESPACE_ID::Arena::GetArena(while_cond);
+    if (message_arena != submessage_arena) {
+      while_cond = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
+          message_arena, while_cond, submessage_arena);
+    }
+    _has_bits_[0] |= 0x00000001u;
+  } else {
+    _has_bits_[0] &= ~0x00000001u;
+  }
+  while_cond_ = while_cond;
+  // @@protoc_insertion_point(field_set_allocated:Frontend_ir.Expr._While_expr.while_cond)
+}
+
+// required .Frontend_ir.Expr while_block = 2;
+inline bool Expr__While_expr::_internal_has_while_block() const {
+  bool value = (_has_bits_[0] & 0x00000002u) != 0;
+  PROTOBUF_ASSUME(!value || while_block_ != nullptr);
+  return value;
+}
+inline bool Expr__While_expr::has_while_block() const {
+  return _internal_has_while_block();
+}
+inline void Expr__While_expr::clear_while_block() {
+  if (while_block_ != nullptr) while_block_->Clear();
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline const ::Frontend_ir::Expr& Expr__While_expr::_internal_while_block() const {
+  const ::Frontend_ir::Expr* p = while_block_;
+  return p != nullptr ? *p : *reinterpret_cast<const ::Frontend_ir::Expr*>(
+      &::Frontend_ir::_Expr_default_instance_);
+}
+inline const ::Frontend_ir::Expr& Expr__While_expr::while_block() const {
+  // @@protoc_insertion_point(field_get:Frontend_ir.Expr._While_expr.while_block)
+  return _internal_while_block();
+}
+inline void Expr__While_expr::unsafe_arena_set_allocated_while_block(
+    ::Frontend_ir::Expr* while_block) {
+  if (GetArena() == nullptr) {
+    delete reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(while_block_);
+  }
+  while_block_ = while_block;
+  if (while_block) {
+    _has_bits_[0] |= 0x00000002u;
+  } else {
+    _has_bits_[0] &= ~0x00000002u;
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:Frontend_ir.Expr._While_expr.while_block)
+}
+inline ::Frontend_ir::Expr* Expr__While_expr::release_while_block() {
+  auto temp = unsafe_arena_release_while_block();
+  if (GetArena() != nullptr) {
+    temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  }
+  return temp;
+}
+inline ::Frontend_ir::Expr* Expr__While_expr::unsafe_arena_release_while_block() {
+  // @@protoc_insertion_point(field_release:Frontend_ir.Expr._While_expr.while_block)
+  _has_bits_[0] &= ~0x00000002u;
+  ::Frontend_ir::Expr* temp = while_block_;
+  while_block_ = nullptr;
+  return temp;
+}
+inline ::Frontend_ir::Expr* Expr__While_expr::_internal_mutable_while_block() {
+  _has_bits_[0] |= 0x00000002u;
+  if (while_block_ == nullptr) {
+    auto* p = CreateMaybeMessage<::Frontend_ir::Expr>(GetArena());
+    while_block_ = p;
+  }
+  return while_block_;
+}
+inline ::Frontend_ir::Expr* Expr__While_expr::mutable_while_block() {
+  // @@protoc_insertion_point(field_mutable:Frontend_ir.Expr._While_expr.while_block)
+  return _internal_mutable_while_block();
+}
+inline void Expr__While_expr::set_allocated_while_block(::Frontend_ir::Expr* while_block) {
+  ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArena();
+  if (message_arena == nullptr) {
+    delete while_block_;
+  }
+  if (while_block) {
+    ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena =
+      ::PROTOBUF_NAMESPACE_ID::Arena::GetArena(while_block);
+    if (message_arena != submessage_arena) {
+      while_block = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
+          message_arena, while_block, submessage_arena);
+    }
+    _has_bits_[0] |= 0x00000002u;
+  } else {
+    _has_bits_[0] &= ~0x00000002u;
+  }
+  while_block_ = while_block;
+  // @@protoc_insertion_point(field_set_allocated:Frontend_ir.Expr._While_expr.while_block)
+}
+
+// -------------------------------------------------------------------
+
 // Expr
 
 // int32 Integer = 1;
@@ -6351,6 +6956,79 @@ inline ::Frontend_ir::Expr__Block* Expr::mutable_blockexpr() {
   return _internal_mutable_blockexpr();
 }
 
+// .Frontend_ir.Expr._While_expr WhileExpr = 11;
+inline bool Expr::_internal_has_whileexpr() const {
+  return value_case() == kWhileExpr;
+}
+inline bool Expr::has_whileexpr() const {
+  return _internal_has_whileexpr();
+}
+inline void Expr::set_has_whileexpr() {
+  _oneof_case_[0] = kWhileExpr;
+}
+inline void Expr::clear_whileexpr() {
+  if (_internal_has_whileexpr()) {
+    if (GetArena() == nullptr) {
+      delete value_.whileexpr_;
+    }
+    clear_has_value();
+  }
+}
+inline ::Frontend_ir::Expr__While_expr* Expr::release_whileexpr() {
+  // @@protoc_insertion_point(field_release:Frontend_ir.Expr.WhileExpr)
+  if (_internal_has_whileexpr()) {
+    clear_has_value();
+      ::Frontend_ir::Expr__While_expr* temp = value_.whileexpr_;
+    if (GetArena() != nullptr) {
+      temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+    }
+    value_.whileexpr_ = nullptr;
+    return temp;
+  } else {
+    return nullptr;
+  }
+}
+inline const ::Frontend_ir::Expr__While_expr& Expr::_internal_whileexpr() const {
+  return _internal_has_whileexpr()
+      ? *value_.whileexpr_
+      : *reinterpret_cast< ::Frontend_ir::Expr__While_expr*>(&::Frontend_ir::_Expr__While_expr_default_instance_);
+}
+inline const ::Frontend_ir::Expr__While_expr& Expr::whileexpr() const {
+  // @@protoc_insertion_point(field_get:Frontend_ir.Expr.WhileExpr)
+  return _internal_whileexpr();
+}
+inline ::Frontend_ir::Expr__While_expr* Expr::unsafe_arena_release_whileexpr() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:Frontend_ir.Expr.WhileExpr)
+  if (_internal_has_whileexpr()) {
+    clear_has_value();
+    ::Frontend_ir::Expr__While_expr* temp = value_.whileexpr_;
+    value_.whileexpr_ = nullptr;
+    return temp;
+  } else {
+    return nullptr;
+  }
+}
+inline void Expr::unsafe_arena_set_allocated_whileexpr(::Frontend_ir::Expr__While_expr* whileexpr) {
+  clear_value();
+  if (whileexpr) {
+    set_has_whileexpr();
+    value_.whileexpr_ = whileexpr;
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:Frontend_ir.Expr.WhileExpr)
+}
+inline ::Frontend_ir::Expr__While_expr* Expr::_internal_mutable_whileexpr() {
+  if (!_internal_has_whileexpr()) {
+    clear_value();
+    set_has_whileexpr();
+    value_.whileexpr_ = CreateMaybeMessage< ::Frontend_ir::Expr__While_expr >(GetArena());
+  }
+  return value_.whileexpr_;
+}
+inline ::Frontend_ir::Expr__While_expr* Expr::mutable_whileexpr() {
+  // @@protoc_insertion_point(field_mutable:Frontend_ir.Expr.WhileExpr)
+  return _internal_mutable_whileexpr();
+}
+
 inline bool Expr::has_value() const {
   return value_case() != VALUE_NOT_SET;
 }
@@ -6406,6 +7084,10 @@ Program::main() const {
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------
