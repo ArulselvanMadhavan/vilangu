@@ -89,6 +89,8 @@ std::unique_ptr<ExprIR> deserializeExpr(const Frontend_ir::Expr &expr) {
     return std::unique_ptr<ExprBlockIR>(new ExprBlockIR(expr.blockexpr()));
   case Frontend_ir::Expr::kWhileExpr:
     return std::unique_ptr<ExprWhileIR>(new ExprWhileIR(expr.whileexpr()));
+  case Frontend_ir::Expr::kBreak:
+    return std::unique_ptr<ExprBreakIR>(new ExprBreakIR());
   default:
     // FIXME
     return std::unique_ptr<ExprIR>(new ExprIntegerIR(-1));
@@ -120,7 +122,11 @@ ExprAssignIR::ExprAssignIR(const Frontend_ir::Expr::_Assign &expr) {
 
 ExprBlockIR::ExprBlockIR(const Frontend_ir::Expr::_Block &expr) {
   for (int i = 0; i < expr.expr_list_size(); i++) {
-    exprs.push_back(deserializeExpr(expr.expr_list(i)));
+    auto e = expr.expr_list(i);
+    exprs.push_back(deserializeExpr(e));
+    if (e.has_break_()) {
+      break; // Don’t generate anymore statements in the block after a break
+    }
   }
 }
 
@@ -181,5 +187,9 @@ llvm::Value *ExprIfElseIR::codegen(IRVisitor &visitor) {
 }
 
 llvm::Value *ExprWhileIR::codegen(IRVisitor &visitor) {
+  return visitor.codegen(*this);
+}
+
+llvm::Value *ExprBreakIR::codegen(IRVisitor &visitor) {
   return visitor.codegen(*this);
 }

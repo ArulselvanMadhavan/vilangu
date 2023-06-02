@@ -1,13 +1,19 @@
 #include "tlang/Codegen/Ir_codegen_visitor.h"
+#include "tlang/Deserializer/Expr_ir.h"
+#include "llvm/IR/BasicBlock.h"
 #include "llvm/IR/DerivedTypes.h"
 #include "llvm/IR/Function.h"
 #include "llvm/IR/IRBuilder.h"
+#include "llvm/IR/LLVMContext.h"
+#include "llvm/IR/LegacyPassManager.h"
 #include "llvm/IR/Module.h"
 #include "llvm/IR/Type.h"
 #include "llvm/IR/Value.h"
-
-#include "llvm/IR/BasicBlock.h"
+#include "llvm/Pass.h"
 #include "llvm/Support/Host.h"
+#include "llvm/Transforms/InstCombine/InstCombine.h"
+#include "llvm/Transforms/Scalar.h"
+#include "llvm/Transforms/Scalar/GVN.h"
 #include <iostream>
 #include <llvm/ADT/APInt.h>
 #include <llvm/IR/Constants.h>
@@ -18,6 +24,7 @@ IRCodegenVisitor::IRCodegenVisitor() {
   context = std::make_unique<llvm::LLVMContext>();
   builder = std::unique_ptr<llvm::IRBuilder<>>(new llvm::IRBuilder<>(*context));
   module = std::make_unique<llvm::Module>("Module", *context);
+  loops = new std::stack<LoopInfo *>();
 }
 
 void IRCodegenVisitor::codegenMainExpr(
@@ -44,6 +51,7 @@ void IRCodegenVisitor::codegenMainExpr(
 void IRCodegenVisitor::codegenProgram(const ProgramIR &program) {
   codegenExternFunctionDeclarations();
   codegenMainExpr(program.mainExpr);
+  runOptimizingPasses(program.mainExpr);
 }
 IRCodegenVisitor::~IRCodegenVisitor() {
   // std::cout << "Destructor IRCodegenVisitor\n";
@@ -55,3 +63,16 @@ void IRCodegenVisitor::configureTarget() {
 }
 
 void IRCodegenVisitor::dumpLLVMIR() { module->print(llvm::outs(), nullptr); }
+
+void IRCodegenVisitor::runOptimizingPasses(
+    const std::vector<std::unique_ptr<ExprIR>> &mainExpr) {
+  std::unique_ptr<llvm::legacy::FunctionPassManager> functionPassManager =
+      std::make_unique<llvm::legacy::FunctionPassManager>(module.get());
+  // Do simple "peephole" optimizations
+  // functionPassManager->add(llvm::createInstructionCombiningPass());
+  // Simplify the control flow graph (deleting unreachable blocks etc).
+  functionPassManager->add(llvm::createCFGSimplificationPass());
+  functionPassManager->doInitialization();
+  llvm::Function *llvmMainFun = module->getFunction(llvm::StringRef("main"));
+  functionPassManager->run(*llvmMainFun);
+}

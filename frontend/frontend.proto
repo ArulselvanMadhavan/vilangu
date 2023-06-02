@@ -88,6 +88,9 @@ message Expr {
     required Expr while_cond = 1;
     required Expr while_block = 2;
   }
+
+  message _Break {
+  }
   
   oneof value {
     int32 Integer = 1;
@@ -101,6 +104,7 @@ message Expr {
     _If_expr IfExpr = 9;
     _Block BlockExpr = 10;
     _While_expr WhileExpr = 11;
+    _Break Break = 12;
   }
 }
 

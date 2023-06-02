@@ -192,34 +192,47 @@ llvm::Value *IRCodegenVisitor::codegen(const ExprIfElseIR &expr){
 }
 
 llvm::Value *IRCodegenVisitor::codegen(const ExprWhileIR &expr) {
+  llvm::BasicBlock *currentBB = builder->GetInsertBlock();
+  llvm::Function *parentFunc = currentBB->getParent();
+
+  // BB
+  llvm::BasicBlock *loopCondBB = llvm::BasicBlock::Create(*context, "loopcond");
+  llvm::BasicBlock *loopBB = llvm::BasicBlock::Create(*context, "loop");
+  llvm::BasicBlock *loopEndBB = llvm::BasicBlock::Create(*context, "loopend");
+
+  auto currentLoop = new LoopInfo(loopBB, loopEndBB);
+  loops->push(currentLoop);
+  builder->CreateBr(loopCondBB);
+  
+  // Cond BB
+  parentFunc->getBasicBlockList().push_back(loopCondBB);
+  builder->SetInsertPoint(loopCondBB);
   llvm::Value *condValue = expr.condExpr->codegen(*this);
   if(condValue == nullptr){
     llvm::outs() << "Null condition expr for while statement";
     return nullptr;
   }
-  llvm::Function *parentFunc = builder->GetInsertBlock()->getParent();
-
-  // BB
-  llvm::BasicBlock *loopBB = llvm::BasicBlock::Create(*context, "loop");
-  llvm::BasicBlock *loopEndBB = llvm::BasicBlock::Create(*context, "loopend");
-
+  loopCondBB = builder->GetInsertBlock();
   builder->CreateCondBr(condValue, loopBB, loopEndBB);
 
   // loopBB
   parentFunc->getBasicBlockList().push_back(loopBB);
   builder->SetInsertPoint(loopBB);
   expr.loopExpr->codegen(*this);
-
-  condValue = expr.condExpr->codegen(*this);
-  if(condValue == nullptr){
-    llvm::outs() << "Null condition expr for while statement";
-    return nullptr;
-  }  
   loopBB = builder->GetInsertBlock();
-  builder->CreateCondBr(condValue, loopBB, loopEndBB);
+  builder->CreateBr(loopCondBB);
 
+  // loopEndBB
   parentFunc->getBasicBlockList().push_back(loopEndBB);
   builder->SetInsertPoint(loopEndBB);
 
+  loops->pop();
+  delete currentLoop;
+  return llvm::Constant::getNullValue(llvm::Type::getInt32Ty(*context));
+}
+
+llvm::Value *IRCodegenVisitor::codegen(const ExprBreakIR &expr){
+  LoopInfo *currentLoop = loops->top();
+  builder->CreateBr(currentLoop->loopEnd);
   return llvm::Constant::getNullValue(llvm::Type::getInt32Ty(*context));
 }

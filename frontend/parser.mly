@@ -182,7 +182,7 @@ let out_stmt :=
   | OUT; ~=exp; SEMICOLON; { Output exp }
 
 let break :=
-  | BREAK; { Break }
+  | BREAK; SEMICOLON; { Break }
 
 let continue :=
   | CONTINUE; { Continue }

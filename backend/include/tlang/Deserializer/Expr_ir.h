@@ -105,5 +105,8 @@ struct ExprWhileIR : public ExprIR {
   virtual llvm::Value *codegen(IRVisitor &visitor) override;
 };
 
+struct ExprBreakIR : public ExprIR {
+  virtual llvm::Value *codegen(IRVisitor &visitor) override;
+};
 std::unique_ptr<ExprIR> deserializeExpr(const Frontend_ir::Expr &expr);
 #endif

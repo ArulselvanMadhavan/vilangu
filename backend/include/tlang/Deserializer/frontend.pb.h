@@ -47,7 +47,7 @@ struct TableStruct_frontend_2eproto {
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::AuxillaryParseTableField aux[]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
-  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[22]
+  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[23]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::FieldMetadata field_metadata[];
   static const ::PROTOBUF_NAMESPACE_ID::internal::SerializationTable serialization_table[];
@@ -79,6 +79,9 @@ extern Expr__BinopDefaultTypeInternal _Expr__Binop_default_instance_;
 class Expr__Block;
 class Expr__BlockDefaultTypeInternal;
 extern Expr__BlockDefaultTypeInternal _Expr__Block_default_instance_;
+class Expr__Break;
+class Expr__BreakDefaultTypeInternal;
+extern Expr__BreakDefaultTypeInternal _Expr__Break_default_instance_;
 class Expr__FunctionApp;
 class Expr__FunctionAppDefaultTypeInternal;
 extern Expr__FunctionAppDefaultTypeInternal _Expr__FunctionApp_default_instance_;
@@ -131,6 +134,7 @@ template<> ::Frontend_ir::Expr* Arena::CreateMaybeMessage<::Frontend_ir::Expr>(A
 template<> ::Frontend_ir::Expr__Assign* Arena::CreateMaybeMessage<::Frontend_ir::Expr__Assign>(Arena*);
 template<> ::Frontend_ir::Expr__Binop* Arena::CreateMaybeMessage<::Frontend_ir::Expr__Binop>(Arena*);
 template<> ::Frontend_ir::Expr__Block* Arena::CreateMaybeMessage<::Frontend_ir::Expr__Block>(Arena*);
+template<> ::Frontend_ir::Expr__Break* Arena::CreateMaybeMessage<::Frontend_ir::Expr__Break>(Arena*);
 template<> ::Frontend_ir::Expr__FunctionApp* Arena::CreateMaybeMessage<::Frontend_ir::Expr__FunctionApp>(Arena*);
 template<> ::Frontend_ir::Expr__If_expr* Arena::CreateMaybeMessage<::Frontend_ir::Expr__If_expr>(Arena*);
 template<> ::Frontend_ir::Expr__Printf* Arena::CreateMaybeMessage<::Frontend_ir::Expr__Printf>(Arena*);
@@ -3508,6 +3512,137 @@ class Expr__While_expr PROTOBUF_FINAL :
 };
 // -------------------------------------------------------------------
 
+class Expr__Break PROTOBUF_FINAL :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:Frontend_ir.Expr._Break) */ {
+ public:
+  inline Expr__Break() : Expr__Break(nullptr) {};
+  virtual ~Expr__Break();
+
+  Expr__Break(const Expr__Break& from);
+  Expr__Break(Expr__Break&& from) noexcept
+    : Expr__Break() {
+    *this = ::std::move(from);
+  }
+
+  inline Expr__Break& operator=(const Expr__Break& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline Expr__Break& operator=(Expr__Break&& from) noexcept {
+    if (GetArena() == from.GetArena()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  inline const ::PROTOBUF_NAMESPACE_ID::UnknownFieldSet& unknown_fields() const {
+    return _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance);
+  }
+  inline ::PROTOBUF_NAMESPACE_ID::UnknownFieldSet* mutable_unknown_fields() {
+    return _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const Expr__Break& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const Expr__Break* internal_default_instance() {
+    return reinterpret_cast<const Expr__Break*>(
+               &_Expr__Break_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    20;
+
+  friend void swap(Expr__Break& a, Expr__Break& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(Expr__Break* other) {
+    if (other == this) return;
+    if (GetArena() == other->GetArena()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(Expr__Break* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArena() == other->GetArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline Expr__Break* New() const final {
+    return CreateMaybeMessage<Expr__Break>(nullptr);
+  }
+
+  Expr__Break* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<Expr__Break>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const Expr__Break& from);
+  void MergeFrom(const Expr__Break& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(Expr__Break* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "Frontend_ir.Expr._Break";
+  }
+  protected:
+  explicit Expr__Break(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  private:
+  static void ArenaDtor(void* object);
+  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_frontend_2eproto);
+    return ::descriptor_table_frontend_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // @@protoc_insertion_point(class_scope:Frontend_ir.Expr._Break)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  friend struct ::TableStruct_frontend_2eproto;
+};
+// -------------------------------------------------------------------
+
 class Expr PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:Frontend_ir.Expr) */ {
  public:
@@ -3563,6 +3698,7 @@ class Expr PROTOBUF_FINAL :
     kIfExpr = 9,
     kBlockExpr = 10,
     kWhileExpr = 11,
+    kBreak = 12,
     VALUE_NOT_SET = 0,
   };
 
@@ -3572,7 +3708,7 @@ class Expr PROTOBUF_FINAL :
                &_Expr_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    20;
+    21;
 
   friend void swap(Expr& a, Expr& b) {
     a.Swap(&b);
@@ -3649,6 +3785,7 @@ class Expr PROTOBUF_FINAL :
   typedef Expr__If_expr _If_expr;
   typedef Expr__Block _Block;
   typedef Expr__While_expr _While_expr;
+  typedef Expr__Break _Break;
 
   // accessors -------------------------------------------------------
 
@@ -3664,6 +3801,7 @@ class Expr PROTOBUF_FINAL :
     kIfExprFieldNumber = 9,
     kBlockExprFieldNumber = 10,
     kWhileExprFieldNumber = 11,
+    kBreakFieldNumber = 12,
   };
   // int32 Integer = 1;
   bool has_integer() const;
@@ -3858,6 +3996,24 @@ class Expr PROTOBUF_FINAL :
       ::Frontend_ir::Expr__While_expr* whileexpr);
   ::Frontend_ir::Expr__While_expr* unsafe_arena_release_whileexpr();
 
+  // .Frontend_ir.Expr._Break Break = 12;
+  bool has_break_() const;
+  private:
+  bool _internal_has_break_() const;
+  public:
+  void clear_break_();
+  const ::Frontend_ir::Expr__Break& break_() const;
+  ::Frontend_ir::Expr__Break* release_break_();
+  ::Frontend_ir::Expr__Break* mutable_break_();
+  void set_allocated_break_(::Frontend_ir::Expr__Break* break_);
+  private:
+  const ::Frontend_ir::Expr__Break& _internal_break_() const;
+  ::Frontend_ir::Expr__Break* _internal_mutable_break_();
+  public:
+  void unsafe_arena_set_allocated_break_(
+      ::Frontend_ir::Expr__Break* break_);
+  ::Frontend_ir::Expr__Break* unsafe_arena_release_break_();
+
   void clear_value();
   ValueCase value_case() const;
   // @@protoc_insertion_point(class_scope:Frontend_ir.Expr)
@@ -3874,6 +4030,7 @@ class Expr PROTOBUF_FINAL :
   void set_has_ifexpr();
   void set_has_blockexpr();
   void set_has_whileexpr();
+  void set_has_break_();
 
   inline bool has_value() const;
   inline void clear_has_value();
@@ -3894,6 +4051,7 @@ class Expr PROTOBUF_FINAL :
     ::Frontend_ir::Expr__If_expr* ifexpr_;
     ::Frontend_ir::Expr__Block* blockexpr_;
     ::Frontend_ir::Expr__While_expr* whileexpr_;
+    ::Frontend_ir::Expr__Break* break__;
   } value_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   ::PROTOBUF_NAMESPACE_ID::uint32 _oneof_case_[1];
@@ -3951,7 +4109,7 @@ class Program PROTOBUF_FINAL :
                &_Program_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    21;
+    22;
 
   friend void swap(Program& a, Program& b) {
     a.Swap(&b);
@@ -6259,6 +6417,10 @@ inline void Expr__While_expr::set_allocated_while_block(::Frontend_ir::Expr* whi
 
 // -------------------------------------------------------------------
 
+// Expr__Break
+
+// -------------------------------------------------------------------
+
 // Expr
 
 // int32 Integer = 1;
@@ -7029,6 +7191,79 @@ inline ::Frontend_ir::Expr__While_expr* Expr::mutable_whileexpr() {
   return _internal_mutable_whileexpr();
 }
 
+// .Frontend_ir.Expr._Break Break = 12;
+inline bool Expr::_internal_has_break_() const {
+  return value_case() == kBreak;
+}
+inline bool Expr::has_break_() const {
+  return _internal_has_break_();
+}
+inline void Expr::set_has_break_() {
+  _oneof_case_[0] = kBreak;
+}
+inline void Expr::clear_break_() {
+  if (_internal_has_break_()) {
+    if (GetArena() == nullptr) {
+      delete value_.break__;
+    }
+    clear_has_value();
+  }
+}
+inline ::Frontend_ir::Expr__Break* Expr::release_break_() {
+  // @@protoc_insertion_point(field_release:Frontend_ir.Expr.Break)
+  if (_internal_has_break_()) {
+    clear_has_value();
+      ::Frontend_ir::Expr__Break* temp = value_.break__;
+    if (GetArena() != nullptr) {
+      temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+    }
+    value_.break__ = nullptr;
+    return temp;
+  } else {
+    return nullptr;
+  }
+}
+inline const ::Frontend_ir::Expr__Break& Expr::_internal_break_() const {
+  return _internal_has_break_()
+      ? *value_.break__
+      : *reinterpret_cast< ::Frontend_ir::Expr__Break*>(&::Frontend_ir::_Expr__Break_default_instance_);
+}
+inline const ::Frontend_ir::Expr__Break& Expr::break_() const {
+  // @@protoc_insertion_point(field_get:Frontend_ir.Expr.Break)
+  return _internal_break_();
+}
+inline ::Frontend_ir::Expr__Break* Expr::unsafe_arena_release_break_() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:Frontend_ir.Expr.Break)
+  if (_internal_has_break_()) {
+    clear_has_value();
+    ::Frontend_ir::Expr__Break* temp = value_.break__;
+    value_.break__ = nullptr;
+    return temp;
+  } else {
+    return nullptr;
+  }
+}
+inline void Expr::unsafe_arena_set_allocated_break_(::Frontend_ir::Expr__Break* break_) {
+  clear_value();
+  if (break_) {
+    set_has_break_();
+    value_.break__ = break_;
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:Frontend_ir.Expr.Break)
+}
+inline ::Frontend_ir::Expr__Break* Expr::_internal_mutable_break_() {
+  if (!_internal_has_break_()) {
+    clear_value();
+    set_has_break_();
+    value_.break__ = CreateMaybeMessage< ::Frontend_ir::Expr__Break >(GetArena());
+  }
+  return value_.break__;
+}
+inline ::Frontend_ir::Expr__Break* Expr::mutable_break_() {
+  // @@protoc_insertion_point(field_mutable:Frontend_ir.Expr.Break)
+  return _internal_mutable_break_();
+}
+
 inline bool Expr::has_value() const {
   return value_case() != VALUE_NOT_SET;
 }
@@ -7084,6 +7319,8 @@ Program::main() const {
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------
