@@ -17,7 +17,7 @@ let ast_dir = build_dir "ast"
 let list_dir =
   let files = Sys.readdir (Fpath.to_string files_dir) in
   let _files = Base.Array.filter ~f:(fun x -> Filename.extension x = ".t") files in
-  let files = [| "if.t" |] in
+  let files = [| "while.t" |] in
   Base.Array.map files ~f:(fun x -> Fpath.(add_seg files_dir x))
 ;;
 

@@ -13,9 +13,11 @@ message Un_op {
 message Bin_op {
   message _PlusOp {}
   message _EqualsOp {}
+  message _LessThanOp {}
   oneof value {
     _PlusOp plus = 1;
     _EqualsOp equals = 2;
+    _LessThanOp lessthan = 3;
   }
 }
 
@@ -81,6 +83,11 @@ message Expr {
   message _Block {
     repeated Expr expr_list = 1;
   }
+
+  message _While_expr {
+    required Expr while_cond = 1;
+    required Expr while_block = 2;
+  }
   
   oneof value {
     int32 Integer = 1;
@@ -93,6 +100,7 @@ message Expr {
     Identifier ExprId = 8;
     _If_expr IfExpr = 9;
     _Block BlockExpr = 10;
+    _While_expr WhileExpr = 11;
   }
 }
 

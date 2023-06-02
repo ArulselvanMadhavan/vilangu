@@ -128,7 +128,7 @@ let formal_param :=
 
 (* VariableDeclarationID substituted with decl *)
 let block :=
-  | LBRACE; ~=block_stmts; RBRACE; { Block block_stmts }
+  | LBRACE; ~=block_stmts; RBRACE; { Block (List.rev block_stmts) }
   | LBRACE; RBRACE; { Block [] }
 
 let block_stmts :=

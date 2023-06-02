@@ -5,6 +5,7 @@ module S = Symbol
 let gen_binop = function
   | A.PlusOp -> FT.Plus
   | A.EqualsOp -> FT.Equals
+  | A.LessThanOp -> FT.Lessthan
   | _ -> FT.Plus
 ;;
 
@@ -30,6 +31,7 @@ let gen_stmt s =
     | A.IfElse { exp; istmt; estmt } ->
       FT.If_expr { eval = gen_expr exp; if_expr = gstmt istmt; else_expr = gstmt estmt }
     | A.Block xs -> FT.Block_expr { expr_list = List.map gstmt xs }
+    | A.While {exp; block} -> FT.While_expr {while_cond = gen_expr exp; while_block = gstmt block}
     | _ -> FT.Integer (Int32.of_int (-1))
   in
   gstmt s
