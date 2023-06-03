@@ -93,6 +93,8 @@ std::unique_ptr<ExprIR> deserializeExpr(const Frontend_ir::Expr &expr) {
     return std::unique_ptr<ExprBreakIR>(new ExprBreakIR());
   case Frontend_ir::Expr::kContinue:
     return std::unique_ptr<ExprContinueIR>(new ExprContinueIR());
+  case Frontend_ir::Expr::kEmpty:
+    return std::unique_ptr<ExprEmptyIR>(new ExprEmptyIR());
   default:
     // FIXME
     return std::unique_ptr<ExprIR>(new ExprIntegerIR(-1));
@@ -198,5 +200,9 @@ llvm::Value *ExprBreakIR::codegen(IRVisitor &visitor) {
 }
 
 llvm::Value *ExprContinueIR::codegen(IRVisitor &visitor) {
+  return visitor.codegen(*this);
+}
+
+llvm::Value *ExprEmptyIR::codegen(IRVisitor &visitor) {
   return visitor.codegen(*this);
 }

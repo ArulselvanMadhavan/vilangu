@@ -17,7 +17,7 @@ let ast_dir = build_dir "ast"
 let list_dir =
   let files = Sys.readdir (Fpath.to_string files_dir) in
   let _files = Base.Array.filter ~f:(fun x -> Filename.extension x = ".t") files in
-  let files = [| "continue.t" |] in
+  let files = [| "empty.t" |] in
   Base.Array.map files ~f:(fun x -> Fpath.(add_seg files_dir x))
 ;;
 
@@ -58,6 +58,7 @@ let compile_file filename =
       Error_msg.error ((-1, -1), (-1, -1)) !err_str;
       None
   in
+  (* semant phase *)
   let parsed_exp =
     if Error_msg.has_errors ()
     then log_err filename ()

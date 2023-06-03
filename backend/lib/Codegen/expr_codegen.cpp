@@ -258,3 +258,7 @@ llvm::Value *IRCodegenVisitor::codegen(const ExprContinueIR &expr) {
   builder->CreateBr(currentLoop->loopCond);
   return llvm::Constant::getNullValue(llvm::Type::getInt32Ty(*context));
 }
+
+llvm::Value *IRCodegenVisitor::codegen(const ExprEmptyIR &expr) {
+  return llvm::Constant::getNullValue(llvm::Type::getInt32Ty(*context));
+}

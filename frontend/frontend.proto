@@ -92,6 +92,7 @@ message Expr {
   message _Break {}
 
   message _Continue{}
+  message _Empty{}
   
   oneof value {
     int32 Integer = 1;
@@ -107,6 +108,7 @@ message Expr {
     _While_expr WhileExpr = 11;
     _Break Break = 12;
     _Continue Continue = 13;
+    _Empty Empty = 14;
   }
 }
 

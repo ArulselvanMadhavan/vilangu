@@ -56,6 +56,7 @@ public:
   virtual llvm::Value *codegen(const ExprWhileIR &expr) override;
   virtual llvm::Value *codegen(const ExprBreakIR &expr) override;
   virtual llvm::Value *codegen(const ExprContinueIR &expr) override;
+  virtual llvm::Value *codegen(const ExprEmptyIR &expr) override;
   virtual llvm::Type *codegen(const TypeIntIR &texpr) override;
   void
   runOptimizingPasses(const std::vector<std::unique_ptr<ExprIR>> &mainExpr);
