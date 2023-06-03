@@ -39,6 +39,7 @@ and expr =
   | Block_expr of expr_p_block
   | While_expr of expr_p_while_expr
   | Break
+  | Continue
 
 and expr_p_printf =
   { format : string

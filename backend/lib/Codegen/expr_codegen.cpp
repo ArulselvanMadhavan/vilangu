@@ -3,10 +3,10 @@
 #include "llvm/IR/Constants.h"
 #include "llvm/IR/Type.h"
 #include "llvm/IR/Value.h"
-#include <llvm-14/llvm/IR/Instructions.h>
 #include <llvm/ADT/StringRef.h>
 #include <llvm/IR/DerivedTypes.h>
 #include <llvm/IR/Function.h>
+#include <llvm/IR/Instructions.h>
 #include <llvm/Support/raw_ostream.h>
 #include <string>
 #include <vector>
@@ -89,7 +89,7 @@ llvm::Value *IRCodegenVisitor::codegen(const ExprBinOpIR &expr) {
 llvm::Value *IRCodegenVisitor::codegen(const ExprVarDeclIR &expr) {
   // TODO: Get type of variable
   llvm::Value *boundVal =
-    llvm::ConstantInt::getSigned(expr.varType->codegen(*this), 0);
+      llvm::ConstantInt::getSigned(expr.varType->codegen(*this), 0);
   llvm::Function *parentFunction = builder->GetInsertBlock()->getParent();
   llvm::IRBuilder<> TmpBuilder(&(parentFunction->getEntryBlock()),
                                parentFunction->getEntryBlock().begin());
@@ -126,7 +126,9 @@ llvm::Value *IRCodegenVisitor::codegen(const ExprIdentifierIR &expr) {
     return nullptr;
   }
 
-  llvm::Type *idType = id->getType()->isPointerTy() ? id->getType()->getPointerElementType() : id->getType();
+  llvm::Type *idType = id->getType()->isPointerTy()
+                           ? id->getType()->getPointerElementType()
+                           : id->getType();
   llvm::Value *idVal = builder->CreateLoad(idType, id);
   if (idVal == nullptr) {
     llvm::outs() << "Identifier not loaded: " + expr.identifier->varName;
@@ -135,43 +137,53 @@ llvm::Value *IRCodegenVisitor::codegen(const ExprIdentifierIR &expr) {
   return idVal;
 }
 
-llvm::Value *IRCodegenVisitor::codegen(const ExprBlockIR &expr){
+llvm::Value *IRCodegenVisitor::codegen(const ExprBlockIR &expr) {
   llvm::Value *lastExprVal;
-  for(auto &e : expr.exprs){
+  for (auto &e : expr.exprs) {
     lastExprVal = (e->codegen(*this));
   }
   return lastExprVal;
 }
 
-llvm::Value *IRCodegenVisitor::codegen(const ExprIfElseIR &expr){
+llvm::Value *IRCodegenVisitor::codegen(const ExprIfElseIR &expr) {
   llvm::Value *condValue = expr.condExpr->codegen(*this);
-  if(condValue == nullptr){
+  if (condValue == nullptr) {
     llvm::outs() << "Null cond expression in if-else statement.";
   }
   llvm::Function *parentFunction = builder->GetInsertBlock()->getParent();
 
-  llvm::BasicBlock *thenBB = llvm::BasicBlock::Create(*context, "then", parentFunction);
+  llvm::BasicBlock *thenBB =
+      llvm::BasicBlock::Create(*context, "then", parentFunction);
   llvm::BasicBlock *elseBB = llvm::BasicBlock::Create(*context, "else");
   llvm::BasicBlock *mergeBB = llvm::BasicBlock::Create(*context, "ifcont");
   builder->CreateCondBr(condValue, thenBB, elseBB);
 
   builder->SetInsertPoint(thenBB);
   llvm::Value *thenVal = expr.thenExpr->codegen(*this);
-  if(thenVal == nullptr){
+  if (thenVal == nullptr) {
     llvm::outs() << "Then block evaluates to null in if-else statement.";
-      return nullptr;
+    return nullptr;
   }
   thenBB = builder->GetInsertBlock();
-  builder->CreateBr(mergeBB);
+  if (thenBB->getTerminator() == nullptr) {
+    // Block could have inserted branch inst already. Ex: break, continue
+    // Insert a branch only if one hasn’t been inserted already.
+    builder->CreateBr(mergeBB);
+  }
 
   parentFunction->getBasicBlockList().push_back(elseBB);
   builder->SetInsertPoint(elseBB);
   llvm::Value *elseVal = expr.elseExpr->codegen(*this);
-  if(elseVal == nullptr){
+  if (elseVal == nullptr) {
     llvm::outs() << "Else block evaluates to null in if-else statement.";
     return nullptr;
   }
   elseBB = builder->GetInsertBlock();
+  if (elseBB->getTerminator() == nullptr) {
+    // Block could have inserted branch inst already. Ex: break, continue
+    // Insert a branch only if one hasn’t been inserted already.
+    builder->CreateBr(mergeBB);
+  }
   builder->CreateBr(mergeBB);
 
   // merge block
@@ -200,15 +212,15 @@ llvm::Value *IRCodegenVisitor::codegen(const ExprWhileIR &expr) {
   llvm::BasicBlock *loopBB = llvm::BasicBlock::Create(*context, "loop");
   llvm::BasicBlock *loopEndBB = llvm::BasicBlock::Create(*context, "loopend");
 
-  auto currentLoop = new LoopInfo(loopBB, loopEndBB);
+  auto currentLoop = new LoopInfo(loopCondBB, loopEndBB);
   loops->push(currentLoop);
   builder->CreateBr(loopCondBB);
-  
+
   // Cond BB
   parentFunc->getBasicBlockList().push_back(loopCondBB);
   builder->SetInsertPoint(loopCondBB);
   llvm::Value *condValue = expr.condExpr->codegen(*this);
-  if(condValue == nullptr){
+  if (condValue == nullptr) {
     llvm::outs() << "Null condition expr for while statement";
     return nullptr;
   }
@@ -218,10 +230,10 @@ llvm::Value *IRCodegenVisitor::codegen(const ExprWhileIR &expr) {
   // loopBB
   parentFunc->getBasicBlockList().push_back(loopBB);
   builder->SetInsertPoint(loopBB);
+  // codegen
   expr.loopExpr->codegen(*this);
   loopBB = builder->GetInsertBlock();
   builder->CreateBr(loopCondBB);
-
   // loopEndBB
   parentFunc->getBasicBlockList().push_back(loopEndBB);
   builder->SetInsertPoint(loopEndBB);
@@ -231,8 +243,16 @@ llvm::Value *IRCodegenVisitor::codegen(const ExprWhileIR &expr) {
   return llvm::Constant::getNullValue(llvm::Type::getInt32Ty(*context));
 }
 
-llvm::Value *IRCodegenVisitor::codegen(const ExprBreakIR &expr){
+llvm::Value *IRCodegenVisitor::codegen(const ExprBreakIR &expr) {
   LoopInfo *currentLoop = loops->top();
+  currentLoop->hasBreak = true;
   builder->CreateBr(currentLoop->loopEnd);
+  return llvm::Constant::getNullValue(llvm::Type::getInt32Ty(*context));
+}
+
+llvm::Value *IRCodegenVisitor::codegen(const ExprContinueIR &expr) {
+  LoopInfo *currentLoop = loops->top();
+  currentLoop->hasContinue = true;
+  builder->CreateBr(currentLoop->loopCond);
   return llvm::Constant::getNullValue(llvm::Type::getInt32Ty(*context));
 }

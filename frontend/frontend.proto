@@ -89,8 +89,9 @@ message Expr {
     required Expr while_block = 2;
   }
 
-  message _Break {
-  }
+  message _Break {}
+
+  message _Continue{}
   
   oneof value {
     int32 Integer = 1;
@@ -105,6 +106,7 @@ message Expr {
     _Block BlockExpr = 10;
     _While_expr WhileExpr = 11;
     _Break Break = 12;
+    _Continue Continue = 13;
   }
 }
 

@@ -46,7 +46,7 @@ make
 dune exec vilangu
 #+end_src
 ** Open Questions
-- Do we need a Phi node
+- Semantic analysis catch - continue statements not in loop
 ** Useful links
   - https://github.com/ksrky/tiger/tree/master
   - [[https://www.cs.columbia.edu/~sedwards/classes/2002/w4115/tiger.pdf][Tiger Lang specs]]

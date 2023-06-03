@@ -91,6 +91,8 @@ std::unique_ptr<ExprIR> deserializeExpr(const Frontend_ir::Expr &expr) {
     return std::unique_ptr<ExprWhileIR>(new ExprWhileIR(expr.whileexpr()));
   case Frontend_ir::Expr::kBreak:
     return std::unique_ptr<ExprBreakIR>(new ExprBreakIR());
+  case Frontend_ir::Expr::kContinue:
+    return std::unique_ptr<ExprContinueIR>(new ExprContinueIR());
   default:
     // FIXME
     return std::unique_ptr<ExprIR>(new ExprIntegerIR(-1));
@@ -124,9 +126,6 @@ ExprBlockIR::ExprBlockIR(const Frontend_ir::Expr::_Block &expr) {
   for (int i = 0; i < expr.expr_list_size(); i++) {
     auto e = expr.expr_list(i);
     exprs.push_back(deserializeExpr(e));
-    if (e.has_break_()) {
-      break; // Don’t generate anymore statements in the block after a break
-    }
   }
 }
 
@@ -140,6 +139,7 @@ ExprWhileIR::ExprWhileIR(const Frontend_ir::Expr::_While_expr &expr) {
   condExpr = deserializeExpr(expr.while_cond());
   loopExpr = deserializeExpr(expr.while_block());
 }
+
 // Codegen impl
 
 llvm::Value *ExprIntegerIR::codegen(IRVisitor &visitor) {
@@ -191,5 +191,9 @@ llvm::Value *ExprWhileIR::codegen(IRVisitor &visitor) {
 }
 
 llvm::Value *ExprBreakIR::codegen(IRVisitor &visitor) {
+  return visitor.codegen(*this);
+}
+
+llvm::Value *ExprContinueIR::codegen(IRVisitor &visitor) {
   return visitor.codegen(*this);
 }

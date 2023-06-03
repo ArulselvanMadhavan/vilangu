@@ -34,6 +34,7 @@ let gen_stmt s =
     | A.While { exp; block } ->
       FT.While_expr { while_cond = gen_expr exp; while_block = gstmt block }
     | A.Break -> FT.Break
+    | A.Continue -> FT.Continue
     | _ -> FT.Integer (Int32.of_int (-1))
   in
   gstmt s

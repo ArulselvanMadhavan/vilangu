@@ -15,10 +15,13 @@
 #include <vector>
 
 struct LoopInfo {
-  llvm::BasicBlock *loopBegin;
+  llvm::BasicBlock *loopCond;
   llvm::BasicBlock *loopEnd;
-  LoopInfo(llvm::BasicBlock *loopBB, llvm::BasicBlock *loopEndBB)
-      : loopBegin(loopBB), loopEnd(loopEndBB){};
+  bool hasBreak;
+  bool hasContinue;
+  LoopInfo(llvm::BasicBlock *loopCondBB, llvm::BasicBlock *loopEndBB)
+      : loopCond(loopCondBB), loopEnd(loopEndBB), hasBreak(false),
+        hasContinue(false){};
   virtual ~LoopInfo() = default;
 };
 
@@ -52,6 +55,7 @@ public:
   virtual llvm::Value *codegen(const ExprIfElseIR &expr) override;
   virtual llvm::Value *codegen(const ExprWhileIR &expr) override;
   virtual llvm::Value *codegen(const ExprBreakIR &expr) override;
+  virtual llvm::Value *codegen(const ExprContinueIR &expr) override;
   virtual llvm::Type *codegen(const TypeIntIR &texpr) override;
   void
   runOptimizingPasses(const std::vector<std::unique_ptr<ExprIR>> &mainExpr);

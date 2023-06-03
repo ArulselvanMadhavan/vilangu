@@ -91,6 +91,7 @@ and pp_expr fmt (v : Frontend_types.expr) =
   | Frontend_types.While_expr x ->
     Format.fprintf fmt "@[<hv2>While_expr(@,%a)@]" pp_expr_p_while_expr x
   | Frontend_types.Break -> Format.fprintf fmt "Break"
+  | Frontend_types.Continue -> Format.fprintf fmt "Continue"
 
 and pp_expr_p_printf fmt (v : Frontend_types.expr_p_printf) =
   let pp_i fmt () =
