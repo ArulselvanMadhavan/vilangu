@@ -126,6 +126,9 @@ ExprBlockIR::ExprBlockIR(const Frontend_ir::Expr::_Block &expr) {
   for (int i = 0; i < expr.expr_list_size(); i++) {
     auto e = expr.expr_list(i);
     exprs.push_back(deserializeExpr(e));
+    if (e.has_break_() || e.has_continue_()) {
+      break;
+    }
   }
 }
 

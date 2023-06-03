@@ -184,7 +184,6 @@ llvm::Value *IRCodegenVisitor::codegen(const ExprIfElseIR &expr) {
     // Insert a branch only if one hasn’t been inserted already.
     builder->CreateBr(mergeBB);
   }
-  builder->CreateBr(mergeBB);
 
   // merge block
   parentFunction->getBasicBlockList().push_back(mergeBB);
@@ -233,7 +232,10 @@ llvm::Value *IRCodegenVisitor::codegen(const ExprWhileIR &expr) {
   // codegen
   expr.loopExpr->codegen(*this);
   loopBB = builder->GetInsertBlock();
-  builder->CreateBr(loopCondBB);
+  if (loopBB->getTerminator() == nullptr) {
+    // Possibly we may have to remove instructions after the terminator
+    builder->CreateBr(loopCondBB);
+  }
   // loopEndBB
   parentFunc->getBasicBlockList().push_back(loopEndBB);
   builder->SetInsertPoint(loopEndBB);
