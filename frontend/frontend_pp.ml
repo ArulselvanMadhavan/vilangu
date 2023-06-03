@@ -9,7 +9,11 @@ let rec pp_bin_op fmt (v:Frontend_types.bin_op) =
   match v with
   | Frontend_types.Plus  -> Format.fprintf fmt "Plus"
   | Frontend_types.Equals  -> Format.fprintf fmt "Equals"
-  | Frontend_types.Lessthan  -> Format.fprintf fmt "Lessthan"
+  | Frontend_types.Less_than  -> Format.fprintf fmt "Less_than"
+  | Frontend_types.Greater_than  -> Format.fprintf fmt "Greater_than"
+  | Frontend_types.Mult_op  -> Format.fprintf fmt "Mult_op"
+  | Frontend_types.Divide_op  -> Format.fprintf fmt "Divide_op"
+  | Frontend_types.Subtract_op  -> Format.fprintf fmt "Subtract_op"
 
 let rec pp_identifier_p_var fmt (v:Frontend_types.identifier_p_var) = 
   let pp_i fmt () =

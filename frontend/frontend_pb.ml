@@ -152,7 +152,23 @@ let rec decode_bin_op d =
       end
       | Some (3, _) -> begin 
         Pbrt.Decoder.empty_nested d ;
-        (Frontend_types.Lessthan : Frontend_types.bin_op)
+        (Frontend_types.Less_than : Frontend_types.bin_op)
+      end
+      | Some (4, _) -> begin 
+        Pbrt.Decoder.empty_nested d ;
+        (Frontend_types.Greater_than : Frontend_types.bin_op)
+      end
+      | Some (5, _) -> begin 
+        Pbrt.Decoder.empty_nested d ;
+        (Frontend_types.Mult_op : Frontend_types.bin_op)
+      end
+      | Some (6, _) -> begin 
+        Pbrt.Decoder.empty_nested d ;
+        (Frontend_types.Divide_op : Frontend_types.bin_op)
+      end
+      | Some (7, _) -> begin 
+        Pbrt.Decoder.empty_nested d ;
+        (Frontend_types.Subtract_op : Frontend_types.bin_op)
       end
       | Some (n, payload_kind) -> (
         Pbrt.Decoder.skip d payload_kind; 
@@ -561,8 +577,20 @@ let rec encode_bin_op (v:Frontend_types.bin_op) encoder =
   | Frontend_types.Equals ->
     Pbrt.Encoder.key (2, Pbrt.Bytes) encoder; 
     Pbrt.Encoder.empty_nested encoder
-  | Frontend_types.Lessthan ->
+  | Frontend_types.Less_than ->
     Pbrt.Encoder.key (3, Pbrt.Bytes) encoder; 
+    Pbrt.Encoder.empty_nested encoder
+  | Frontend_types.Greater_than ->
+    Pbrt.Encoder.key (4, Pbrt.Bytes) encoder; 
+    Pbrt.Encoder.empty_nested encoder
+  | Frontend_types.Mult_op ->
+    Pbrt.Encoder.key (5, Pbrt.Bytes) encoder; 
+    Pbrt.Encoder.empty_nested encoder
+  | Frontend_types.Divide_op ->
+    Pbrt.Encoder.key (6, Pbrt.Bytes) encoder; 
+    Pbrt.Encoder.empty_nested encoder
+  | Frontend_types.Subtract_op ->
+    Pbrt.Encoder.key (7, Pbrt.Bytes) encoder; 
     Pbrt.Encoder.empty_nested encoder
   end
 

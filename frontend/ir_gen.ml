@@ -5,7 +5,9 @@ module S = Symbol
 let gen_binop = function
   | A.PlusOp -> FT.Plus
   | A.EqualsOp -> FT.Equals
-  | A.LessThanOp -> FT.Lessthan
+  | A.LessThanOp -> FT.Less_than
+  | A.GreaterThanOp -> FT.Greater_than
+  | A.MultOp -> FT.Mult_op
   | _ -> FT.Plus
 ;;
 

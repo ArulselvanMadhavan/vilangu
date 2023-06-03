@@ -11,7 +11,11 @@ type un_op =
 type bin_op =
   | Plus
   | Equals
-  | Lessthan
+  | Less_than
+  | Greater_than
+  | Mult_op
+  | Divide_op
+  | Subtract_op
 
 type identifier_p_var = {
   var_name : string;

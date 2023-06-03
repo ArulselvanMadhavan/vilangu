@@ -14,10 +14,18 @@ message Bin_op {
   message _PlusOp {}
   message _EqualsOp {}
   message _LessThanOp {}
+  message _GreaterThanOp {}
+  message _MultOp {}
+  message _DivideOp {}
+  message _SubtractOp {}
   oneof value {
     _PlusOp plus = 1;
     _EqualsOp equals = 2;
-    _LessThanOp lessthan = 3;
+    _LessThanOp lessThan = 3;
+    _GreaterThanOp greaterThan = 4;
+    _MultOp multOp = 5;
+    _DivideOp divideOp = 6;
+    _SubtractOp subtractOp = 7;
   }
 }
 

@@ -146,6 +146,7 @@ and bioper =
   | GreaterThanOp
   | PlusOp
   | MultOp
+  | DivideOp
   | EqualsOp
   | MinusOp
 

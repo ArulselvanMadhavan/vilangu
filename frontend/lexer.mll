@@ -61,7 +61,7 @@ rule token = parse
   | "<" { LT }
   | ">" { GT }
   | "+" { PLUS }
-
+  | "/" { DIV }
   | "*" { MULT }
   | "!" { NOT }
   | "[" { LSQB }

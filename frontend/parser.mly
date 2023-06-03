@@ -15,7 +15,7 @@ open Ast
 %token ASSIGN_OP
 %token LT GT EQUALS
 %token PLUS MINUS
-%token MULT
+%token MULT DIV
 %token LPAREN RPAREN LBRACE RBRACE LSQB RSQB
 %token SEMICOLON COMMA DOT
 %token NOT
@@ -224,6 +224,7 @@ let addexp :=
 
 let mulexp :=
   | left=mulexp; MULT; right=unaryexp; { OpExp (BinaryOp {left; right; oper=MultOp}, lp($loc))}
+  | left=mulexp; DIV; right=unaryexp; {OpExp (BinaryOp {left; right; oper=DivideOp}, lp($loc))}
   | ~=unaryexp; { unaryexp }
 
 let unaryexp :=
