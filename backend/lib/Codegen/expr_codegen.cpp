@@ -82,7 +82,15 @@ llvm::Value *IRCodegenVisitor::codegen(const ExprBinOpIR &expr) {
   case BinOpEquals:
     return builder->CreateICmpEQ(lexpr, rexpr, "equal");
   case BinOpLessThan:
-    return builder->CreateICmpSLT(lexpr, rexpr, "signedLessThan");
+    return builder->CreateICmpSLT(lexpr, rexpr, "slt");
+  case BinOpGreaterThan:
+    return builder->CreateICmpSGT(lexpr, rexpr, "sgt");
+  case BinOpMult:
+    return builder->CreateMul(lexpr, rexpr, "mul");
+  case BinOpDivide:
+    return builder->CreateSDiv(lexpr, rexpr, "sdiv");
+  case BinOpSubtract:
+    return builder->CreateSub(lexpr, rexpr, "sub");
   }
 }
 

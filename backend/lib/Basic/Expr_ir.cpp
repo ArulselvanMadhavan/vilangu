@@ -25,8 +25,16 @@ enum BinOp deserializeBinOp(const Frontend_ir::Bin_op &op) {
     return BinOp::BinOpPlus;
   case Frontend_ir::Bin_op::kEquals:
     return BinOp::BinOpEquals;
-  case Frontend_ir::Bin_op::kLessthan:
+  case Frontend_ir::Bin_op::kLessThan:
     return BinOp::BinOpLessThan;
+  case Frontend_ir::Bin_op::kGreaterThan:
+    return BinOp::BinOpGreaterThan;
+  case Frontend_ir::Bin_op::kMultOp:
+    return BinOp::BinOpMult;
+  case Frontend_ir::Bin_op::kDivideOp:
+    return BinOp::BinOpDivide;
+  case Frontend_ir::Bin_op::kSubtractOp:
+    return BinOp::BinOpSubtract;
   default:
     llvm::outs() << "Unmatched unary op\n";
     return BinOp::BinOpPlus;
