@@ -8,7 +8,8 @@ let gen_binop = function
   | A.LessThanOp -> FT.Less_than
   | A.GreaterThanOp -> FT.Greater_than
   | A.MultOp -> FT.Mult_op
-  | _ -> FT.Plus
+  | A.DivideOp -> FT.Divide_op
+  | A.MinusOp -> FT.Subtract_op
 ;;
 
 let gen_expr e =
