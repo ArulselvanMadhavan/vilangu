@@ -88,7 +88,7 @@ llvm::Value *IRCodegenVisitor::codegen(const ExprBinOpIR &expr) {
   case BinOpMult:
     return builder->CreateMul(lexpr, rexpr, "mul");
   case BinOpDivide:
-    return builder->CreateSDiv(lexpr, rexpr, "sdiv");
+    return builder->CreateExactSDiv(lexpr, rexpr, "sdiv");
   case BinOpSubtract:
     return builder->CreateSub(lexpr, rexpr, "sub");
   }
