@@ -74,9 +74,11 @@ let trans_var (venv, var) =
   match var with
   | A.SimpleVar (id, pos) ->
     (match S.look (venv, id) with
-     | Some (E.VarEntry { ty; rank }) -> { stmt = (); ty; rank }
+     | Some (E.VarEntry { ty; rank }) ->
+       { stmt = (); ty; rank }
      | Some _ -> error pos "expecting a variable, not a function" err_stmty
-     | None -> error pos ("undefined variable " ^ S.name id) err_stmty)
+     | None ->
+       error pos ("undefined variable " ^ S.name id) err_stmty)
   | _ -> err_stmty
 ;;
 
@@ -92,10 +94,21 @@ let rec trans_exp (venv, tenv, exp) =
   | _ -> err_stmty
 ;;
 
-let trans_stmt (venv, tenv, stmt) : stmty =
+let rec trans_stmt (venv, tenv, stmt) : stmty =
   match stmt with
   | A.ExprStmt e -> trans_exp (venv, tenv, e)
+  | A.While { exp; block } ->
+    let _ = trans_exp (venv, tenv, exp) in
+    trans_stmt (venv, tenv, block)
+  | A.Output e -> trans_exp (venv, tenv, e)
+  | A.Block xs ->
+    let _ = trans_blk (venv, tenv) xs in
+    { stmt = (); ty = T.UNIT; rank = 0 }
   | _ -> err_stmty
+
+and trans_blk (venv, tenv) = function
+  | [] -> []
+  | x :: xs -> trans_stmt (venv, tenv, x) :: trans_blk (venv, tenv) xs
 ;;
 
 let trans_vars (venv, tenv, vars) : venv * tenv * stmty =

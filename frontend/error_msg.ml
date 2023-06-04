@@ -36,7 +36,11 @@ let log_err filename =
   let out_ch = open_out filename in
   let pipe_str = output_string out_ch in
   let pipe_trm = output_string stdout in
-  List.iter (fun s -> pipe_str s; pipe_trm s) !error_state.errors
+  List.iter
+    (fun s ->
+      pipe_str s;
+      pipe_trm s)
+    !error_state.errors
 ;;
 
 let has_errors () = !error_state.any_errors
