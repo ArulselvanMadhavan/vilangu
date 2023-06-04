@@ -17,25 +17,32 @@ let ast_dir = build_dir "ast"
 let list_dir =
   let files = Sys.readdir (Fpath.to_string files_dir) in
   let _files = Base.Array.filter ~f:(fun x -> Filename.extension x = ".t") files in
-  let files = [| "op.t" |] in
+  let files = [| "invalid_var.t" |] in
   Base.Array.map files ~f:(fun x -> Fpath.(add_seg files_dir x))
 ;;
 
-let log_err filename () =
+let log_err filename =
   let err_file = gen_new_file out_dir filename ".err" in
-  Tlang.Error_msg.log_err (Fpath.to_string err_file);
-  None
+  Tlang.Error_msg.log_err (Fpath.to_string err_file)
 ;;
 
-let check_types parsed_ast () =
+let to_opt filename a =
   let open Tlang in
-  let Semant.{ ty; _ } = Semant.trans_prog parsed_ast in
-  Printf.printf "Result type:%s\n" (Types.type2str ty);
-  Some parsed_ast
+  if Error_msg.has_errors ()
+  then (
+    log_err filename;
+    None)
+  else Some a
+;;
+
+let check_types parsed_ast =
+  let open Tlang in
+  Semant.trans_prog parsed_ast
 ;;
 
 let compile_file filename =
   let open Tlang in
+  let open Base.Option.Let_syntax in
   let in_ch = open_in (Fpath.to_string filename) in
   Error_msg.reset ();
   Error_msg.set_filename (Fpath.to_string filename);
@@ -48,32 +55,27 @@ let compile_file filename =
       let (sl, sr), (el, er) = pos in
       err_str := Printf.sprintf "Error at (%d:%d)-(%d:%d). %s" sl sr el er msg;
       Error_msg.error pos !err_str;
+      log_err filename;
       None
     | Parser.Error ->
       err_str := "Parser Error occured";
       Error_msg.error ((-1, -1), (-1, -1)) !err_str;
+      log_err filename;
       None
     | _ ->
       err_str := "Unexpected error";
       Error_msg.error ((-1, -1), (-1, -1)) !err_str;
+      log_err filename;
       None
   in
-  (* semant phase *)
-  let parsed_exp =
-    if Error_msg.has_errors ()
-    then log_err filename ()
-    else Option.fold ~none:(log_err filename) ~some:check_types parsed_exp ()
-  in
-  Option.map
-    (fun pe ->
-      Sexplib0.Sexp.to_string_hum (Ast.sexp_of_comp_unit pe) |> Printf.printf "%s\n";
-      let ir_file = gen_new_file ir_dir filename ".ir" in
-      let ast_file = gen_new_file ast_dir filename ".ast" in
-      (* Ast.sexp_of_comp_unit pe |> Sexplib0.Sexp.to_string |> Printf.printf "%s\n"; *)
-      Ir_gen.gen_prog pe
-      |> Ir_gen.dump (Fpath.to_string ast_file) (Fpath.to_string ir_file);
-      ir_file)
-    parsed_exp
+  let%bind parsed_ast = parsed_exp in
+  let%map _sem_ty = check_types parsed_ast |> to_opt filename in
+  Sexplib0.Sexp.to_string_hum (Ast.sexp_of_comp_unit parsed_ast) |> Printf.printf "%s\n";
+  let ir_file = gen_new_file ir_dir filename ".ir" in
+  let ast_file = gen_new_file ast_dir filename ".ast" in
+  Ir_gen.gen_prog parsed_ast
+  |> Ir_gen.dump (Fpath.to_string ast_file) (Fpath.to_string ir_file);
+  ir_file
 ;;
 
 let backend_exec = "backend/build/tools/driver/tlang"
