@@ -80,7 +80,7 @@ and stmt =
   | Output of exp
   | ReturnStmt of exp option
   | Empty
-  | Break
+  | Break of pos
   | Continue of pos
   | ExprStmt of exp
   | Delete of exp

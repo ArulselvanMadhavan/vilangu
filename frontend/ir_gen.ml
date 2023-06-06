@@ -36,7 +36,7 @@ let gen_stmt s =
     | A.Block xs -> FT.Block_expr { expr_list = List.map gstmt xs }
     | A.While { exp; block } ->
       FT.While_expr { while_cond = gen_expr exp; while_block = gstmt block }
-    | A.Break -> FT.Break
+    | A.Break _ -> FT.Break
     | A.Continue _ -> FT.Continue
     | A.Empty -> FT.Empty
     | _ -> FT.Integer (Int32.of_int (-1))

@@ -16,8 +16,8 @@ let ast_dir = build_dir "ast"
 
 let list_dir =
   let files = Sys.readdir (Fpath.to_string files_dir) in
-  let _files = Base.Array.filter ~f:(fun x -> Filename.extension x = ".t") files in
-  let files = [| "continue.t" |] in
+  let files = Base.Array.filter ~f:(fun x -> Filename.extension x = ".t") files in
+  (* let files = [| "continue.t" |] in *)
   Base.Array.map files ~f:(fun x -> Fpath.(add_seg files_dir x))
 ;;
 
@@ -69,7 +69,7 @@ let compile_file filename =
       None
   in
   let%bind parsed_ast = parsed_exp in
-  Sexplib0.Sexp.to_string_hum (Ast.sexp_of_comp_unit parsed_ast) |> Printf.printf "%s\n";  
+  Sexplib0.Sexp.to_string_hum (Ast.sexp_of_comp_unit parsed_ast) |> Printf.printf "%s\n";
   let%map _sem_ty = check_types parsed_ast |> to_opt filename in
   let ir_file = gen_new_file ir_dir filename ".ir" in
   let ast_file = gen_new_file ast_dir filename ".ast" in

@@ -98,8 +98,14 @@ let rec trans_exp (venv, tenv, exp) =
     else (
       let oper_str = A.sexp_of_bioper oper |> Sexplib0.Sexp.to_string_hum in
       error pos (oper_str ^ " operand types don't match") err_stmty)
-  | A.IntLit _ -> {ty = T.INT; rank = 0; stmt = ()}
+  | A.IntLit _ -> { ty = T.INT; rank = 0; stmt = () }
   | _ -> err_stmty
+;;
+
+let inside_loop_check stmt_str pos =
+  if !loop_nest_count = 0
+  then error pos (stmt_str ^ "statement not directly inside a loop") err_stmty
+  else { stmt = (); ty = T.UNIT; rank = 0 }
 ;;
 
 let rec trans_stmt (venv, tenv, stmt) : stmty =
@@ -113,9 +119,9 @@ let rec trans_stmt (venv, tenv, stmt) : stmty =
     res_ty
   | A.Output e -> trans_exp (venv, tenv, e)
   | A.Continue pos ->
-    if !loop_nest_count = 0
-    then error pos "Continue statement not directly inside a loop" err_stmty
-    else { stmt = (); ty = T.UNIT; rank = 0 }
+    inside_loop_check (A.sexp_of_stmt stmt |> Sexplib0.Sexp.to_string_hum) pos
+  | A.Break pos ->
+    inside_loop_check (A.sexp_of_stmt stmt |> Sexplib0.Sexp.to_string_hum) pos
   | A.Block xs ->
     let _ = trans_blk (venv, tenv) xs in
     { stmt = (); ty = T.UNIT; rank = 0 }

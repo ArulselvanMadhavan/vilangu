@@ -182,7 +182,7 @@ let out_stmt :=
   | OUT; ~=exp; SEMICOLON; { Output exp }
 
 let break :=
-  | BREAK; SEMICOLON; { Break }
+  | BREAK; SEMICOLON; { Break (lp($loc)) }
 
 let continue :=
   | CONTINUE; SEMICOLON; { Continue (lp($loc)) }
