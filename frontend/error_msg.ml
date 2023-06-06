@@ -3,7 +3,7 @@ type t =
   ; file_name : string [@default ""]
   ; line_num : int [@default 1]
   ; line_pos : int list
-  ; errors : string list
+  ; errors : string list (* ; warnings : string list *)
   }
 [@@deriving make]
 

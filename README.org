@@ -45,8 +45,9 @@ make
 #+begin_src bash
 dune exec vilangu
 #+end_src
-** Open Questions
-- Semantic analysis catch - continue statements not in loop
+** TODO
+- [ ] Warn users of unreachable code blocks after break; continue statements
+- 
 ** Useful links
   - https://github.com/ksrky/tiger/tree/master
   - [[https://www.cs.columbia.edu/~sedwards/classes/2002/w4115/tiger.pdf][Tiger Lang specs]]

@@ -18,6 +18,7 @@ let error pos msg ret =
   ret
 ;;
 
+let loop_nest_count = ref 0
 let err_stmty = { stmt = (); ty = T.NULL; rank = 0 }
 
 let check_rank (ty, exp_rank, got_rank, pos) =
@@ -74,11 +75,9 @@ let trans_var (venv, var) =
   match var with
   | A.SimpleVar (id, pos) ->
     (match S.look (venv, id) with
-     | Some (E.VarEntry { ty; rank }) ->
-       { stmt = (); ty; rank }
+     | Some (E.VarEntry { ty; rank }) -> { stmt = (); ty; rank }
      | Some _ -> error pos "expecting a variable, not a function" err_stmty
-     | None ->
-       error pos ("undefined variable " ^ S.name id) err_stmty)
+     | None -> error pos ("undefined variable " ^ S.name id) err_stmty)
   | _ -> err_stmty
 ;;
 
@@ -91,6 +90,15 @@ let rec trans_exp (venv, tenv, exp) =
     (* TODO: check rank *)
     { stmt = (); ty = T.UNIT; rank = 0 }
   | A.Identifier (id, pos) -> trans_var (venv, A.SimpleVar (id, pos))
+  | A.OpExp (A.BinaryOp { left; oper; right }, pos) ->
+    let lexp = trans_exp (venv, tenv, left) in
+    let rexp = trans_exp (venv, tenv, right) in
+    if T.type_match lexp.ty rexp.ty
+    then lexp
+    else (
+      let oper_str = A.sexp_of_bioper oper |> Sexplib0.Sexp.to_string_hum in
+      error pos (oper_str ^ " operand types don't match") err_stmty)
+  | A.IntLit _ -> {ty = T.INT; rank = 0; stmt = ()}
   | _ -> err_stmty
 ;;
 
@@ -99,11 +107,25 @@ let rec trans_stmt (venv, tenv, stmt) : stmty =
   | A.ExprStmt e -> trans_exp (venv, tenv, e)
   | A.While { exp; block } ->
     let _ = trans_exp (venv, tenv, exp) in
-    trans_stmt (venv, tenv, block)
+    loop_nest_count := !loop_nest_count + 1;
+    let res_ty = trans_stmt (venv, tenv, block) in
+    loop_nest_count := !loop_nest_count - 1;
+    res_ty
   | A.Output e -> trans_exp (venv, tenv, e)
+  | A.Continue pos ->
+    if !loop_nest_count = 0
+    then error pos "Continue statement not directly inside a loop" err_stmty
+    else { stmt = (); ty = T.UNIT; rank = 0 }
   | A.Block xs ->
     let _ = trans_blk (venv, tenv) xs in
     { stmt = (); ty = T.UNIT; rank = 0 }
+  | A.IfElse { exp; istmt; estmt; pos } ->
+    let _c = trans_exp (venv, tenv, exp) in
+    let ires = trans_stmt (venv, tenv, istmt) in
+    let eres = trans_stmt (venv, tenv, estmt) in
+    if T.type_match ires.ty eres.ty
+    then ires
+    else error pos "If and else branch types don't match" err_stmty
   | _ -> err_stmty
 
 and trans_blk (venv, tenv) = function

@@ -31,13 +31,13 @@ let gen_stmt s =
   let rec gstmt = function
     | A.Output o -> FT.Printf { format = "%d"; f_args = [ gen_expr o ] }
     | A.ExprStmt e -> gen_expr e
-    | A.IfElse { exp; istmt; estmt } ->
+    | A.IfElse { exp; istmt; estmt; _ } ->
       FT.If_expr { eval = gen_expr exp; if_expr = gstmt istmt; else_expr = gstmt estmt }
     | A.Block xs -> FT.Block_expr { expr_list = List.map gstmt xs }
     | A.While { exp; block } ->
       FT.While_expr { while_cond = gen_expr exp; while_block = gstmt block }
     | A.Break -> FT.Break
-    | A.Continue -> FT.Continue
+    | A.Continue _ -> FT.Continue
     | A.Empty -> FT.Empty
     | _ -> FT.Integer (Int32.of_int (-1))
   in

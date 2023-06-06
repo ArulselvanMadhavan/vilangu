@@ -166,7 +166,7 @@ let stmt :=
   | ~=block; <>
 
 let if_stmt :=
-  | IF; exp=paren_exp; istmt=stmt; ELSE; estmt=stmt; { IfElse {exp;istmt;estmt} }
+  | IF; exp=paren_exp; istmt=stmt; ELSE; estmt=stmt; { IfElse {exp;istmt;estmt;pos=lp($loc)} }
                
 let while_stmt :=
   | WHILE; ~=paren_exp; ~=stmt; { While { exp=paren_exp; block=stmt} }
@@ -185,7 +185,7 @@ let break :=
   | BREAK; SEMICOLON; { Break }
 
 let continue :=
-  | CONTINUE; { Continue }
+  | CONTINUE; SEMICOLON; { Continue (lp($loc)) }
 
 let empty_stmt :=                    
   | SEMICOLON; {Empty}

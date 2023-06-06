@@ -15,3 +15,12 @@ let type2str = function
   | NAME (id, _) -> Symbol.name id
   | UNIT -> "unit"
 ;;
+
+let type_match t1 t2 =
+  match t1, t2 with
+  | INT, INT -> true
+  | UNIT, UNIT -> true
+  | NULL, NULL -> true
+  | NAME ((_, id1), _), NAME ((_, id2), _) -> Int.(id1 = id2)
+  | _, _ -> false
+;;

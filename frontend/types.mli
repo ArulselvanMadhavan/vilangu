@@ -10,3 +10,4 @@ type ty =
 [@@deriving sexp]
 
 val type2str : ty -> string
+val type_match : ty -> ty -> bool

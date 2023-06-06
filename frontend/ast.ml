@@ -81,13 +81,14 @@ and stmt =
   | ReturnStmt of exp option
   | Empty
   | Break
-  | Continue
+  | Continue of pos
   | ExprStmt of exp
   | Delete of exp
   | IfElse of
       { exp : exp
       ; istmt : stmt
       ; estmt : stmt
+      ; pos : pos
       }
 
 and exp =
