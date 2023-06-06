@@ -45,9 +45,9 @@ make
 #+begin_src bash
 dune exec vilangu
 #+end_src
-** TODO
+** Pending tasks
 - [ ] Warn users of unreachable code blocks after break; continue statements
-- 
+- [ ] Warn Unused variables
 ** Useful links
   - https://github.com/ksrky/tiger/tree/master
   - [[https://www.cs.columbia.edu/~sedwards/classes/2002/w4115/tiger.pdf][Tiger Lang specs]]
