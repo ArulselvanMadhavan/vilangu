@@ -3,47 +3,10 @@ Vilangu is a compiler for the [[https://www.cs.unh.edu/~cs712/T_language_spec/][
 OCaml. The backend uses the LLVM infrastructure to generate code for
 any desired architecture.
 ** How to run?
-*** Install OCaml Toolchain
 #+begin_src bash
-bash -c "sh <(curl -fsSL https://raw.githubusercontent.com/ocaml/opam/master/shell/install.sh)"
-opam init
-opam switch create vilangu 4.14.1
-opam install . --deps-only
-#+end_src
-*** Install LLVM toolchain (14 or higher)
-- [[https://apt.llvm.org/][Follow the official instructions here]]
-*** Link between Frontend and Backend
-- This link happens via frontend.proto
-- OCaml types to serialize the AST are generated using
-    #+begin_src bash
-      ocaml-protoc -binary -ml_out tlang/ tlang/frontend.proto
-    #+end_src
-- Sample output
-#+begin_src bash
-arul@arul-Serval ~/d/vilangu (main)> ocaml-protoc -binary -pp -ml_out frontend/ frontend/frontend.proto                                                                                                     (base) 
-Generating frontend/frontend_types.mli
-Generating frontend/frontend_types.ml
-Generating frontend/frontend_pb.mli
-Generating frontend/frontend_pb.ml
-Generating frontend/frontend_pp.mli
-Generating frontend/frontend_pp.ml
-#+end_src
-- Install protobuf compiler
-  #+begin_src bash
-    sudo apt-get install -y protobuf-compiler
-    protoc --version
-  #+end_src
-*** Generate the tlang backend
-#+begin_src bash
-cd backend
-mkdir build
-cd build
-cmake ../
-make
-#+end_src
-*** Run the compiler
-#+begin_src bash
-dune exec vilangu
+  make vilangu
+  # inside docker container
+  bash run.sh
 #+end_src
 ** Pending tasks
 - [ ] Warn users of unreachable code blocks after break; continue statements
