@@ -42,11 +42,11 @@ ENV OCAML_COMPILER=${OCAML_COMPILER}
 RUN echo "${USER_NAME} ALL=(ALL:ALL) NOPASSWD:ALL" > /etc/sudoers.d/${USER_NAME}
 RUN chmod 440 /etc/sudoers.d/${USER_NAME}
 RUN chown root:root /etc/sudoers.d/${USER_NAME}
-RUN groupadd -g ${GID} ${USER_NAME}
+RUN if [ $(getent group ${GID}) ]; then echo "group already exists"; else groupadd -g ${GID} ${USER_NAME} ; fi
 RUN useradd -m ${USER_NAME} --uid=${UID} --gid=${GID} -s /bin/bash
 # RUN adduser --uid ${UID} --disabled-password --gecos '' ${USER_NAME}
 RUN passwd -l ${USER_NAME}
-RUN chown -R ${USER_NAME}:${USER_NAME} /home/${USER_NAME}
+RUN chown -R ${USER_NAME}:$(getent group ${GID} | cut -d: -f1) /home/${USER_NAME}
 USER ${USER_NAME}
 ENV HOME=/home/${USER_NAME}
 
