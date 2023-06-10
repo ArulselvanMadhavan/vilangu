@@ -60,18 +60,13 @@ ExprFunctionAppIR::ExprFunctionAppIR(
   }
 };
 
-ExprPrintfIR::ExprPrintfIR(const Frontend_ir::Expr::_Printf &expr) {
-  formatStr = expr.format();
-  formatStr = formatStr.append("\n"); // Add new line to format string
-  for (int i = 0; i < expr.f_args_size(); i++) {
-    arguments.push_back(deserializeExpr(expr.f_args()[i]));
+ExprArrayMakeIR::ExprArrayMakeIR(
+    const Frontend_ir::Expr::_ArrayCreation &expr) {
+  varType = deserializeType(expr.texpr());
+  for (auto e : expr.creation_exprs()) {
+    creationExprs.push_back(deserializeExpr(e));
   }
 };
-
-ExprVarDeclIR::ExprVarDeclIR(const Frontend_ir::Expr::_VarDecl &expr) {
-  varName = expr.var_id();
-  varType = deserializeType(expr.texpr());
-}
 
 std::unique_ptr<ExprIR> deserializeExpr(const Frontend_ir::Expr &expr) {
   switch (expr.value_case()) {
@@ -79,78 +74,89 @@ std::unique_ptr<ExprIR> deserializeExpr(const Frontend_ir::Expr &expr) {
     return std::unique_ptr<ExprIR>(new ExprIntegerIR(expr.integer()));
   case Frontend_ir::Expr::kFunctionApp:
     return std::unique_ptr<ExprIR>(new ExprFunctionAppIR(expr.functionapp()));
-  case Frontend_ir::Expr::kPrintf:
-    return std::unique_ptr<ExprIR>(new ExprPrintfIR(expr.printf()));
   case Frontend_ir::Expr::kUnop:
     return std::unique_ptr<ExprIR>(new ExprUnopIR(expr.unop()));
   case Frontend_ir::Expr::kBinop:
     return std::unique_ptr<ExprIR>(new ExprBinOpIR(expr.binop()));
-  case Frontend_ir::Expr::kVarDecl:
-    return std::unique_ptr<ExprIR>(new ExprVarDeclIR(expr.vardecl()));
   case Frontend_ir::Expr::kAssign:
     return std::unique_ptr<ExprIR>(new ExprAssignIR(expr.assign()));
   case Frontend_ir::Expr::kExprId:
     return std::unique_ptr<ExprIR>(new ExprIdentifierIR(expr.exprid()));
-  case Frontend_ir::Expr::kIfExpr:
-    return std::unique_ptr<ExprIR>(new ExprIfElseIR(expr.ifexpr()));
-  case Frontend_ir::Expr::kBlockExpr:
-    return std::unique_ptr<ExprBlockIR>(new ExprBlockIR(expr.blockexpr()));
-  case Frontend_ir::Expr::kWhileExpr:
-    return std::unique_ptr<ExprWhileIR>(new ExprWhileIR(expr.whileexpr()));
-  case Frontend_ir::Expr::kBreak:
-    return std::unique_ptr<ExprBreakIR>(new ExprBreakIR());
-  case Frontend_ir::Expr::kContinue:
-    return std::unique_ptr<ExprContinueIR>(new ExprContinueIR());
   case Frontend_ir::Expr::kEmpty:
-    return std::unique_ptr<ExprEmptyIR>(new ExprEmptyIR());
+    return std::unique_ptr<ExprIR>(new ExprEmptyIR());
+  case Frontend_ir::Expr::kArrayCreation:
+    return std::unique_ptr<ExprIR>(new ExprArrayMakeIR(expr.arraycreation()));
+  case Frontend_ir::Expr::kVarExp:
+    return std::unique_ptr<ExprIR>(new ExprVarIR(expr.varexp()));
+  case Frontend_ir::Expr::kNullLit:
+    return std::unique_ptr<ExprIR>(new ExprNullIR());
+  case Frontend_ir::Expr::kCastExpr:
+    return std::unique_ptr<ExprIR>(new ExprCastIR(expr.castexpr()));
   default:
     // FIXME
     return std::unique_ptr<ExprIR>(new ExprIntegerIR(-1));
   }
 }
 
-IdentifierVarIR::IdentifierVarIR(const std::string &name) { varName = name; };
-
-std::unique_ptr<IdentifierIR>
-deserializeIdentifier(const Frontend_ir::Identifier &identifier) {
-  switch (identifier.value_case()) {
-  case Frontend_ir::Identifier::kVar:
-    return std::unique_ptr<IdentifierIR>(
-        new IdentifierVarIR(identifier.var().var_name()));
+CastType deserializeCastType(const Frontend_ir::Expr::_Cast c) {
+  switch (c.value_case()) {
+  case Frontend_ir::Expr::_Cast::kNoCast:
+    return CastType::Identity;
+  case Frontend_ir::Expr::_Cast::kWideCast:
+    return CastType::Wide;
+  case Frontend_ir::Expr::_Cast::kNarrowCast:
+    return CastType::Narrow;
   default:
-    return std::unique_ptr<IdentifierIR>(new IdentifierVarIR("null"));
-    break;
+    llvm::outs() << "Cast type not set";
+    return CastType::Identity;
   }
 }
 
-ExprIdentifierIR::ExprIdentifierIR(const Frontend_ir::Identifier &expr) {
-  identifier = deserializeIdentifier(expr);
+ExprCastIR::ExprCastIR(const Frontend_ir::Expr::_CastExpr castExpr) {
+  castType = deserializeCastType(castExpr.cast_type());
+  castTo = deserializeType(castExpr.cast_to());
+  expr = deserializeExpr(castExpr.expr());
+};
+
+ExprVarIR::ExprVarIR(const Frontend_ir::Var &v) { var = deserializeVar(v); };
+SimpleVarIR::SimpleVarIR(const std::string &name) { varName = name; };
+LoadVarIR::LoadVarIR(const Frontend_ir::Var::_Load &v) {
+  baseVar = deserializeVar(v.var());
+};
+
+SubscriptVarIR::SubscriptVarIR(const Frontend_ir::Var::_Subscript &var) {
+  baseVar = deserializeVar(var.base_var());
+  lenVar = deserializeVar(var.len_var());
+  expr = deserializeExpr(var.var_exp());
+};
+
+FieldVarIR::FieldVarIR(const Frontend_ir::Var::_Field &var) {
+  baseExpr = deserializeExpr(var.base_expr());
+  field_index = var.field_index();
+};
+
+std::unique_ptr<VarIR> deserializeVar(const Frontend_ir::Var &var) {
+  switch (var.value_case()) {
+  case Frontend_ir::Var::kSimple:
+    return std::unique_ptr<VarIR>(new SimpleVarIR(var.simple().var_name()));
+  case Frontend_ir::Var::kSubscript:
+    return std::unique_ptr<VarIR>(new SubscriptVarIR(var.subscript()));
+  case Frontend_ir::Var::kField:
+    return std::unique_ptr<VarIR>(new FieldVarIR(var.field()));
+  case Frontend_ir::Var::kLoadVar:
+    return std::unique_ptr<VarIR>(new LoadVarIR(var.loadvar()));
+  default:
+    return nullptr;
+  }
 }
 
 ExprAssignIR::ExprAssignIR(const Frontend_ir::Expr::_Assign &expr) {
-  identifier = deserializeIdentifier(expr.lhs());
+  identifier = deserializeVar(expr.lhs());
   assignedExpr = deserializeExpr(expr.rhs());
 }
 
-ExprBlockIR::ExprBlockIR(const Frontend_ir::Expr::_Block &expr) {
-  for (int i = 0; i < expr.expr_list_size(); i++) {
-    auto e = expr.expr_list(i);
-    exprs.push_back(deserializeExpr(e));
-    if (e.has_break_() || e.has_continue_()) {
-      break;
-    }
-  }
-}
-
-ExprIfElseIR::ExprIfElseIR(const Frontend_ir::Expr::_If_expr &expr) {
-  condExpr = deserializeExpr(expr.eval());
-  thenExpr = deserializeExpr(expr.if_expr());
-  elseExpr = deserializeExpr(expr.else_expr());
-}
-
-ExprWhileIR::ExprWhileIR(const Frontend_ir::Expr::_While_expr &expr) {
-  condExpr = deserializeExpr(expr.while_cond());
-  loopExpr = deserializeExpr(expr.while_block());
+ExprIdentifierIR::ExprIdentifierIR(const Frontend_ir::Identifier &expr) {
+  var = deserializeVar(expr.id());
 }
 
 // Codegen impl
@@ -163,10 +169,6 @@ llvm::Value *ExprFunctionAppIR::codegen(IRVisitor &visitor) {
   return visitor.codegen(*this);
 }
 
-llvm::Value *ExprPrintfIR::codegen(IRVisitor &visitor) {
-  return visitor.codegen(*this);
-}
-
 llvm::Value *ExprUnopIR::codegen(IRVisitor &visitor) {
   return visitor.codegen(*this);
 }
@@ -175,7 +177,19 @@ llvm::Value *ExprBinOpIR::codegen(IRVisitor &visitor) {
   return visitor.codegen(*this);
 }
 
-llvm::Value *ExprVarDeclIR::codegen(IRVisitor &visitor) {
+llvm::Value *ExprAssignIR::codegen(IRVisitor &visitor) {
+  return visitor.codegen(*this);
+}
+
+llvm::Value *ExprEmptyIR::codegen(IRVisitor &visitor) {
+  return visitor.codegen(*this);
+}
+
+llvm::Value *ExprArrayMakeIR::codegen(IRVisitor &visitor) {
+  return visitor.codegen(*this);
+}
+
+llvm::Value *SimpleVarIR::codegen(IRVisitor &visitor) {
   return visitor.codegen(*this);
 }
 
@@ -183,34 +197,21 @@ llvm::Value *ExprIdentifierIR::codegen(IRVisitor &visitor) {
   return visitor.codegen(*this);
 }
 
-llvm::Value *ExprAssignIR::codegen(IRVisitor &visitor) {
+llvm::Value *SubscriptVarIR::codegen(IRVisitor &visitor) {
   return visitor.codegen(*this);
 }
-
-llvm::Value *IdentifierVarIR::codegen(IRVisitor &visitor) {
+llvm::Value *FieldVarIR::codegen(IRVisitor &visitor) {
   return visitor.codegen(*this);
 }
-
-llvm::Value *ExprBlockIR::codegen(IRVisitor &visitor) {
+llvm::Value *ExprVarIR::codegen(IRVisitor &visitor) {
   return visitor.codegen(*this);
 }
-
-llvm::Value *ExprIfElseIR::codegen(IRVisitor &visitor) {
+llvm::Value *LoadVarIR::codegen(IRVisitor &visitor) {
   return visitor.codegen(*this);
 }
-
-llvm::Value *ExprWhileIR::codegen(IRVisitor &visitor) {
+llvm::Value *ExprNullIR::codegen(IRVisitor &visitor) {
   return visitor.codegen(*this);
 }
-
-llvm::Value *ExprBreakIR::codegen(IRVisitor &visitor) {
-  return visitor.codegen(*this);
-}
-
-llvm::Value *ExprContinueIR::codegen(IRVisitor &visitor) {
-  return visitor.codegen(*this);
-}
-
-llvm::Value *ExprEmptyIR::codegen(IRVisitor &visitor) {
+llvm::Value *ExprCastIR::codegen(IRVisitor &visitor) {
   return visitor.codegen(*this);
 }

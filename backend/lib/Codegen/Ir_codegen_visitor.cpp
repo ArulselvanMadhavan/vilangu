@@ -27,8 +27,16 @@ IRCodegenVisitor::IRCodegenVisitor() {
   loops = new std::stack<LoopInfo *>();
 }
 
+std::string IRCodegenVisitor::getPrintIntFormatVar() {
+  return "printIntFormat";
+}
+std::string IRCodegenVisitor::getCastErrFormatVar() { return "castErrFormat"; }
+std::string IRCodegenVisitor::getOutOfBoundsFormatVar() {
+  return "outOfBoundsFormat";
+}
+
 void IRCodegenVisitor::codegenMainExpr(
-    const std::vector<std::unique_ptr<ExprIR>> &mainExpr) {
+    const std::vector<std::unique_ptr<StmtIR>> &mainExpr) {
   llvm::FunctionType *mainType =
       llvm::FunctionType::get(llvm::IntegerType::getInt32Ty(*context),
                               std::vector<llvm::Type *>(), false);
@@ -50,8 +58,12 @@ void IRCodegenVisitor::codegenMainExpr(
 }
 void IRCodegenVisitor::codegenProgram(const ProgramIR &program) {
   codegenExternFunctionDeclarations();
+  codegenClasses(program.classDefns);
+  codegenFunctionProtos(program.functionDefns);
+  codegenVTables(program.classDefns);
+  codegenFunctionDefns(program.functionDefns);
   codegenMainExpr(program.mainExpr);
-  runOptimizingPasses(program.mainExpr);
+  // runOptimizingPasses(program.mainExpr);
 }
 IRCodegenVisitor::~IRCodegenVisitor() {
   // std::cout << "Destructor IRCodegenVisitor\n";
@@ -65,14 +77,29 @@ void IRCodegenVisitor::configureTarget() {
 void IRCodegenVisitor::dumpLLVMIR() { module->print(llvm::outs(), nullptr); }
 
 void IRCodegenVisitor::runOptimizingPasses(
-    const std::vector<std::unique_ptr<ExprIR>> &mainExpr) {
+    const std::vector<std::unique_ptr<StmtIR>> &mainExpr) {
   std::unique_ptr<llvm::legacy::FunctionPassManager> functionPassManager =
       std::make_unique<llvm::legacy::FunctionPassManager>(module.get());
   // Do simple "peephole" optimizations
-  // functionPassManager->add(llvm::createInstructionCombiningPass());
+  functionPassManager->add(llvm::createInstructionCombiningPass());
   // Simplify the control flow graph (deleting unreachable blocks etc).
   functionPassManager->add(llvm::createCFGSimplificationPass());
   functionPassManager->doInitialization();
   llvm::Function *llvmMainFun = module->getFunction(llvm::StringRef("main"));
   functionPassManager->run(*llvmMainFun);
+}
+
+std::string IRCodegenVisitor::getTypeNameAsString(llvm::Type *t) {
+  std::string type_str;
+  llvm::raw_string_ostream rso(type_str);
+  t->print(rso);
+  return type_str;
+}
+
+std::string IRCodegenVisitor::getVtableName(std::string className) {
+  return className + "_Vtable";
+}
+
+std::string IRCodegenVisitor::getVtableTypeName(std::string className) {
+  return getVtableName(className) + "_type";
 }

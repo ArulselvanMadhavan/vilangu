@@ -27,13 +27,6 @@ struct ExprFunctionAppIR : public ExprIR {
   virtual llvm::Value *codegen(IRVisitor &visitor) override;
 };
 
-struct ExprPrintfIR : public ExprIR {
-  std::string formatStr;
-  std::vector<std::unique_ptr<ExprIR>> arguments;
-  ExprPrintfIR(const Frontend_ir::Expr::_Printf &expr);
-  virtual llvm::Value *codegen(IRVisitor &visitor) override;
-};
-
 enum Unop { UnopNot, UnopNeg };
 
 struct ExprUnopIR : public ExprIR {
@@ -61,63 +54,53 @@ struct ExprBinOpIR : public ExprIR {
   virtual llvm::Value *codegen(IRVisitor &visitor) override;
 };
 
-struct IdentifierIR {
-  std::string varName;
-  virtual ~IdentifierIR() = default;
+struct VarIR {
+  virtual ~VarIR() = default;
   virtual llvm::Value *codegen(IRVisitor &visitor) = 0;
 };
 
-struct IdentifierVarIR : public IdentifierIR {
-  IdentifierVarIR(const std::string &name);
-  virtual llvm::Value *codegen(IRVisitor &visitor) override;
-};
-
-struct ExprVarDeclIR : public ExprIR {
+struct SimpleVarIR : public VarIR {
   std::string varName;
-  std::unique_ptr<TypeIR> varType;
-  ExprVarDeclIR(const Frontend_ir::Expr::_VarDecl &expr);
+  SimpleVarIR(const std::string &name);
   virtual llvm::Value *codegen(IRVisitor &visitor) override;
 };
 
+struct SubscriptVarIR : public VarIR {
+  std::unique_ptr<VarIR> baseVar;
+  std::unique_ptr<ExprIR> expr;
+  std::unique_ptr<VarIR> lenVar;
+  SubscriptVarIR(const Frontend_ir::Var::_Subscript &var);
+  virtual llvm::Value *codegen(IRVisitor &visitor) override;
+};
+
+struct FieldVarIR : public VarIR {
+  std::unique_ptr<ExprIR> baseExpr;
+  int field_index;
+  FieldVarIR(const Frontend_ir::Var::_Field &var);
+  virtual llvm::Value *codegen(IRVisitor &visitor) override;
+};
+
+struct LoadVarIR : public VarIR {
+  std::unique_ptr<VarIR> baseVar;
+  LoadVarIR(const Frontend_ir::Var::_Load &var);
+  virtual llvm::Value *codegen(IRVisitor &visitor) override;
+};
+
+struct ExprVarIR : public ExprIR {
+  std::unique_ptr<VarIR> var;
+  ExprVarIR(const Frontend_ir::Var &var);
+  virtual llvm::Value *codegen(IRVisitor &visitor) override;
+};
 struct ExprIdentifierIR : public ExprIR {
-  std::unique_ptr<IdentifierIR> identifier;
+  std::unique_ptr<VarIR> var;
   ExprIdentifierIR(const Frontend_ir::Identifier &expr);
   virtual llvm::Value *codegen(IRVisitor &visitor) override;
 };
 
 struct ExprAssignIR : public ExprIR {
-  std::unique_ptr<IdentifierIR> identifier;
+  std::unique_ptr<VarIR> identifier;
   std::unique_ptr<ExprIR> assignedExpr;
   ExprAssignIR(const Frontend_ir::Expr::_Assign &expr);
-  virtual llvm::Value *codegen(IRVisitor &visitor) override;
-};
-
-struct ExprBlockIR : public ExprIR {
-  std::vector<std::unique_ptr<ExprIR>> exprs;
-  ExprBlockIR(const Frontend_ir::Expr::_Block &expr);
-  virtual llvm::Value *codegen(IRVisitor &visitor) override;
-};
-
-struct ExprIfElseIR : public ExprIR {
-  std::unique_ptr<ExprIR> condExpr;
-  std::unique_ptr<ExprIR> thenExpr;
-  std::unique_ptr<ExprIR> elseExpr;
-  ExprIfElseIR(const Frontend_ir::Expr::_If_expr &expr);
-  virtual llvm::Value *codegen(IRVisitor &visitor) override;
-};
-
-struct ExprWhileIR : public ExprIR {
-  std::unique_ptr<ExprIR> condExpr;
-  std::unique_ptr<ExprIR> loopExpr;
-  ExprWhileIR(const Frontend_ir::Expr::_While_expr &expr);
-  virtual llvm::Value *codegen(IRVisitor &visitor) override;
-};
-
-struct ExprBreakIR : public ExprIR {
-  virtual llvm::Value *codegen(IRVisitor &visitor) override;
-};
-
-struct ExprContinueIR : public ExprIR {
   virtual llvm::Value *codegen(IRVisitor &visitor) override;
 };
 
@@ -125,5 +108,27 @@ struct ExprEmptyIR : public ExprIR {
   virtual llvm::Value *codegen(IRVisitor &visitor) override;
 };
 
+struct ExprArrayMakeIR : public ExprIR {
+  std::vector<std::unique_ptr<ExprIR>> creationExprs;
+  std::unique_ptr<TypeIR> varType;
+  ExprArrayMakeIR(const Frontend_ir::Expr::_ArrayCreation &expr);
+  virtual llvm::Value *codegen(IRVisitor &visitor) override;
+};
+
+struct ExprNullIR : public ExprIR {
+  virtual llvm::Value *codegen(IRVisitor &visitor) override;
+};
+
+enum CastType { Identity, Wide, Narrow };
+
+struct ExprCastIR : public ExprIR {
+  std::unique_ptr<TypeIR> castTo;
+  std::unique_ptr<ExprIR> expr;
+  enum CastType castType;
+  ExprCastIR(const Frontend_ir::Expr::_CastExpr);
+  virtual llvm::Value *codegen(IRVisitor &visitor) override;
+};
+
 std::unique_ptr<ExprIR> deserializeExpr(const Frontend_ir::Expr &expr);
+std::unique_ptr<VarIR> deserializeVar(const Frontend_ir::Var &var);
 #endif

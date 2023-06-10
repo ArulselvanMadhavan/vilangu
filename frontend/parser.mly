@@ -25,7 +25,7 @@ open Ast
 
 %{
 let lp((sp, ep) : (Lexing.position * Lexing.position)) : pos
-      = ((sp.pos_lnum, sp.pos_cnum - sp.pos_bol), (ep.pos_lnum, ep.pos_cnum - sp.pos_bol))
+  = ((sp.pos_lnum, sp.pos_cnum - sp.pos_bol), (ep.pos_lnum, ep.pos_cnum - sp.pos_bol))
 %}
 
 %%
@@ -34,10 +34,10 @@ let prog :=
   ~=comp_unit; EOF; <>         (* <> is identity *)
 
 let comp_unit :=                       
-  | ~=main_decl; { {main_decl ; classdecs = []}}
-  | ~=main_decl; ~=class_decls; { {main_decl; classdecs = class_decls} }
-  | ~=class_decls; ~=main_decl; { {main_decl; classdecs = class_decls} }
-  | cs1=class_decls; ~=main_decl; cs2=class_decls; { {main_decl; classdecs= cs1 @ cs2}}
+  | ~=main_decl; { {main_decl ; class_decs = []}}
+  | ~=main_decl; ~=class_decls; { {main_decl; class_decs = class_decls} }
+  | ~=class_decls; ~=main_decl; { {main_decl; class_decs = class_decls} }
+  | cs1=class_decls; ~=main_decl; cs2=class_decls; { {main_decl; class_decs= cs1 @ cs2}}
 
 let main_decl :=
   | INT; MAIN; LPAREN; RPAREN; ~=main_block; { main_block }
@@ -72,7 +72,7 @@ let class_mem :=
   | ~=mthd_decl; { mthd_decl }
 
 let field_decl :=
-  | (rank1, type_)=typ; ~=decls; SEMICOLON; { FieldDec (List.map (fun (rank2, id) -> Field { type_; rank = rank1 + rank2; name = id}) decls) }
+  | type_=typ; ~=decls; SEMICOLON; { FieldDec (List.map (fun (rank, id) -> Field { type_ = append_rank_to_type rank type_; name = id}) decls) }
 
 let decls ==
   separated_list(COMMA, decl)
@@ -82,7 +82,7 @@ let decl :=
   | ~=id; { (0, id) }
 
 let mthd_decl :=
-  | (rank, type_)=typ; (id, fparams)=mthd_desc; ~=mth_body; { Method {return_t = Return { type_; rank}; name=id; fparams ; body = mth_body} }
+  | type_=typ; (id, fparams)=mthd_desc; ~=mth_body; { Method {return_t = Return { type_ }; name=id; fparams ; body = mth_body} }
 
 let mthd_desc :=
   | ~=id; ~=formal_params; { (id, formal_params) }
@@ -124,7 +124,7 @@ let fplist :=
   | ~=formal_param; { [ formal_param] }
 
 let formal_param :=
- | (rank1, typ)=typ; (rank2, id)=decl; { Param { typ; name = id; rank = rank1 + rank2 } }
+  | type_=typ; (rank1, id)=decl; { Param { type_ = append_rank_to_type rank1 type_; name = id} }
 
 (* VariableDeclarationID substituted with decl *)
 let block :=
@@ -151,7 +151,7 @@ let main_var_dec :=
   | ~=main_var_desc; SEMICOLON; { main_var_desc }
 
 let main_var_desc :=
-  | (rank1, type_)=typ; ~=decls; { (List.map (fun (rank2, id) -> {type_; id; rank=rank1 + rank2}) decls)}
+  | type_=typ; ~=decls; { (List.map (fun (rank, id) -> {type_ = append_rank_to_type rank type_; id}) decls)}
 
 let stmt :=
   | ~=while_stmt; <>
@@ -179,7 +179,7 @@ let delete_stmt :=
   | DELETE; ~=exp; SEMICOLON; { Delete exp }
 
 let out_stmt :=                
-  | OUT; ~=exp; SEMICOLON; { Output exp }
+  | OUT; ~=exp; SEMICOLON; { Output (exp, lp($loc)) }
 
 let break :=
   | BREAK; SEMICOLON; { Break (lp($loc)) }
@@ -208,8 +208,8 @@ let assignment :=
   | lhs=lhs; ASSIGN_OP; ~=exp; { Assignment {lhs; exp; pos=lp($loc)} }
 
 let lhs :=
-  | ~=id; { SimpleVar (id, lp($loc)) }
-  | ~=field_access; { field_access }
+  | ~=id; { (SimpleVar (id, lp($loc))) }
+  | ~=field_access; { LoadVar field_access }
   | ~=array_access; { array_access }
 
 let relexp :=
@@ -234,11 +234,11 @@ let unaryexp :=
 
 let castexp :=
   | ~=paren_exp; ~=castexp; { CastEvalExp {to_=paren_exp; from_=castexp}}
-  | LPAREN; (rank, type_)=arr_type;RPAREN; exp=castexp; { CastType { rank; type_; exp}}
+  | LPAREN; type_=arr_type;RPAREN; exp=castexp; { CastType { type_ = Reference type_; exp; cast_type = None}}
   | ~=primary; { primary }
 
 let primary :=
-  | ~=id; { Identifier (id, lp($loc)) }
+  | ~=id; { VarExp (SimpleVar (id, lp($loc)), lp($loc)) } (* VarExp SimpleVar *)
   | ~=arrayexpr; { arrayexpr }
   | ~=primlit; { primlit }
 
@@ -252,13 +252,13 @@ let primlit :=
   | ~=class_inst_creation; { class_inst_creation }
 
 let class_inst_creation :=
-  | NEW; (_, type_)=class_type; ~=arguments; { ClassCreationExp {type_; args=arguments; pos = (lp($loc))} }
+  | NEW; type_=class_type; ~=arguments; { ClassCreationExp {type_ = Reference type_; args=arguments; pos = (lp($loc))} }
 
 let arrayexpr :=
-  | NEW; ~=prim_type; ~=dimexprs; empty_dims=dimensions; { ArrayCreationExp {type_=prim_type; exprs=dimexprs; empty_dims; pos = lp($loc)}}
-  | NEW; ~=prim_type; ~=dimexprs; { ArrayCreationExp {type_ = prim_type; exprs=dimexprs; empty_dims=0; pos= lp($loc)} }
-  | NEW; (_, type_)=class_type; ~=dimexprs; empty_dims=dimensions; { ArrayCreationExp {type_; exprs=dimexprs; empty_dims; pos = lp($loc)}}
-  | NEW; (_, type_)=class_type; ~=dimexprs; { ArrayCreationExp {type_; exprs=dimexprs; empty_dims=0; pos = lp($loc)}}
+  | NEW; ~=prim_type; ~=dimexprs; empty_dims=dimensions; { ArrayCreationExp {type_=append_rank_to_type empty_dims prim_type; exprs=dimexprs; pos = lp($loc)}}
+  | NEW; ~=prim_type; ~=dimexprs; { ArrayCreationExp {type_ = prim_type; exprs=dimexprs; pos= lp($loc)} }
+  | NEW; type_=class_type; ~=dimexprs; empty_dims=dimensions; { ArrayCreationExp {type_ = append_rank_to_type empty_dims (Reference type_); exprs=dimexprs; pos = lp($loc)}}
+  | NEW; type_=class_type; ~=dimexprs; { ArrayCreationExp {type_ = Reference type_; exprs=dimexprs; pos = lp($loc)}}
 
 let dimexprs :=
   | ~=dimexprs; ~=dimexpr; { dimexpr :: dimexprs }
@@ -283,8 +283,12 @@ let mth_invoc :=
   | ~=primary;  DOT; ~=id; ~=arguments; { MethodCall {base = primary; field = Some (Identifier (id, lp($loc))); args = arguments; pos = lp($loc)} }
   | SUPER; DOT; ~=id; ~=arguments; { MethodCall {base=(Super (lp($loc))); field=Some (Identifier (id, lp($loc))); args=arguments; pos = lp($loc)} }
 
+let primary_no_new_array :=
+  | ~=array_access; { array_access }
+
 let array_access :=
-  | ~=id; ~=dimexpr; { (SubscriptVar (SimpleVar (id, lp($loc)), dimexpr, lp($loc))) }
+  | ~=id; ~=dimexpr; { SubscriptVar (SimpleVar (id, lp($loc)), dimexpr, lp($loc)) }
+  | ~=primary_no_new_array; ~=dimexpr; { SubscriptVar (primary_no_new_array, dimexpr, lp($loc)) }
 
 let arguments :=
   | LPAREN; ~=args_list; RPAREN; { args_list }
@@ -295,7 +299,7 @@ let args_list :=
   | ~=exp; { [exp]}
 
 let typ :=
-  | ~=prim_type; { (0, prim_type) }
+  | ~=prim_type; { prim_type }
   | ~=ref_type; { ref_type }
 
 let prim_type :=
@@ -305,19 +309,23 @@ let num_type :=
   | ~=int_type; { int_type }
 
 let int_type :=
-  | INT; { NameTy (Env.int_symbol, lp($loc)) }
+  | INT; { Primitive (Env.int_symbol, lp($loc)) }
 
 let ref_type :=
-  | ~=class_type; { class_type }
-  | ~=arr_type; { arr_type }
+  | ~=class_type; { Reference class_type }
+  | ~=arr_type; { Reference arr_type }
 
 let class_type :=
-  | ~=id; { (0, NameTy (id, lp($loc))) }
+  | ~=id; { (ClassType (id, lp($loc))) }
 
 let arr_type :=
-  | ~=prim_type; dimension; { (1, prim_type) }
-  | ~=id; dimension; { (1, NameTy (id, lp($loc))) }
-  | (rank, dim)=arr_type; dimension; {(rank + 1, dim)}
+  | ~=prim_type; dimension; { ArrayType (1, prim_type) }
+  | ~=id; dimension; { ArrayType (1, (Reference (ClassType (id, lp($loc))))) }
+  | prev_arr=arr_type; dimension; {
+      match prev_arr with
+      | ArrayType (rank, ty) -> ArrayType (rank + 1, ty)
+      | ty -> ty
+  }
 
 let literal :=
   | intval=NUM; { IntLit (intval, lp($loc))

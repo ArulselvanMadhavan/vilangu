@@ -9,3 +9,5 @@ export CC=/usr/bin/clang
 cmake ../ && make
 cd ${PROJECT_HOME}
 dune exec vilangu
+mkdir -p examples/err
+mv examples/out/*.err examples/err

@@ -8,7 +8,7 @@ type symbol = Symbol.symbol [@@deriving sexp]
 
 type comp_unit =
   { main_decl : main list
-  ; classdecs : classdec list
+  ; class_decs : classdec list
   }
 
 and classdec =
@@ -21,15 +21,10 @@ and classdec =
 and class_field =
   | Field of
       { name : symbol
-      ; type_ : type_
-      ; rank : int
+      ; type_ : type_ (* ; rank : int *)
       }
 
-and return_t =
-  | Return of
-      { type_ : type_
-      ; rank : int
-      }
+and return_t = Return of { type_ : type_ (* ; rank : int *) }
 
 and class_body =
   | Constructor of
@@ -52,19 +47,18 @@ and class_body =
 and param =
   | Param of
       { name : symbol
-      ; typ : type_
-      ; rank : int
+      ; type_ : type_ (* ; rank : int *)
       }
 
 and var =
   | SimpleVar of symbol * pos
   | SubscriptVar of var * exp * pos
   | FieldVar of exp * symbol * pos
+  | LoadVar of var (* used only on lhs *)
 
 and variable =
   { type_ : type_
-  ; id : symbol
-  ; rank : int
+  ; id : symbol (* ; rank : int *)
   }
 
 and main =
@@ -77,7 +71,7 @@ and stmt =
       { exp : exp
       ; block : stmt
       }
-  | Output of exp
+  | Output of exp * pos
   | ReturnStmt of exp option
   | Empty
   | Break of pos
@@ -98,7 +92,6 @@ and exp =
   | ArrayCreationExp of
       { type_ : type_
       ; exprs : exp list
-      ; empty_dims : int
       ; pos : pos
       }
   | ClassCreationExp of
@@ -121,9 +114,9 @@ and exp =
       ; from_ : exp
       }
   | CastType of
-      { rank : int
-      ; type_ : type_
+      { type_ : type_
       ; exp : exp
+      ; cast_type : cast_type option
       }
   | Assignment of
       { lhs : var
@@ -155,4 +148,25 @@ and uoper =
   | NotOp
   | NegateOp
 
-and type_ = NameTy of symbol * pos [@@deriving sexp]
+and type_ =
+  | Primitive of symbol * pos
+  | Reference of ref_type
+
+and ref_type =
+  | ArrayType of int * type_
+  | ClassType of symbol * pos
+
+and cast_type =
+  | Wide
+  | Narrow
+  | Identity
+[@@deriving sexp]
+
+let append_rank_to_type rank1 type_ =
+  if rank1 > 0
+  then (
+    match type_ with
+    | Reference (ArrayType (rank2, type_)) -> Reference (ArrayType (rank1 + rank2, type_))
+    | _ -> Reference (ArrayType (rank1, type_)))
+  else type_
+;;

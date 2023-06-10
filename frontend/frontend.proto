@@ -29,23 +29,53 @@ message Bin_op {
   }
 }
 
-message Identifier {
-  message _Var {
+message Var {
+  message _Simple {
     required string var_name = 1;
   }
+  message _Subscript {
+    required Var base_var = 1;
+    required Expr var_exp = 2;
+    required Var len_var = 3;
+  }
+  message _Field {
+    required Expr base_expr = 1;
+    required int32 field_index = 2;
+  }
+  message _Load {
+    required Var var = 1;
+  }
   oneof value {
-    _Var var = 1;
+    _Simple Simple = 1;
+    _Subscript Subscript = 2;
+    _Field Field = 3;
+    _Load LoadVar = 4;
   }
 }
 
+message Identifier {
+  required Var id = 1;
+}
+
 message Type_expr {
-  
-  message _RankedType {
-    required int32 rank = 1;
+
+  message _Int32 {}
+  message _Void {}
+  message _Class {
+    required string name = 1;
   }
-  
+  message _Pointer {
+    required Type_expr data = 1;
+  }
+  message _Bool {}
+  message _Int8 {}
   oneof value {
-    _RankedType Int32Ty = 1;
+    _Int32 Int32 = 1;
+    _Class Class = 2;
+    _Pointer Pointer = 3;
+    _Void Void = 4;
+    _Bool Bool = 5;
+    _Int8 Int8 = 6;
   }
 }
 
@@ -54,11 +84,6 @@ message Expr {
   message _FunctionApp {
     required string name = 1;
     repeated Expr args = 2;
-  }
-
-  message _Printf {
-    required string format = 1;
-    repeated Expr f_args = 2;
   }
 
   message _Unop {
@@ -72,54 +97,117 @@ message Expr {
     required Expr rexpr = 3;
   }
 
-  message _VarDecl {
-    required string var_id = 1;
-    required Type_expr texpr = 2;
-  }
-
-  message _Assign {
-    required Identifier lhs = 1;
+  message _Assign {    
+    required Var lhs = 1;
     required Expr rhs = 2;
   }
 
-  message _If_expr {
-    required Expr eval = 1;
-    required Expr if_expr = 2;
-    required Expr else_expr = 3;
-  }
-
-  message _Block {
-    repeated Expr expr_list = 1;
-  }
-
-  message _While_expr {
-    required Expr while_cond = 1;
-    required Expr while_block = 2;
-  }
-
-  message _Break {}
-
-  message _Continue{}
   message _Empty{}
+  message _ArrayCreation{
+    repeated Expr creation_exprs = 1;
+    required Type_expr texpr = 2;
+    // texpr.rank - length of creation_exprs = empty_dims
+  }
+
+  message _NullLit {
+    
+  }
+
+  message _Cast {
+    message _NoCast {}
+    message _WideCast {}
+    message _NarrowCast {}
+    oneof value {
+      _NoCast NoCast = 1;
+      _WideCast WideCast = 2;
+      _NarrowCast NarrowCast = 3;
+    }
+  }
+
+  message _CastExpr {
+    required Type_expr cast_to = 1;
+    required Expr expr = 2;
+    required _Cast cast_type = 3;
+  }
   
   oneof value {
     int32 Integer = 1;
     _FunctionApp FunctionApp = 2;
-    _Printf Printf = 3;
-    _Unop Unop = 4;
-    _Binop Binop = 5;
-    _VarDecl VarDecl = 6;
-    _Assign Assign = 7;
-    Identifier ExprId = 8;
-    _If_expr IfExpr = 9;
-    _Block BlockExpr = 10;
-    _While_expr WhileExpr = 11;
-    _Break Break = 12;
-    _Continue Continue = 13;
-    _Empty Empty = 14;
+    _Unop Unop = 3;
+    _Binop Binop = 4;
+    _Assign Assign = 5;
+    Identifier ExprId = 6;      // RHS
+    _Empty Empty = 7;
+    _ArrayCreation ArrayCreation = 8;
+    Var VarExp = 9;            // LHS
+    _NullLit NullLit = 10;
+    _CastExpr CastExpr = 11;
   }
 }
 
+message Stmt {
+
+  message _VarDecl {
+    required string var_id = 1;
+    required Type_expr texpr = 2;
+  }
+  
+  message _Printf {
+    required string format = 1;
+    repeated Expr f_args = 2;
+  }
+
+  message _ExprStmt {
+    required Expr expr_stmt = 1;
+  }
+
+  message _While {
+    required Expr while_cond = 1;
+    required Stmt while_block = 2;
+  }
+  message _Block {
+    repeated Stmt stmt_list = 1;
+  }
+  message _Break {}
+  message _Continue{}
+  message _If_stmt {
+    required Expr eval = 1;
+    required Stmt if_stmt = 2;
+    required Stmt else_stmt = 3;
+  }
+  
+  oneof value {
+    _VarDecl VarDecl = 1;
+    _ExprStmt ExprStmt = 2;
+    _Printf Printf = 3;
+    _While While = 4;
+    _Block Block = 5;
+    _Break Break = 6;
+    _Continue Continue = 7;
+    _If_stmt IfStmt = 8;
+  }
+}
+
+message ClassDef {
+  required string name = 1;
+  repeated Type_expr fields = 2;
+  required string baseClassName = 3;
+}
+
+message Param {
+  required Type_expr param_type = 1;
+  required string param_name = 2;
+}
+
+message FunctionDef {
+  required string name = 1;
+  required Type_expr return_t = 2;
+  repeated Param params = 3;
+  required Stmt body = 4;
+}
+
 message Program {
-  repeated Expr main = 1;
+  repeated Stmt main = 1;
+  repeated ClassDef classdefs = 2;
+  repeated FunctionDef function_defs = 3;
 }

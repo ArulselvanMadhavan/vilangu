@@ -19,9 +19,9 @@ int main(int argc_, const char **argv_) {
   auto program = pb_result.second;
   auto pir = tlang::protobufToIR(program);
 
-  IRCodegenVisitor codeGen;
-  codeGen.codegenProgram(*pir);
-  codeGen.configureTarget();
-  codeGen.dumpLLVMIR();
+  IRCodegenVisitor *codeGen = new IRCodegenVisitor();
+  codeGen->codegenProgram(*pir);
+  codeGen->configureTarget();
+  codeGen->dumpLLVMIR();
   return 0;
 }
