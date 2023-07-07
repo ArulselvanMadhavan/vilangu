@@ -14,12 +14,10 @@
 
 (license LICENSE)
 
-(documentation https://url/to/documentation)
-
 (package
  (name vilangu)
- (synopsis "tiger compiler in OCaml")
- (description "Tiger compiler")
+ (synopsis "T-lang compiler in OCaml")
+ (description "T-lang compiler")
  (depends ocaml
           dune
           (menhir (>= 20230415))
@@ -31,6 +29,6 @@
           (ppx_let (>= 0.15.0))
           (cmdliner (>= 1.2.0)))
  (tags
-  (topics compiler tiger)))
+  (topics compiler tiger t-lang)))
 
 ; See the complete stanza docs at https://dune.readthedocs.io/en/stable/dune-files.html#dune-project

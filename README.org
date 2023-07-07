@@ -11,6 +11,7 @@ any desired architecture.
 ** Pending tasks
 - [ ] Ref types init to null at variable declaration time. Handle the case when they are used
   without proper initialization.
+- [ ] Pass line number with all subscript accesses
 - [X] Array type should be int*.
 - [X] Respect multiple ranks
 - [X] Generate loop blocks to init array based on rank
