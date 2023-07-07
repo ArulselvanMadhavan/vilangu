@@ -8,3 +8,4 @@ examples/llvm/*
 examples/out/*
 examples/exec/*
 examples/ast/*
+out/*

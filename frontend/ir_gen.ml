@@ -53,19 +53,22 @@ let gen_expr tenv e =
     | _ -> FT.Integer (Int32.of_int (-1))
   and gen_var = function
     | A.SimpleVar ((sym_name, _), _) -> FT.Simple { var_name = sym_name }
-    | A.SubscriptVar ((A.FieldVar _ as v), exp, _) ->
+    | A.SubscriptVar ((A.FieldVar _ as v), exp, pos) ->
       (match gen_var v with
        | FT.Field { base_expr; _ } as base_var ->
          let len_var = FT.Field { base_expr; field_index = Int32.of_int 2 } in
-         FT.Subscript { base_var; var_exp = gexpr exp; len_var }
+         let line_no = A.line_no pos in
+         FT.Subscript { base_var; var_exp = gexpr exp; len_var; line_no }
        | _ -> raise SubscriptAccessException)
-    | A.SubscriptVar (v, exp, _) ->
+    | A.SubscriptVar (v, exp, pos) ->
+               let line_no = A.line_no pos in
       FT.Subscript
         { base_var =
             FT.Field { base_expr = FT.Var_exp (gen_var v); field_index = Int32.one }
         ; len_var =
             FT.Field { base_expr = FT.Var_exp (gen_var v); field_index = Int32.of_int 2 }
         ; var_exp = gexpr exp
+              ; line_no
         }
     | A.FieldVar (base_exp, _, _) ->
       FT.Field { base_expr = gexpr base_exp; field_index = Int32.of_int 2 }
@@ -165,6 +168,7 @@ let mk_arr_constr name rank type_ =
                                 { base_var = this_field Int32.one
                                 ; var_exp = var_exp "i"
                                 ; len_var = this_field (Int32.of_int 2)
+                                ; line_no = Int32.zero (* There is no line no for compiler generated code *)
                                 }
                           ; rhs = var_exp "zeroInit"
                           }

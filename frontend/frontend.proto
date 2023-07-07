@@ -37,6 +37,7 @@ message Var {
     required Var base_var = 1;
     required Expr var_exp = 2;
     required Var len_var = 3;
+    required int32 line_no = 4;
   }
   message _Field {
     required Expr base_expr = 1;
