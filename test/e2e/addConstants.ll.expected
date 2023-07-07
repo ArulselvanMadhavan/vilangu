@@ -8,6 +8,7 @@ target triple = "x86_64-pc-linux-gnu"
 @printIntFormat = private constant [4 x i8] c"%d\0A\00", align 1
 @castErrFormat = private constant [38 x i8] c"Narrow cast err: %s is not a type %s\0A\00", align 1
 @outOfBoundsFormat = private constant [64 x i8] c"Array out of bounds exception at line %d. Index:%d | Length:%d\0A\00", align 1
+@negativeLenFormat = private constant [51 x i8] c"Array len cannot be negative. Length attempted:%d\0A\00", align 1
 @Object_class_name = private constant [7 x i8] c"Object\00", align 1
 @Object_Vtable = global %Object_Vtable_type { %Object_Vtable_type* null, i8* getelementptr inbounds ([7 x i8], [7 x i8]* @Object_class_name, i32 0, i32 0) }
 

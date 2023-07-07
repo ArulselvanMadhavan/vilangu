@@ -308,23 +308,23 @@ llvm::Value *IRCodegenVisitor::codegen(const ExprArrayMakeIR &expr) {
     return nullptr;
   }
   // Negative int check
-  // llvm::Function *parentFunction = builder->GetInsertBlock()->getParent();
-  // llvm::BasicBlock *thenBB =
-  //     llvm::BasicBlock::Create(*context, "negativeLenThen", parentFunction);
-  // llvm::BasicBlock *mergeBB =
-  //     llvm::BasicBlock::Create(*context, "negativeLenCont");
-  // llvm::Value *zeroIdx =
-  //     llvm::ConstantInt::getSigned(llvm::Type::getInt32Ty(*context), 0);
-  // llvm::Value *condValue = builder->CreateICmpSLT(zeroIdx, size);
-  // builder->CreateCondBr(condValue, thenBB, mergeBB);
+  llvm::Function *parentFunction = builder->GetInsertBlock()->getParent();
+  llvm::BasicBlock *thenBB =
+      llvm::BasicBlock::Create(*context, "negativeLenThen", parentFunction);
+  llvm::BasicBlock *mergeBB =
+      llvm::BasicBlock::Create(*context, "negativeLenCont");
+  llvm::Value *zeroIdx =
+      llvm::ConstantInt::getSigned(llvm::Type::getInt32Ty(*context), 0);
+  llvm::Value *condValue = builder->CreateICmpSLT(size, zeroIdx);
+  builder->CreateCondBr(condValue, thenBB, mergeBB);
 
-  // parentFunction->getBasicBlockList().push_back(thenBB);
-  // builder->SetInsertPoint(thenBB);
-  // runtimeError(getNegativeLenFormatVar(), llvm::ArrayRef<llvm::Value *>{});
-  // builder->CreateBr(mergeBB);
+  parentFunction->getBasicBlockList().push_back(thenBB);
+  builder->SetInsertPoint(thenBB);
+  runtimeError(getNegativeLenFormatVar(), llvm::ArrayRef<llvm::Value *>{size});
+  builder->CreateBr(mergeBB);
 
-  // parentFunction->getBasicBlockList().push_back(mergeBB);
-  // builder->SetInsertPoint(mergeBB);
+  parentFunction->getBasicBlockList().push_back(mergeBB);
+  builder->SetInsertPoint(mergeBB);
 
   llvm::Type *resultTypePtr = expr.varType->codegen(*this); // i32arr*
   llvm::Type *resultType;                                   // i32arr
