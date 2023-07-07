@@ -126,10 +126,8 @@ let rec trans_var (venv, tenv, var) =
     then error pos "field access on non-object type" err_stmty_unit
     else if not (String.equal sym_name "length")
     then error pos ("unknown field " ^ sym_name) err_stmty_unit
-    else (
-      (* This has to be length *)
-      { ty = T.INT; stmt = () }
-    )
+    else { (* This has to be length *)
+           ty = T.INT; stmt = () }
   | A.LoadVar var -> trans_var (venv, tenv, var)
 
 and trans_exp (venv, tenv, exp) =
@@ -202,7 +200,6 @@ let rec trans_stmt (venv, tenv, stmt) : 'a stmty =
     { stmt = A.While { exp = tr_exp; block }; ty }
   | A.Output (e, pos) as stmt ->
     let { stmt = exp; ty } = trans_exp (venv, tenv, e) in
-    Printf.printf "%s" (T.type2str ty);
     if T.is_int ty
     then { stmt = A.Output (exp, pos); ty }
     else error pos "Output statement doesn't have an int expression" (err_stmty stmt)

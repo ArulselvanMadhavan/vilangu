@@ -1,3 +1,8 @@
+open Cmdliner
+
+exception NotAValidFileException of string
+exception UnsupportedFileExtension
+
 let files_dir = Fpath.v "examples"
 
 let build_dir dir_name =
@@ -14,11 +19,11 @@ let out_dir = build_dir "out"
 let ir_dir = build_dir "ir"
 let ast_dir = build_dir "ast"
 
-let list_dir =
-  let files = Sys.readdir (Fpath.to_string files_dir) in
-  let _files = Base.Array.filter ~f:(fun x -> Filename.extension x = ".t") files in
-  let files = [| "array.t" |] in
-  Base.Array.map files ~f:(fun x -> Fpath.(add_seg files_dir x))
+(* let list_dir = *)
+(*   let files = Sys.readdir (Fpath.to_string files_dir) in *)
+(*   let _files = Base.Array.filter ~f:(fun x -> Filename.extension x = ".t") files in *)
+(*   let files = [| "array.t" |] in *)
+(*   Base.Array.map files ~f:(fun x -> Fpath.(add_seg files_dir x)) *)
 ;;
 
 let log_err filename =
@@ -89,7 +94,7 @@ let run_exec exec_file out_file =
   "./" ^ Fpath.to_string exec_file ^ " > " ^ Fpath.to_string out_file
 ;;
 
-let print_cmd cmd = Printf.printf "%s\n" cmd
+(* let print_cmd cmd = Printf.printf "%s\n" cmd *)
 
 let ir_to_backend ir_file =
   let is_avail = Sys.file_exists backend_exec in
@@ -99,18 +104,50 @@ let ir_to_backend ir_file =
   let cmd =
     backend_exec ^ " " ^ Fpath.to_string ir_file ^ " > " ^ Fpath.to_string llvm_ir_file
   in
-  print_cmd cmd;
   let code = if is_avail then Sys.command cmd else -1 in
   let cmd = clang_command llvm_ir_file exec_file in
-  print_cmd cmd;
   let code = if code = 0 then Sys.command cmd else -1 in
   let cmd = run_exec exec_file out_file in
   if code = 0 then Sys.command cmd else -1
 ;;
 
-let () =
-  let ir_files = Array.map compile_file list_dir in
+let source_file_t =
+  let env =
+    let doc = "T-lang source file to compile" in
+    Cmd.Env.info "SOURCE_FILE" ~doc
+  in
+  let doc = ".t file to compile" in
+  Arg.(value & pos 0 string "Source file" & info [] ~env ~docv:"SOURCE" ~doc)
+;;
+
+let validate_source_file fname =
+  let fpath =
+    match Fpath.of_string fname with
+    | Ok fpath -> fpath
+    | Error (`Msg s) -> raise (NotAValidFileException s)
+  in
+  let is_t = Fpath.has_ext ".t" fpath in
+  if is_t then fpath else raise UnsupportedFileExtension
+;;
+
+let compiler source_file =
+  let source_file = validate_source_file source_file in
+  let ir_files = Array.map compile_file [| source_file |] in
   let ir_files = Base.Array.filter_opt ir_files in
   let _out_codes = Array.map ir_to_backend ir_files in
   ()
 ;;
+
+let compiler_t = Term.(const compiler $ source_file_t)
+
+let cmd =
+  let doc = "compiler for T-lang" in
+  let man =
+    [ `S Manpage.s_bugs; `P "Email bug reports to <arulselvan1234@gmail.com>." ]
+  in
+  let info = Cmd.info "vilangu" ~version:"%‌%VERSION%%" ~doc ~man in
+  Cmd.v info compiler_t
+;;
+
+let main () = exit (Cmd.eval cmd)
+let () = main ()

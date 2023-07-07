@@ -19,6 +19,7 @@ depends: [
   "ppx_deriving_protobuf" {>= "3.0.0"}
   "fpath" {>= "0.7.3"}
   "ppx_let" {>= "0.15.0"}
+  "cmdliner" {>= "1.2.0"}
   "odoc" {with-doc}
 ]
 build: [

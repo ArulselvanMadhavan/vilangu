@@ -8,6 +8,31 @@ any desired architecture.
   # inside docker container
   bash run.sh
 #+end_src
+** Compiler options
+#+begin_src bash
+     The tc script also takes a few optional commandline options:
+
+       -AST: dumps the AST to an HTML file (file.t --> file.html) after
+             semantic analysis, if semantic analysis is run; otherwise
+             it dumps the tree after the parser is done.
+
+       -CT: dumps the class table after semantic analysis.
+
+       -noAnalyze: disable semantic analysis and code generation
+
+       -log: display the internal translator log messages
+
+       -noLLVM: disable processing the LLVM assembly language
+
+       -ll: keep the LLVM assembly language file produced by the compiler
+
+       -bc: keep the LLVM bytecode file produced by assembling the LLVM
+            assembly language file
+
+       -s: keep the Intel assembly language file
+
+       -o outFile: name the executable file  
+#+end_src
 ** Pending tasks
 - [ ] Ref types init to null at variable declaration time. Handle the case when they are used
   without proper initialization.
@@ -46,10 +71,6 @@ in the long term.  We urge you to read about the
 [Give up GitHub](https://GiveUpGitHub.org) campaign from
 [the Software Freedom Conservancy](https://sfconservancy.org) to understand
 some of the reasons why GitHub is not a good place to host FOSS projects.
-
-If you are a contributor who personally has already quit using GitHub, please
-[check this resource](INSERT_LINK) for how to send us contributions without
-using GitHub directly.
 
 Any use of this project's code by GitHub Copilot, past or present, is done
 without our permission.  We do not consent to GitHub's use of this project's

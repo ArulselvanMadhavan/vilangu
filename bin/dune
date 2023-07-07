@@ -1,6 +1,6 @@
 (executable
  (public_name vilangu)
  (name main)
- (libraries tlang fpath)
+ (libraries tlang fpath cmdliner)
  (preprocess
   (pps ppx_let)))
