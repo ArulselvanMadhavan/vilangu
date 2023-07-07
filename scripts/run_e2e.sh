@@ -26,5 +26,6 @@ for f in $(find ./test/e2e -name '*.t'); do # run through program test_suite
       # create expected output for regression tests in future
         cp "${OUT_FILE}" "${OUT_FILE}.expected"
       fi
+      rm -rf ${OUT_FILE}
     done
 done
