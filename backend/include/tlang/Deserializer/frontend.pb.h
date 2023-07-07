@@ -5159,6 +5159,7 @@ class Expr__ArrayCreation PROTOBUF_FINAL :
   enum : int {
     kCreationExprsFieldNumber = 1,
     kTexprFieldNumber = 2,
+    kMakeLineNoFieldNumber = 3,
   };
   // repeated .Frontend_ir.Expr creation_exprs = 1;
   int creation_exprs_size() const;
@@ -5196,9 +5197,25 @@ class Expr__ArrayCreation PROTOBUF_FINAL :
       ::Frontend_ir::Type_expr* texpr);
   ::Frontend_ir::Type_expr* unsafe_arena_release_texpr();
 
+  // required int32 make_line_no = 3;
+  bool has_make_line_no() const;
+  private:
+  bool _internal_has_make_line_no() const;
+  public:
+  void clear_make_line_no();
+  ::PROTOBUF_NAMESPACE_ID::int32 make_line_no() const;
+  void set_make_line_no(::PROTOBUF_NAMESPACE_ID::int32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::int32 _internal_make_line_no() const;
+  void _internal_set_make_line_no(::PROTOBUF_NAMESPACE_ID::int32 value);
+  public:
+
   // @@protoc_insertion_point(class_scope:Frontend_ir.Expr._ArrayCreation)
  private:
   class _Internal;
+
+  // helper for ByteSizeLong()
+  size_t RequiredFieldsByteSizeFallback() const;
 
   template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
@@ -5207,6 +5224,7 @@ class Expr__ArrayCreation PROTOBUF_FINAL :
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Frontend_ir::Expr > creation_exprs_;
   ::Frontend_ir::Type_expr* texpr_;
+  ::PROTOBUF_NAMESPACE_ID::int32 make_line_no_;
   friend struct ::TableStruct_frontend_2eproto;
 };
 // -------------------------------------------------------------------
@@ -12193,6 +12211,34 @@ inline void Expr__ArrayCreation::set_allocated_texpr(::Frontend_ir::Type_expr* t
   }
   texpr_ = texpr;
   // @@protoc_insertion_point(field_set_allocated:Frontend_ir.Expr._ArrayCreation.texpr)
+}
+
+// required int32 make_line_no = 3;
+inline bool Expr__ArrayCreation::_internal_has_make_line_no() const {
+  bool value = (_has_bits_[0] & 0x00000002u) != 0;
+  return value;
+}
+inline bool Expr__ArrayCreation::has_make_line_no() const {
+  return _internal_has_make_line_no();
+}
+inline void Expr__ArrayCreation::clear_make_line_no() {
+  make_line_no_ = 0;
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 Expr__ArrayCreation::_internal_make_line_no() const {
+  return make_line_no_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 Expr__ArrayCreation::make_line_no() const {
+  // @@protoc_insertion_point(field_get:Frontend_ir.Expr._ArrayCreation.make_line_no)
+  return _internal_make_line_no();
+}
+inline void Expr__ArrayCreation::_internal_set_make_line_no(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  _has_bits_[0] |= 0x00000002u;
+  make_line_no_ = value;
+}
+inline void Expr__ArrayCreation::set_make_line_no(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  _internal_set_make_line_no(value);
+  // @@protoc_insertion_point(field_set:Frontend_ir.Expr._ArrayCreation.make_line_no)
 }
 
 // -------------------------------------------------------------------

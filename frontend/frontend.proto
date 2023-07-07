@@ -107,6 +107,7 @@ message Expr {
   message _ArrayCreation{
     repeated Expr creation_exprs = 1;
     required Type_expr texpr = 2;
+    required int32 make_line_no = 3;
     // texpr.rank - length of creation_exprs = empty_dims
   }
 

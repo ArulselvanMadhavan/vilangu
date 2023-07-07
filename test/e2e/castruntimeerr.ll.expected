@@ -174,12 +174,12 @@ negativeLenCont3:                                 ; preds = %negativeLenThen2, %
   %4 = bitcast %i32arr** %a to %Object**
   %5 = load %Object*, %Object** %4, align 8
   %6 = call i1 @Object_IsA(%Object* %5, %Object_Vtable_type* nonnull @Object_Vtable, i8* getelementptr inbounds ([10 x i8], [10 x i8]* @i32arrarr_class_name, i64 0, i64 0))
-  br i1 %6, label %then, label %else
+  br i1 %6, label %castThen, label %castElse
 
-then:                                             ; preds = %negativeLenCont3
-  br label %ifcont
+castThen:                                         ; preds = %negativeLenCont3
+  br label %castCont
 
-else:                                             ; preds = %negativeLenCont3
+castElse:                                         ; preds = %negativeLenCont3
   %7 = alloca [7 x i8], align 1
   %.repack = getelementptr inbounds [7 x i8], [7 x i8]* %7, i64 0, i64 0
   store i8 79, i8* %.repack, align 1
@@ -224,8 +224,8 @@ else:                                             ; preds = %negativeLenCont3
   %10 = getelementptr inbounds [12 x i8], [12 x i8]* %9, i64 0, i64 0
   %11 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([38 x i8], [38 x i8]* @castErrFormat, i64 0, i64 0), i8* nonnull %8, i8* nonnull %10)
   call void @exit(i32 -1)
-  br label %ifcont
+  br label %castCont
 
-ifcont:                                           ; preds = %else, %then
+castCont:                                         ; preds = %castElse, %castThen
   ret i32 0
 }

@@ -112,6 +112,7 @@ struct ExprEmptyIR : public ExprIR {
 struct ExprArrayMakeIR : public ExprIR {
   std::vector<std::unique_ptr<ExprIR>> creationExprs;
   std::unique_ptr<TypeIR> varType;
+  int lineNo;
   ExprArrayMakeIR(const Frontend_ir::Expr::_ArrayCreation &expr);
   virtual llvm::Value *codegen(IRVisitor &visitor) override;
 };

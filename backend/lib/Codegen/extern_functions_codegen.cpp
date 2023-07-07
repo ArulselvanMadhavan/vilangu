@@ -29,8 +29,8 @@ void IRCodegenVisitor::codegenExternFunctionDeclarations() {
   castErrGV->setAlignment(llvm::Align());
   castErrGV->setInitializer(castErrPtr);
 
-  llvm::StringRef oob =
-      "Array out of bounds exception at line %d. Index:%d | Length:%d\n";
+  llvm::StringRef oob = "Line: %d | Array out of bounds exception at line. "
+                        "Index:%d | Length:%d\n";
   auto oobPtr = llvm::ConstantDataArray::getString(*context, oob);
   module->getOrInsertGlobal(getOutOfBoundsFormatVar(), oobPtr->getType());
   llvm::GlobalVariable *oobGV =
@@ -40,7 +40,8 @@ void IRCodegenVisitor::codegenExternFunctionDeclarations() {
   oobGV->setAlignment(llvm::Align());
   oobGV->setInitializer(oobPtr);
 
-  llvm::StringRef nlen = "Array len cannot be negative. Length attempted:%d\n";
+  llvm::StringRef nlen =
+      "Line:%d | Array len cannot be negative. Length attempted:%d\n";
   auto nlenPtr = llvm::ConstantDataArray::getString(*context, nlen);
   module->getOrInsertGlobal(getNegativeLenFormatVar(), nlenPtr->getType());
   llvm::GlobalVariable *nlenGV =

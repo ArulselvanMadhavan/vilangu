@@ -132,92 +132,86 @@ negativeLenCont:                                  ; preds = %negativeLenThen1, %
   %1 = bitcast i8* %0 to i32*
   call void @i32arr_Constructor(%i32arr* nonnull %newArrayResult, %i32arr_Vtable_type* nonnull @i32arr_Vtable, i32* %1, i32 5)
   store %i32arr* %newArrayResult, %i32arr** %a, align 8
-  %2 = getelementptr inbounds %i32arr, %i32arr* %newArrayResult, i64 0, i32 2
-  %3 = load i32, i32* %2, align 8
-  %4 = icmp sgt i32 %3, 3
-  br i1 %4, label %boundsCheckThen2, label %boundsCheckElse
+  %2 = getelementptr inbounds %i32arr, %i32arr* %newArrayResult, i64 0, i32 1
+  %baseArrPtr = load i32*, i32** %2, align 8
+  %3 = getelementptr inbounds %i32arr, %i32arr* %newArrayResult, i64 0, i32 2
+  %4 = load i32, i32* %3, align 8
+  %5 = icmp slt i32 %4, 4
+  br i1 %5, label %boundsCheckThen2, label %boundsCheckElse
 
 boundsCheckThen2:                                 ; preds = %negativeLenCont
-  %5 = getelementptr inbounds %i32arr, %i32arr* %newArrayResult, i64 0, i32 1
-  %baseArrPtr = load i32*, i32** %5, align 8
-  %6 = getelementptr inbounds i32, i32* %baseArrPtr, i64 3
-  br label %boundsCheckIfcont
-
-boundsCheckElse:                                  ; preds = %negativeLenCont
-  %7 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([64 x i8], [64 x i8]* @outOfBoundsFormat, i64 0, i64 0), i32 5, i32 3, i32 %3)
+  %6 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([64 x i8], [64 x i8]* @outOfBoundsFormat, i64 0, i64 0), i32 5, i32 3, i32 %4)
   call void @exit(i32 -1)
-  br label %boundsCheckIfcont
+  br label %boundsCheckElse
 
-boundsCheckIfcont:                                ; preds = %boundsCheckElse, %boundsCheckThen2
-  store i32 3, i32* %6, align 4
+boundsCheckElse:                                  ; preds = %boundsCheckThen2, %negativeLenCont
+  %7 = getelementptr inbounds i32, i32* %baseArrPtr, i64 3
+  store i32 3, i32* %7, align 4
   %8 = bitcast %i32arr** %a to %Object**
   %9 = load %Object*, %Object** %8, align 8
   %10 = call i1 @Object_IsA(%Object* %9, %Object_Vtable_type* nonnull @Object_Vtable, i8* getelementptr inbounds ([7 x i8], [7 x i8]* @i32arr_class_name, i64 0, i64 0))
-  br i1 %10, label %then, label %else
+  br i1 %10, label %castThen, label %castElse
 
-then:                                             ; preds = %boundsCheckIfcont
-  br label %ifcont
+castThen:                                         ; preds = %boundsCheckElse
+  br label %castCont
 
-else:                                             ; preds = %boundsCheckIfcont
+castElse:                                         ; preds = %boundsCheckElse
   %11 = alloca [7 x i8], align 1
   %.repack = getelementptr inbounds [7 x i8], [7 x i8]* %11, i64 0, i64 0
   store i8 79, i8* %.repack, align 1
-  %.repack7 = getelementptr inbounds [7 x i8], [7 x i8]* %11, i64 0, i64 1
-  store i8 98, i8* %.repack7, align 1
-  %.repack8 = getelementptr inbounds [7 x i8], [7 x i8]* %11, i64 0, i64 2
-  store i8 106, i8* %.repack8, align 1
-  %.repack9 = getelementptr inbounds [7 x i8], [7 x i8]* %11, i64 0, i64 3
-  store i8 101, i8* %.repack9, align 1
-  %.repack10 = getelementptr inbounds [7 x i8], [7 x i8]* %11, i64 0, i64 4
-  store i8 99, i8* %.repack10, align 1
-  %.repack11 = getelementptr inbounds [7 x i8], [7 x i8]* %11, i64 0, i64 5
-  store i8 116, i8* %.repack11, align 1
-  %.repack12 = getelementptr inbounds [7 x i8], [7 x i8]* %11, i64 0, i64 6
-  store i8 0, i8* %.repack12, align 1
+  %.repack6 = getelementptr inbounds [7 x i8], [7 x i8]* %11, i64 0, i64 1
+  store i8 98, i8* %.repack6, align 1
+  %.repack7 = getelementptr inbounds [7 x i8], [7 x i8]* %11, i64 0, i64 2
+  store i8 106, i8* %.repack7, align 1
+  %.repack8 = getelementptr inbounds [7 x i8], [7 x i8]* %11, i64 0, i64 3
+  store i8 101, i8* %.repack8, align 1
+  %.repack9 = getelementptr inbounds [7 x i8], [7 x i8]* %11, i64 0, i64 4
+  store i8 99, i8* %.repack9, align 1
+  %.repack10 = getelementptr inbounds [7 x i8], [7 x i8]* %11, i64 0, i64 5
+  store i8 116, i8* %.repack10, align 1
+  %.repack11 = getelementptr inbounds [7 x i8], [7 x i8]* %11, i64 0, i64 6
+  store i8 0, i8* %.repack11, align 1
   %12 = getelementptr inbounds [7 x i8], [7 x i8]* %11, i64 0, i64 0
   %13 = alloca [9 x i8], align 1
-  %.repack13 = getelementptr inbounds [9 x i8], [9 x i8]* %13, i64 0, i64 0
-  store i8 37, i8* %.repack13, align 1
-  %.repack14 = getelementptr inbounds [9 x i8], [9 x i8]* %13, i64 0, i64 1
-  store i8 105, i8* %.repack14, align 1
-  %.repack15 = getelementptr inbounds [9 x i8], [9 x i8]* %13, i64 0, i64 2
-  store i8 51, i8* %.repack15, align 1
-  %.repack16 = getelementptr inbounds [9 x i8], [9 x i8]* %13, i64 0, i64 3
-  store i8 50, i8* %.repack16, align 1
-  %.repack17 = getelementptr inbounds [9 x i8], [9 x i8]* %13, i64 0, i64 4
-  store i8 97, i8* %.repack17, align 1
-  %.repack18 = getelementptr inbounds [9 x i8], [9 x i8]* %13, i64 0, i64 5
+  %.repack12 = getelementptr inbounds [9 x i8], [9 x i8]* %13, i64 0, i64 0
+  store i8 37, i8* %.repack12, align 1
+  %.repack13 = getelementptr inbounds [9 x i8], [9 x i8]* %13, i64 0, i64 1
+  store i8 105, i8* %.repack13, align 1
+  %.repack14 = getelementptr inbounds [9 x i8], [9 x i8]* %13, i64 0, i64 2
+  store i8 51, i8* %.repack14, align 1
+  %.repack15 = getelementptr inbounds [9 x i8], [9 x i8]* %13, i64 0, i64 3
+  store i8 50, i8* %.repack15, align 1
+  %.repack16 = getelementptr inbounds [9 x i8], [9 x i8]* %13, i64 0, i64 4
+  store i8 97, i8* %.repack16, align 1
+  %.repack17 = getelementptr inbounds [9 x i8], [9 x i8]* %13, i64 0, i64 5
+  store i8 114, i8* %.repack17, align 1
+  %.repack18 = getelementptr inbounds [9 x i8], [9 x i8]* %13, i64 0, i64 6
   store i8 114, i8* %.repack18, align 1
-  %.repack19 = getelementptr inbounds [9 x i8], [9 x i8]* %13, i64 0, i64 6
-  store i8 114, i8* %.repack19, align 1
-  %.repack20 = getelementptr inbounds [9 x i8], [9 x i8]* %13, i64 0, i64 7
-  store i8 42, i8* %.repack20, align 1
-  %.repack21 = getelementptr inbounds [9 x i8], [9 x i8]* %13, i64 0, i64 8
-  store i8 0, i8* %.repack21, align 1
+  %.repack19 = getelementptr inbounds [9 x i8], [9 x i8]* %13, i64 0, i64 7
+  store i8 42, i8* %.repack19, align 1
+  %.repack20 = getelementptr inbounds [9 x i8], [9 x i8]* %13, i64 0, i64 8
+  store i8 0, i8* %.repack20, align 1
   %14 = getelementptr inbounds [9 x i8], [9 x i8]* %13, i64 0, i64 0
   %15 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([38 x i8], [38 x i8]* @castErrFormat, i64 0, i64 0), i8* nonnull %12, i8* nonnull %14)
   call void @exit(i32 -1)
-  br label %ifcont
+  br label %castCont
 
-ifcont:                                           ; preds = %else, %then
-  %16 = getelementptr inbounds %Object, %Object* %9, i64 2
-  %17 = bitcast %Object* %16 to i32*
-  %18 = load i32, i32* %17, align 4
-  %19 = icmp sgt i32 %18, 3
-  br i1 %19, label %boundsCheckThen4, label %boundsCheckElse5
+castCont:                                         ; preds = %castElse, %castThen
+  %16 = getelementptr inbounds %Object, %Object* %9, i64 1
+  %17 = bitcast %Object* %16 to i32**
+  %baseArrPtr3 = load i32*, i32** %17, align 8
+  %18 = getelementptr inbounds %Object, %Object* %9, i64 2
+  %19 = bitcast %Object* %18 to i32*
+  %20 = load i32, i32* %19, align 4
+  %21 = icmp slt i32 %20, 4
+  br i1 %21, label %boundsCheckThen4, label %boundsCheckElse5
 
-boundsCheckThen4:                                 ; preds = %ifcont
-  %20 = getelementptr inbounds %Object, %Object* %9, i64 1
-  %21 = bitcast %Object* %20 to i32**
-  %baseArrPtr3 = load i32*, i32** %21, align 8
-  br label %boundsCheckIfcont6
-
-boundsCheckElse5:                                 ; preds = %ifcont
-  %22 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([64 x i8], [64 x i8]* @outOfBoundsFormat, i64 0, i64 0), i32 8, i32 3, i32 %18)
+boundsCheckThen4:                                 ; preds = %castCont
+  %22 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([64 x i8], [64 x i8]* @outOfBoundsFormat, i64 0, i64 0), i32 8, i32 3, i32 %20)
   call void @exit(i32 -1)
-  br label %boundsCheckIfcont6
+  br label %boundsCheckElse5
 
-boundsCheckIfcont6:                               ; preds = %boundsCheckElse5, %boundsCheckThen4
+boundsCheckElse5:                                 ; preds = %boundsCheckThen4, %castCont
   %23 = getelementptr inbounds i32, i32* %baseArrPtr3, i64 3
   %24 = load i32, i32* %23, align 4
   %25 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([4 x i8], [4 x i8]* @printIntFormat, i64 0, i64 0), i32 %24)

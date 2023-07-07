@@ -179,10 +179,7 @@ llvm::Value *IRCodegenVisitor::codegen(const SubscriptVarIR &var) {
     return nullptr;
   }
   llvm::Type *baseType = baseArrPtr->getType()->getContainedType(0);
-  // Bounds check
-  // 1. Get length of the array
-  // 2. If loadedVal < length; phi normal
-  // 3. else call print with err_string and exit
+
   llvm::Value *lenPtr = var.lenVar->codegen(*this); // i32*
   llvm::Value *lenVal =
       builder->CreateLoad(lenPtr->getType()->getContainedType(0), lenPtr);
@@ -191,80 +188,23 @@ llvm::Value *IRCodegenVisitor::codegen(const SubscriptVarIR &var) {
       llvm::BasicBlock::Create(*context, "boundsCheckThen", parentFunction);
   llvm::BasicBlock *elseBB =
       llvm::BasicBlock::Create(*context, "boundsCheckElse");
-  llvm::BasicBlock *mergeBB =
-      llvm::BasicBlock::Create(*context, "boundsCheckIfcont");
-  llvm::Value *condValue = builder->CreateICmpSLT(loadedVal, lenVal);
+  llvm::Value *condValue = builder->CreateICmpSGE(loadedVal, lenVal);
   builder->CreateCondBr(condValue, thenBB, elseBB);
 
   parentFunction->getBasicBlockList().push_back(thenBB);
   builder->SetInsertPoint(thenBB);
-  llvm::Value *thenVal =
-      builder->CreateInBoundsGEP(baseType, baseArrPtr, loadedVal);
-  builder->CreateBr(mergeBB);
-
-  // Print err in the else block
-  parentFunction->getBasicBlockList().push_back(elseBB);
-  builder->SetInsertPoint(elseBB);
-  llvm::Function *printf = module->getFunction("printf");
   std::vector<llvm::Value *> printfArgs;
-  llvm::GlobalVariable *printVar =
-      module->getNamedGlobal(getOutOfBoundsFormatVar());
-  llvm::Value *zeroIdx =
-      llvm::ConstantInt::getSigned(llvm::Type::getInt32Ty(*context), 0);
-  llvm::Value *printVarBegin = builder->CreateInBoundsGEP(
-      printVar->getType()->getContainedType(0), printVar,
-      llvm::ArrayRef<llvm::Value *>{zeroIdx, zeroIdx});
-  printfArgs.push_back(printVarBegin);
   printfArgs.push_back(llvm::ConstantInt::getSigned(
       llvm::Type::getInt32Ty(*context), var.lineNo));
   printfArgs.push_back(loadedVal);
   printfArgs.push_back(lenVal);
-  builder->CreateCall(printf, printfArgs);
+  runtimeError(getOutOfBoundsFormatVar(), printfArgs);
+  builder->CreateBr(elseBB);
 
-  llvm::Function *exit = module->getFunction("exit");
-  builder->CreateCall(
-      exit, llvm::ArrayRef<llvm::Value *>{llvm::ConstantInt::getSigned(
-                llvm::Type::getInt32Ty(*context), -1)});
-  // call exit
-  builder->CreateBr(mergeBB);
-
-  // merge block
-  parentFunction->getBasicBlockList().push_back(mergeBB);
-  builder->SetInsertPoint(mergeBB);
-  return thenVal;
-
-  // // // (stty*) or (prim*)
-
-  // llvm::Type *baseType = baseArrPtrPtr->getType()->getContainedType(0);
-
-  // if (baseArrPtr->getType()->isPointerTy() == false) {
-  //   baseType = baseArrPtr->getType();
-  //   baseArrPtr = baseArrPtrPtr;
-  // } else {
-  //   baseType = baseArrPtr->getType()->getContainedType(0);
-  // }
-  // if (baseType->isStructTy() == false) {
-  //   // elty*
-  //   llvm::Type *arrayType = baseType;
-  //   llvm::Value *elemAddr =
-  //       builder->CreateInBoundsGEP(arrayType, baseArrPtr, loadedVal);
-  //   return elemAddr;
-  // } else {
-  //   // structty -> already indexed via field_index; this.data - stty**
-  //   // // structty -> not indexed - a - stty**
-  //   // llvm::Value *arrayPtrPtr =
-  //   //     builder->CreateStructGEP(baseType, baseArrPtr, 0); // elemType**
-  //   // llvm::Type *arrayPtrType =
-  //   //     arrayPtrPtr->getType()->getContainedType(0); // elemType*
-  //   // llvm::Value *arrayPtr =
-  //   //     builder->CreateLoad(arrayPtrType, arrayPtrPtr); // elemType*
-
-  //   llvm::Type *arrayType = baseType->getContainedType(0); //
-  //   llvm::Value *elemAddr =
-  //       builder->CreateInBoundsGEP(arrayType, arrayPtr, loadedVal); //
-  //       elemType*
-  //   return elemAddr;
-  // }
+  // Print err in the else block
+  parentFunction->getBasicBlockList().push_back(elseBB);
+  builder->SetInsertPoint(elseBB);
+  return builder->CreateInBoundsGEP(baseType, baseArrPtr, loadedVal);
 }
 
 llvm::Value *IRCodegenVisitor::codegen(const FieldVarIR &var) {
@@ -282,18 +222,7 @@ llvm::Value *IRCodegenVisitor::codegen(const FieldVarIR &var) {
 
 llvm::Value *IRCodegenVisitor::codegen(const ExprIdentifierIR &expr) {
   llvm::Value *id = expr.var->codegen(*this);
-  // llvm::Type *idType = id->getType()->isPointerTy()
-  //                          ? id->getType()->getPointerElementType()
-  //                          : id->getType();
-  // llvm::Type *idType = id->getType();
-  // if (idType->isPointerTy() == false) {
-  //   llvm::outs() << "Identifier expects a pointer type";
-  //   return nullptr;
-  // }
-  // llvm::Value *idVal = builder->CreateLoad(idType->getContainedType(0), id);
-  // return idVal;
   return id;
-  // return expr.var->codegen(*this);
 }
 
 llvm::Value *IRCodegenVisitor::codegen(const ExprEmptyIR &expr) {
@@ -320,7 +249,11 @@ llvm::Value *IRCodegenVisitor::codegen(const ExprArrayMakeIR &expr) {
 
   parentFunction->getBasicBlockList().push_back(thenBB);
   builder->SetInsertPoint(thenBB);
-  runtimeError(getNegativeLenFormatVar(), llvm::ArrayRef<llvm::Value *>{size});
+  runtimeError(getNegativeLenFormatVar(),
+               llvm::ArrayRef<llvm::Value *>{
+                   llvm::ConstantInt::getSigned(
+                       llvm::Type::getInt32Ty(*context), expr.lineNo),
+                   size});
   builder->CreateBr(mergeBB);
 
   parentFunction->getBasicBlockList().push_back(mergeBB);
@@ -420,34 +353,20 @@ llvm::Value *IRCodegenVisitor::codegen(const ExprCastIR &expr) {
 
     llvm::Function *parentFunction = builder->GetInsertBlock()->getParent();
     llvm::BasicBlock *thenBB =
-        llvm::BasicBlock::Create(*context, "then", parentFunction);
-    llvm::BasicBlock *elseBB = llvm::BasicBlock::Create(*context, "else");
-    llvm::BasicBlock *mergeBB = llvm::BasicBlock::Create(*context, "ifcont");
+        llvm::BasicBlock::Create(*context, "castThen", parentFunction);
+    llvm::BasicBlock *elseBB = llvm::BasicBlock::Create(*context, "castElse");
+    llvm::BasicBlock *mergeBB = llvm::BasicBlock::Create(*context, "castCont");
     builder->CreateCondBr(condValue, thenBB, elseBB);
 
     builder->SetInsertPoint(thenBB);
     llvm::Value *thenVal = builder->CreateBitCast(castExprVal, castToTyPtr);
-    if (thenVal == nullptr) {
-      llvm::outs() << "Then block evaluates to null in if-else statement.";
-      return nullptr;
-    }
-    thenBB = builder->GetInsertBlock();
-    if (thenBB->getTerminator() == nullptr) {
-      // Block could have inserted branch inst already. Ex: break, continue
-      // Insert a branch only if one hasn’t been inserted already.
-      builder->CreateBr(mergeBB);
-    }
+    builder->CreateBr(mergeBB);
+
     // Print err in the else block
     parentFunction->getBasicBlockList().push_back(elseBB);
     builder->SetInsertPoint(elseBB);
-    llvm::Function *printf = module->getFunction("printf");
-    std::vector<llvm::Value *> printfArgs;
-    llvm::GlobalVariable *printVar =
-        module->getNamedGlobal(getCastErrFormatVar());
-    llvm::Value *printVarBegin = builder->CreateInBoundsGEP(
-        printVar->getType()->getContainedType(0), printVar,
-        llvm::ArrayRef<llvm::Value *>{zeroIdx, zeroIdx});
 
+    std::vector<llvm::Value *> printfArgs;
     auto errorArg1 =
         llvm::ConstantDataArray::getString(*context, exprTypeName.str());
     auto errArgLoc1 = builder->CreateAlloca(errorArg1->getType(), nullptr);
@@ -464,38 +383,15 @@ llvm::Value *IRCodegenVisitor::codegen(const ExprCastIR &expr) {
         errorArg2->getType(), errArgLoc2,
         llvm::ArrayRef<llvm::Value *>{zeroIdx, zeroIdx});
 
-    printfArgs.push_back(printVarBegin);
     printfArgs.push_back(errArg1Begin);
     printfArgs.push_back(errArg2Begin);
-
-    builder->CreateCall(printf, printfArgs);
-    llvm::Function *exit = module->getFunction("exit");
-    builder->CreateCall(
-        exit, llvm::ArrayRef<llvm::Value *>{llvm::ConstantInt::getSigned(
-                  llvm::Type::getInt32Ty(*context), -1)});
-    elseBB = builder->GetInsertBlock();
-    if (elseBB->getTerminator() == nullptr) {
-      // Block could have inserted branch inst already. Ex: break, continue
-      // Insert a branch only if one hasn’t been inserted already.
-      builder->CreateBr(mergeBB);
-    }
-
-    // // merge block
+    runtimeError(getCastErrFormatVar(), printfArgs);
+    builder->CreateBr(mergeBB);
+    // merge block
     parentFunction->getBasicBlockList().push_back(mergeBB);
     builder->SetInsertPoint(mergeBB);
 
-    // if either is void or their types don't match (which indicates one of
-    // them
-    // returned the null value for void, then don't construct a phi node)
-    if (thenVal->getType() == llvm::Type::getVoidTy(*context)
-        //     // elseVal->getType() == llvm::Type::getVoidTy(*context) ||
-    ) {
-      return llvm::Constant::getNullValue(llvm::Type::getInt32Ty(*context));
-    }
-    llvm::PHINode *phiNode = builder->CreatePHI(thenVal->getType(), 1, "iftmp");
-    phiNode->addIncoming(thenVal, thenBB);
-    // phiNode->addIncoming(elseVal, elseBB);
-    return phiNode;
+    return thenVal;
   }
   case Identity:
     return expr.expr->codegen(*this);

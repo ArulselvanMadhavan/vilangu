@@ -42,10 +42,11 @@ let gen_expr tenv e =
     | A.Assignment { lhs; exp; _ } -> FT.Assign { lhs = gen_var lhs; rhs = gexpr exp }
     | A.Identifier ((sym_name, _), _) ->
       FT.Expr_id { id = FT.Simple { var_name = sym_name } }
-    | A.ArrayCreationExp { type_; exprs; _ } ->
+    | A.ArrayCreationExp { type_; exprs; pos } ->
       let ty = Semant.trans_type tenv type_ in
       let texpr = T.ARRAY (List.length exprs, ty) |> T.gen_type_expr in
-      FT.Array_creation { creation_exprs = List.map gexpr exprs; texpr }
+      let make_line_no = A.line_no pos in
+      FT.Array_creation { creation_exprs = List.map gexpr exprs; texpr; make_line_no }
     | A.VarExp (v, _) -> FT.Var_exp (gen_var v)
     | A.CastType { type_; exp; cast_type; _ } ->
       let cast_type = Option.fold cast_type ~none:FT.No_cast ~some:gen_cast_type in

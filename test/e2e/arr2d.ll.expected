@@ -174,7 +174,7 @@ negativeLenCont:                                  ; preds = %negativeLenThen1, %
 loopcond:                                         ; preds = %loopend, %negativeLenCont
   %2 = load i32, i32* %i, align 4
   %sgt = icmp sgt i32 %2, 0
-  br i1 %sgt, label %loop, label %loopend34
+  br i1 %sgt, label %loop, label %loopend28
 
 loop:                                             ; preds = %loopcond
   %3 = load i32, i32* %i, align 4
@@ -197,166 +197,140 @@ negativeLenCont3:                                 ; preds = %negativeLenThen2, %
   call void @i32arr_Constructor(%i32arr* nonnull %newArrayResult4, %i32arr_Vtable_type* nonnull @i32arr_Vtable, i32* %8, i32 %4)
   %9 = load i32, i32* %i, align 4
   %10 = load %i32arrarr*, %i32arrarr** %a, align 8
-  %11 = getelementptr inbounds %i32arrarr, %i32arrarr* %10, i64 0, i32 2
-  %12 = load i32, i32* %11, align 4
-  %13 = icmp slt i32 %9, %12
-  br i1 %13, label %boundsCheckThen5, label %boundsCheckElse
+  %11 = getelementptr inbounds %i32arrarr, %i32arrarr* %10, i64 0, i32 1
+  %baseArrPtr = load %i32arr*, %i32arr** %11, align 8
+  %12 = getelementptr inbounds %i32arrarr, %i32arrarr* %10, i64 0, i32 2
+  %13 = load i32, i32* %12, align 4
+  %.not = icmp slt i32 %9, %13
+  br i1 %.not, label %boundsCheckElse, label %boundsCheckThen5
 
 boundsCheckThen5:                                 ; preds = %negativeLenCont3
-  %14 = load %i32arrarr*, %i32arrarr** %a, align 8
-  %15 = getelementptr inbounds %i32arrarr, %i32arrarr* %14, i64 0, i32 1
-  %baseArrPtr = load %i32arr*, %i32arr** %15, align 8
-  %16 = sext i32 %9 to i64
-  %17 = getelementptr inbounds %i32arr, %i32arr* %baseArrPtr, i64 %16
-  br label %boundsCheckIfcont
-
-boundsCheckElse:                                  ; preds = %negativeLenCont3
-  %18 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([64 x i8], [64 x i8]* @outOfBoundsFormat, i64 0, i64 0), i32 11, i32 %9, i32 %12)
+  %14 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([64 x i8], [64 x i8]* @outOfBoundsFormat, i64 0, i64 0), i32 11, i32 %9, i32 %13)
   call void @exit(i32 -1)
-  br label %boundsCheckIfcont
+  br label %boundsCheckElse
 
-boundsCheckIfcont:                                ; preds = %boundsCheckElse, %boundsCheckThen5
+boundsCheckElse:                                  ; preds = %boundsCheckThen5, %negativeLenCont3
+  %15 = sext i32 %9 to i64
+  %16 = getelementptr inbounds %i32arr, %i32arr* %baseArrPtr, i64 %15
   %loadRefTypeBeforeSave = load %i32arr, %i32arr* %newArrayResult4, align 8
-  store %i32arr %loadRefTypeBeforeSave, %i32arr* %17, align 8
+  store %i32arr %loadRefTypeBeforeSave, %i32arr* %16, align 8
   br label %loopcond6
 
-loopcond6:                                        ; preds = %boundsCheckIfcont33, %boundsCheckIfcont
-  %19 = load i32, i32* %j, align 4
-  %sgt7 = icmp sgt i32 %19, 0
+loopcond6:                                        ; preds = %boundsCheckElse27, %boundsCheckElse
+  %17 = load i32, i32* %j, align 4
+  %sgt7 = icmp sgt i32 %17, 0
   br i1 %sgt7, label %loop8, label %loopend
 
 loop8:                                            ; preds = %loopcond6
-  %20 = load i32, i32* %j, align 4
-  %sub9 = add i32 %20, -1
+  %18 = load i32, i32* %j, align 4
+  %sub9 = add i32 %18, -1
   store i32 %sub9, i32* %j, align 4
-  %21 = load i32, i32* %i, align 4
-  %22 = load i32, i32* %col, align 4
-  %mul = mul i32 %21, %22
+  %19 = load i32, i32* %i, align 4
+  %20 = load i32, i32* %col, align 4
+  %mul = mul i32 %19, %20
   %add = add i32 %mul, %sub9
-  %23 = load %i32arrarr*, %i32arrarr** %a, align 8
-  %24 = getelementptr inbounds %i32arrarr, %i32arrarr* %23, i64 0, i32 2
-  %25 = load i32, i32* %24, align 4
-  %26 = icmp slt i32 %21, %25
-  br i1 %26, label %boundsCheckThen11, label %boundsCheckElse12
+  %21 = load %i32arrarr*, %i32arrarr** %a, align 8
+  %22 = getelementptr inbounds %i32arrarr, %i32arrarr* %21, i64 0, i32 1
+  %baseArrPtr10 = load %i32arr*, %i32arr** %22, align 8
+  %23 = getelementptr inbounds %i32arrarr, %i32arrarr* %21, i64 0, i32 2
+  %24 = load i32, i32* %23, align 4
+  %.not29 = icmp slt i32 %19, %24
+  br i1 %.not29, label %boundsCheckElse12, label %boundsCheckThen11
 
 boundsCheckThen11:                                ; preds = %loop8
-  %27 = load %i32arrarr*, %i32arrarr** %a, align 8
-  %28 = getelementptr inbounds %i32arrarr, %i32arrarr* %27, i64 0, i32 1
-  %baseArrPtr10 = load %i32arr*, %i32arr** %28, align 8
-  %29 = sext i32 %21 to i64
-  br label %boundsCheckIfcont13
-
-boundsCheckElse12:                                ; preds = %loop8
-  %30 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([64 x i8], [64 x i8]* @outOfBoundsFormat, i64 0, i64 0), i32 14, i32 %21, i32 %25)
+  %25 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([64 x i8], [64 x i8]* @outOfBoundsFormat, i64 0, i64 0), i32 14, i32 %19, i32 %24)
   call void @exit(i32 -1)
-  br label %boundsCheckIfcont13
+  br label %boundsCheckElse12
 
-boundsCheckIfcont13:                              ; preds = %boundsCheckElse12, %boundsCheckThen11
-  %31 = getelementptr inbounds %i32arr, %i32arr* %baseArrPtr10, i64 %29, i32 1
-  %baseArrPtr14 = load i32*, i32** %31, align 8
-  %32 = load i32, i32* %i, align 4
-  %33 = load %i32arrarr*, %i32arrarr** %a, align 8
-  %34 = getelementptr inbounds %i32arrarr, %i32arrarr* %33, i64 0, i32 2
-  %35 = load i32, i32* %34, align 4
-  %36 = icmp slt i32 %32, %35
-  br i1 %36, label %boundsCheckThen16, label %boundsCheckElse17
+boundsCheckElse12:                                ; preds = %boundsCheckThen11, %loop8
+  %26 = sext i32 %19 to i64
+  %27 = getelementptr inbounds %i32arr, %i32arr* %baseArrPtr10, i64 %26, i32 1
+  %baseArrPtr13 = load i32*, i32** %27, align 8
+  %28 = load i32, i32* %i, align 4
+  %29 = load %i32arrarr*, %i32arrarr** %a, align 8
+  %30 = getelementptr inbounds %i32arrarr, %i32arrarr* %29, i64 0, i32 1
+  %baseArrPtr14 = load %i32arr*, %i32arr** %30, align 8
+  %31 = getelementptr inbounds %i32arrarr, %i32arrarr* %29, i64 0, i32 2
+  %32 = load i32, i32* %31, align 4
+  %.not30 = icmp slt i32 %28, %32
+  br i1 %.not30, label %boundsCheckElse16, label %boundsCheckThen15
 
-boundsCheckThen16:                                ; preds = %boundsCheckIfcont13
-  %37 = load %i32arrarr*, %i32arrarr** %a, align 8
-  %38 = getelementptr inbounds %i32arrarr, %i32arrarr* %37, i64 0, i32 1
-  %baseArrPtr15 = load %i32arr*, %i32arr** %38, align 8
-  %39 = sext i32 %32 to i64
-  br label %boundsCheckIfcont18
-
-boundsCheckElse17:                                ; preds = %boundsCheckIfcont13
-  %40 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([64 x i8], [64 x i8]* @outOfBoundsFormat, i64 0, i64 0), i32 14, i32 %32, i32 %35)
+boundsCheckThen15:                                ; preds = %boundsCheckElse12
+  %33 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([64 x i8], [64 x i8]* @outOfBoundsFormat, i64 0, i64 0), i32 14, i32 %28, i32 %32)
   call void @exit(i32 -1)
-  br label %boundsCheckIfcont18
+  br label %boundsCheckElse16
 
-boundsCheckIfcont18:                              ; preds = %boundsCheckElse17, %boundsCheckThen16
-  %41 = getelementptr inbounds %i32arr, %i32arr* %baseArrPtr15, i64 %39, i32 2
-  %42 = load i32, i32* %41, align 4
-  %43 = icmp slt i32 %sub9, %42
-  br i1 %43, label %boundsCheckThen19, label %boundsCheckElse20
+boundsCheckElse16:                                ; preds = %boundsCheckThen15, %boundsCheckElse12
+  %34 = sext i32 %28 to i64
+  %35 = getelementptr inbounds %i32arr, %i32arr* %baseArrPtr14, i64 %34, i32 2
+  %36 = load i32, i32* %35, align 4
+  %.not31 = icmp slt i32 %sub9, %36
+  br i1 %.not31, label %boundsCheckElse18, label %boundsCheckThen17
 
-boundsCheckThen19:                                ; preds = %boundsCheckIfcont18
-  %44 = sext i32 %sub9 to i64
-  %45 = getelementptr inbounds i32, i32* %baseArrPtr14, i64 %44
-  br label %boundsCheckIfcont21
-
-boundsCheckElse20:                                ; preds = %boundsCheckIfcont18
-  %46 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([64 x i8], [64 x i8]* @outOfBoundsFormat, i64 0, i64 0), i32 14, i32 %sub9, i32 %42)
+boundsCheckThen17:                                ; preds = %boundsCheckElse16
+  %37 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([64 x i8], [64 x i8]* @outOfBoundsFormat, i64 0, i64 0), i32 14, i32 %sub9, i32 %36)
   call void @exit(i32 -1)
-  br label %boundsCheckIfcont21
+  br label %boundsCheckElse18
 
-boundsCheckIfcont21:                              ; preds = %boundsCheckElse20, %boundsCheckThen19
-  store i32 %add, i32* %45, align 4
-  %47 = load i32, i32* %j, align 4
-  %48 = load i32, i32* %i, align 4
-  %49 = load %i32arrarr*, %i32arrarr** %a, align 8
-  %50 = getelementptr inbounds %i32arrarr, %i32arrarr* %49, i64 0, i32 2
-  %51 = load i32, i32* %50, align 4
-  %52 = icmp slt i32 %48, %51
-  br i1 %52, label %boundsCheckThen23, label %boundsCheckElse24
+boundsCheckElse18:                                ; preds = %boundsCheckThen17, %boundsCheckElse16
+  %38 = sext i32 %sub9 to i64
+  %39 = getelementptr inbounds i32, i32* %baseArrPtr13, i64 %38
+  store i32 %add, i32* %39, align 4
+  %40 = load i32, i32* %j, align 4
+  %41 = load i32, i32* %i, align 4
+  %42 = load %i32arrarr*, %i32arrarr** %a, align 8
+  %43 = getelementptr inbounds %i32arrarr, %i32arrarr* %42, i64 0, i32 1
+  %baseArrPtr19 = load %i32arr*, %i32arr** %43, align 8
+  %44 = getelementptr inbounds %i32arrarr, %i32arrarr* %42, i64 0, i32 2
+  %45 = load i32, i32* %44, align 4
+  %.not32 = icmp slt i32 %41, %45
+  br i1 %.not32, label %boundsCheckElse21, label %boundsCheckThen20
 
-boundsCheckThen23:                                ; preds = %boundsCheckIfcont21
-  %53 = load %i32arrarr*, %i32arrarr** %a, align 8
-  %54 = getelementptr inbounds %i32arrarr, %i32arrarr* %53, i64 0, i32 1
-  %baseArrPtr22 = load %i32arr*, %i32arr** %54, align 8
-  %55 = sext i32 %48 to i64
-  br label %boundsCheckIfcont25
-
-boundsCheckElse24:                                ; preds = %boundsCheckIfcont21
-  %56 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([64 x i8], [64 x i8]* @outOfBoundsFormat, i64 0, i64 0), i32 15, i32 %48, i32 %51)
+boundsCheckThen20:                                ; preds = %boundsCheckElse18
+  %46 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([64 x i8], [64 x i8]* @outOfBoundsFormat, i64 0, i64 0), i32 15, i32 %41, i32 %45)
   call void @exit(i32 -1)
-  br label %boundsCheckIfcont25
+  br label %boundsCheckElse21
 
-boundsCheckIfcont25:                              ; preds = %boundsCheckElse24, %boundsCheckThen23
-  %57 = getelementptr inbounds %i32arr, %i32arr* %baseArrPtr22, i64 %55, i32 1
-  %baseArrPtr26 = load i32*, i32** %57, align 8
-  %58 = load i32, i32* %i, align 4
-  %59 = load %i32arrarr*, %i32arrarr** %a, align 8
-  %60 = getelementptr inbounds %i32arrarr, %i32arrarr* %59, i64 0, i32 2
+boundsCheckElse21:                                ; preds = %boundsCheckThen20, %boundsCheckElse18
+  %47 = sext i32 %41 to i64
+  %48 = getelementptr inbounds %i32arr, %i32arr* %baseArrPtr19, i64 %47, i32 1
+  %baseArrPtr22 = load i32*, i32** %48, align 8
+  %49 = load i32, i32* %i, align 4
+  %50 = load %i32arrarr*, %i32arrarr** %a, align 8
+  %51 = getelementptr inbounds %i32arrarr, %i32arrarr* %50, i64 0, i32 1
+  %baseArrPtr23 = load %i32arr*, %i32arr** %51, align 8
+  %52 = getelementptr inbounds %i32arrarr, %i32arrarr* %50, i64 0, i32 2
+  %53 = load i32, i32* %52, align 4
+  %.not33 = icmp slt i32 %49, %53
+  br i1 %.not33, label %boundsCheckElse25, label %boundsCheckThen24
+
+boundsCheckThen24:                                ; preds = %boundsCheckElse21
+  %54 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([64 x i8], [64 x i8]* @outOfBoundsFormat, i64 0, i64 0), i32 15, i32 %49, i32 %53)
+  call void @exit(i32 -1)
+  br label %boundsCheckElse25
+
+boundsCheckElse25:                                ; preds = %boundsCheckThen24, %boundsCheckElse21
+  %55 = sext i32 %49 to i64
+  %56 = getelementptr inbounds %i32arr, %i32arr* %baseArrPtr23, i64 %55, i32 2
+  %57 = load i32, i32* %56, align 4
+  %.not34 = icmp slt i32 %40, %57
+  br i1 %.not34, label %boundsCheckElse27, label %boundsCheckThen26
+
+boundsCheckThen26:                                ; preds = %boundsCheckElse25
+  %58 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([64 x i8], [64 x i8]* @outOfBoundsFormat, i64 0, i64 0), i32 15, i32 %40, i32 %57)
+  call void @exit(i32 -1)
+  br label %boundsCheckElse27
+
+boundsCheckElse27:                                ; preds = %boundsCheckThen26, %boundsCheckElse25
+  %59 = sext i32 %40 to i64
+  %60 = getelementptr inbounds i32, i32* %baseArrPtr22, i64 %59
   %61 = load i32, i32* %60, align 4
-  %62 = icmp slt i32 %58, %61
-  br i1 %62, label %boundsCheckThen28, label %boundsCheckElse29
-
-boundsCheckThen28:                                ; preds = %boundsCheckIfcont25
-  %63 = load %i32arrarr*, %i32arrarr** %a, align 8
-  %64 = getelementptr inbounds %i32arrarr, %i32arrarr* %63, i64 0, i32 1
-  %baseArrPtr27 = load %i32arr*, %i32arr** %64, align 8
-  %65 = sext i32 %58 to i64
-  br label %boundsCheckIfcont30
-
-boundsCheckElse29:                                ; preds = %boundsCheckIfcont25
-  %66 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([64 x i8], [64 x i8]* @outOfBoundsFormat, i64 0, i64 0), i32 15, i32 %58, i32 %61)
-  call void @exit(i32 -1)
-  br label %boundsCheckIfcont30
-
-boundsCheckIfcont30:                              ; preds = %boundsCheckElse29, %boundsCheckThen28
-  %67 = getelementptr inbounds %i32arr, %i32arr* %baseArrPtr27, i64 %65, i32 2
-  %68 = load i32, i32* %67, align 4
-  %69 = icmp slt i32 %47, %68
-  br i1 %69, label %boundsCheckThen31, label %boundsCheckElse32
-
-boundsCheckThen31:                                ; preds = %boundsCheckIfcont30
-  %70 = sext i32 %47 to i64
-  %71 = getelementptr inbounds i32, i32* %baseArrPtr26, i64 %70
-  br label %boundsCheckIfcont33
-
-boundsCheckElse32:                                ; preds = %boundsCheckIfcont30
-  %72 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([64 x i8], [64 x i8]* @outOfBoundsFormat, i64 0, i64 0), i32 15, i32 %47, i32 %68)
-  call void @exit(i32 -1)
-  br label %boundsCheckIfcont33
-
-boundsCheckIfcont33:                              ; preds = %boundsCheckElse32, %boundsCheckThen31
-  %73 = load i32, i32* %71, align 4
-  %74 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([4 x i8], [4 x i8]* @printIntFormat, i64 0, i64 0), i32 %73)
+  %62 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([4 x i8], [4 x i8]* @printIntFormat, i64 0, i64 0), i32 %61)
   br label %loopcond6
 
 loopend:                                          ; preds = %loopcond6
   br label %loopcond
 
-loopend34:                                        ; preds = %loopcond
+loopend28:                                        ; preds = %loopcond
   ret i32 0
 }
