@@ -63,7 +63,7 @@ void IRCodegenVisitor::codegenProgram(const ProgramIR &program) {
   codegenVTables(program.classDefns);
   codegenFunctionDefns(program.functionDefns);
   codegenMainExpr(program.mainExpr);
-  // runOptimizingPasses(program.mainExpr);
+  runOptimizingPasses(program.mainExpr);
 }
 IRCodegenVisitor::~IRCodegenVisitor() {
   // std::cout << "Destructor IRCodegenVisitor\n";
@@ -83,7 +83,7 @@ void IRCodegenVisitor::runOptimizingPasses(
   // Do simple "peephole" optimizations
   functionPassManager->add(llvm::createInstructionCombiningPass());
   // Simplify the control flow graph (deleting unreachable blocks etc).
-  functionPassManager->add(llvm::createCFGSimplificationPass());
+  // functionPassManager->add(llvm::createCFGSimplificationPass());
   functionPassManager->doInitialization();
   llvm::Function *llvmMainFun = module->getFunction(llvm::StringRef("main"));
   functionPassManager->run(*llvmMainFun);

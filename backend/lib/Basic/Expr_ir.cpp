@@ -128,6 +128,7 @@ SubscriptVarIR::SubscriptVarIR(const Frontend_ir::Var::_Subscript &var) {
   baseVar = deserializeVar(var.base_var());
   lenVar = deserializeVar(var.len_var());
   expr = deserializeExpr(var.var_exp());
+  lineNo = var.line_no();
 };
 
 FieldVarIR::FieldVarIR(const Frontend_ir::Var::_Field &var) {

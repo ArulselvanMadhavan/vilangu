@@ -2232,6 +2232,7 @@ class Var__Subscript PROTOBUF_FINAL :
     kBaseVarFieldNumber = 1,
     kVarExpFieldNumber = 2,
     kLenVarFieldNumber = 3,
+    kLineNoFieldNumber = 4,
   };
   // required .Frontend_ir.Var base_var = 1;
   bool has_base_var() const;
@@ -2287,6 +2288,19 @@ class Var__Subscript PROTOBUF_FINAL :
       ::Frontend_ir::Var* len_var);
   ::Frontend_ir::Var* unsafe_arena_release_len_var();
 
+  // required int32 line_no = 4;
+  bool has_line_no() const;
+  private:
+  bool _internal_has_line_no() const;
+  public:
+  void clear_line_no();
+  ::PROTOBUF_NAMESPACE_ID::int32 line_no() const;
+  void set_line_no(::PROTOBUF_NAMESPACE_ID::int32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::int32 _internal_line_no() const;
+  void _internal_set_line_no(::PROTOBUF_NAMESPACE_ID::int32 value);
+  public:
+
   // @@protoc_insertion_point(class_scope:Frontend_ir.Var._Subscript)
  private:
   class _Internal;
@@ -2302,6 +2316,7 @@ class Var__Subscript PROTOBUF_FINAL :
   ::Frontend_ir::Var* base_var_;
   ::Frontend_ir::Expr* var_exp_;
   ::Frontend_ir::Var* len_var_;
+  ::PROTOBUF_NAMESPACE_ID::int32 line_no_;
   friend struct ::TableStruct_frontend_2eproto;
 };
 // -------------------------------------------------------------------
@@ -9989,6 +10004,115 @@ inline void Var__Subscript::set_allocated_var_exp(::Frontend_ir::Expr* var_exp) 
   }
   var_exp_ = var_exp;
   // @@protoc_insertion_point(field_set_allocated:Frontend_ir.Var._Subscript.var_exp)
+}
+
+// required .Frontend_ir.Var len_var = 3;
+inline bool Var__Subscript::_internal_has_len_var() const {
+  bool value = (_has_bits_[0] & 0x00000004u) != 0;
+  PROTOBUF_ASSUME(!value || len_var_ != nullptr);
+  return value;
+}
+inline bool Var__Subscript::has_len_var() const {
+  return _internal_has_len_var();
+}
+inline void Var__Subscript::clear_len_var() {
+  if (len_var_ != nullptr) len_var_->Clear();
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline const ::Frontend_ir::Var& Var__Subscript::_internal_len_var() const {
+  const ::Frontend_ir::Var* p = len_var_;
+  return p != nullptr ? *p : *reinterpret_cast<const ::Frontend_ir::Var*>(
+      &::Frontend_ir::_Var_default_instance_);
+}
+inline const ::Frontend_ir::Var& Var__Subscript::len_var() const {
+  // @@protoc_insertion_point(field_get:Frontend_ir.Var._Subscript.len_var)
+  return _internal_len_var();
+}
+inline void Var__Subscript::unsafe_arena_set_allocated_len_var(
+    ::Frontend_ir::Var* len_var) {
+  if (GetArena() == nullptr) {
+    delete reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(len_var_);
+  }
+  len_var_ = len_var;
+  if (len_var) {
+    _has_bits_[0] |= 0x00000004u;
+  } else {
+    _has_bits_[0] &= ~0x00000004u;
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:Frontend_ir.Var._Subscript.len_var)
+}
+inline ::Frontend_ir::Var* Var__Subscript::release_len_var() {
+  auto temp = unsafe_arena_release_len_var();
+  if (GetArena() != nullptr) {
+    temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  }
+  return temp;
+}
+inline ::Frontend_ir::Var* Var__Subscript::unsafe_arena_release_len_var() {
+  // @@protoc_insertion_point(field_release:Frontend_ir.Var._Subscript.len_var)
+  _has_bits_[0] &= ~0x00000004u;
+  ::Frontend_ir::Var* temp = len_var_;
+  len_var_ = nullptr;
+  return temp;
+}
+inline ::Frontend_ir::Var* Var__Subscript::_internal_mutable_len_var() {
+  _has_bits_[0] |= 0x00000004u;
+  if (len_var_ == nullptr) {
+    auto* p = CreateMaybeMessage<::Frontend_ir::Var>(GetArena());
+    len_var_ = p;
+  }
+  return len_var_;
+}
+inline ::Frontend_ir::Var* Var__Subscript::mutable_len_var() {
+  // @@protoc_insertion_point(field_mutable:Frontend_ir.Var._Subscript.len_var)
+  return _internal_mutable_len_var();
+}
+inline void Var__Subscript::set_allocated_len_var(::Frontend_ir::Var* len_var) {
+  ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArena();
+  if (message_arena == nullptr) {
+    delete len_var_;
+  }
+  if (len_var) {
+    ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena =
+      ::PROTOBUF_NAMESPACE_ID::Arena::GetArena(len_var);
+    if (message_arena != submessage_arena) {
+      len_var = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
+          message_arena, len_var, submessage_arena);
+    }
+    _has_bits_[0] |= 0x00000004u;
+  } else {
+    _has_bits_[0] &= ~0x00000004u;
+  }
+  len_var_ = len_var;
+  // @@protoc_insertion_point(field_set_allocated:Frontend_ir.Var._Subscript.len_var)
+}
+
+// required int32 line_no = 4;
+inline bool Var__Subscript::_internal_has_line_no() const {
+  bool value = (_has_bits_[0] & 0x00000008u) != 0;
+  return value;
+}
+inline bool Var__Subscript::has_line_no() const {
+  return _internal_has_line_no();
+}
+inline void Var__Subscript::clear_line_no() {
+  line_no_ = 0;
+  _has_bits_[0] &= ~0x00000008u;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 Var__Subscript::_internal_line_no() const {
+  return line_no_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 Var__Subscript::line_no() const {
+  // @@protoc_insertion_point(field_get:Frontend_ir.Var._Subscript.line_no)
+  return _internal_line_no();
+}
+inline void Var__Subscript::_internal_set_line_no(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  _has_bits_[0] |= 0x00000008u;
+  line_no_ = value;
+}
+inline void Var__Subscript::set_line_no(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  _internal_set_line_no(value);
+  // @@protoc_insertion_point(field_set:Frontend_ir.Var._Subscript.line_no)
 }
 
 // -------------------------------------------------------------------

@@ -69,6 +69,7 @@ struct SubscriptVarIR : public VarIR {
   std::unique_ptr<VarIR> baseVar;
   std::unique_ptr<ExprIR> expr;
   std::unique_ptr<VarIR> lenVar;
+  int lineNo;
   SubscriptVarIR(const Frontend_ir::Var::_Subscript &var);
   virtual llvm::Value *codegen(IRVisitor &visitor) override;
 };

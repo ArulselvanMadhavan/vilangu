@@ -75,14 +75,6 @@ llvm::Value *IRCodegenVisitor::codegen(const ExprBinOpIR &expr) {
     llvm::outs() << "bin op operand is null";
     return nullptr;
   }
-  // if (lexpr->getType()->isPointerTy()) {
-  //   lexpr = builder->CreateLoad(lexpr->getType()->getContainedType(0),
-  //   lexpr);
-  // }
-  // if (rexpr->getType()->isPointerTy()) {
-  //   rexpr = builder->CreateLoad(rexpr->getType()->getContainedType(0),
-  //   rexpr);
-  // }
   switch (expr.op) {
   case BinOpPlus:
     return builder->CreateAdd(lexpr, rexpr, "add");
@@ -130,8 +122,7 @@ llvm::Value *IRCodegenVisitor::codegen(const ExprAssignIR &expr) {
   // struct_type** happens when you directly; rhs should be struct_type*
   // load a reference type variable from varEnv
 
-  // // lhs is a var - load the address
-
+  // lhs is a var - load the address
   return builder->CreateStore(rhsVal, lhsVal);
 }
 
@@ -224,8 +215,8 @@ llvm::Value *IRCodegenVisitor::codegen(const SubscriptVarIR &var) {
       printVar->getType()->getContainedType(0), printVar,
       llvm::ArrayRef<llvm::Value *>{zeroIdx, zeroIdx});
   printfArgs.push_back(printVarBegin);
-  printfArgs.push_back(
-      llvm::ConstantInt::getSigned(llvm::Type::getInt32Ty(*context), -1));
+  printfArgs.push_back(llvm::ConstantInt::getSigned(
+      llvm::Type::getInt32Ty(*context), var.lineNo));
   printfArgs.push_back(loadedVal);
   printfArgs.push_back(lenVal);
   builder->CreateCall(printf, printfArgs);
