@@ -47,7 +47,7 @@ let gen_expr tenv e =
       let texpr = T.ARRAY (List.length exprs, ty) |> T.gen_type_expr in
       FT.Array_creation { creation_exprs = List.map gexpr exprs; texpr }
     | A.VarExp (v, _) -> FT.Var_exp (gen_var v)
-    | A.CastType { type_; exp; cast_type } ->
+    | A.CastType { type_; exp; cast_type; _ } ->
       let cast_type = Option.fold cast_type ~none:FT.No_cast ~some:gen_cast_type in
       FT.Cast_expr { cast_to = gen_texpr tenv type_; expr = gexpr exp; cast_type }
     | _ -> FT.Integer (Int32.of_int (-1))

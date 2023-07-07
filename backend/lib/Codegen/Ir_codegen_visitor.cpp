@@ -34,6 +34,9 @@ std::string IRCodegenVisitor::getCastErrFormatVar() { return "castErrFormat"; }
 std::string IRCodegenVisitor::getOutOfBoundsFormatVar() {
   return "outOfBoundsFormat";
 }
+std::string IRCodegenVisitor::getNegativeLenFormatVar() {
+  return "negativeLenFormat";
+}
 
 void IRCodegenVisitor::codegenMainExpr(
     const std::vector<std::unique_ptr<StmtIR>> &mainExpr) {
@@ -102,4 +105,24 @@ std::string IRCodegenVisitor::getVtableName(std::string className) {
 
 std::string IRCodegenVisitor::getVtableTypeName(std::string className) {
   return getVtableName(className) + "_type";
+}
+
+void IRCodegenVisitor::runtimeError(std::string formatStr,
+                                    llvm::ArrayRef<llvm::Value *> args) {
+  llvm::Value *zeroIdx =
+      llvm::ConstantInt::getSigned(llvm::Type::getInt32Ty(*context), 0);
+  llvm::Function *printf = module->getFunction("printf");
+  std::vector<llvm::Value *> printfArgs;
+  llvm::GlobalVariable *printVar = module->getNamedGlobal(formatStr);
+  llvm::Value *printVarBegin = builder->CreateInBoundsGEP(
+      printVar->getType()->getContainedType(0), printVar,
+      llvm::ArrayRef<llvm::Value *>{zeroIdx, zeroIdx});
+  printfArgs.insert(printfArgs.begin(), printVarBegin);
+  printfArgs.insert(printfArgs.end(), std::make_move_iterator(args.begin()),
+                    std::make_move_iterator(args.end()));
+  builder->CreateCall(printf, printfArgs);
+  llvm::Function *exit = module->getFunction("exit");
+  builder->CreateCall(
+      exit, llvm::ArrayRef<llvm::Value *>{llvm::ConstantInt::getSigned(
+                llvm::Type::getInt32Ty(*context), -1)});
 }

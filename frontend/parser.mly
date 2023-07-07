@@ -234,7 +234,7 @@ let unaryexp :=
 
 let castexp :=
   | ~=paren_exp; ~=castexp; { CastEvalExp {to_=paren_exp; from_=castexp}}
-  | LPAREN; type_=arr_type;RPAREN; exp=castexp; { CastType { type_ = Reference type_; exp; cast_type = None}}
+  | LPAREN; type_=arr_type;RPAREN; exp=castexp; { CastType { type_ = Reference type_; exp; cast_type = None; pos = lp($loc)}}
   | ~=primary; { primary }
 
 let primary :=

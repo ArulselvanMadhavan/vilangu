@@ -122,6 +122,7 @@ and exp =
       { type_ : type_
       ; exp : exp
       ; cast_type : cast_type option
+      ; pos : pos
       }
   | Assignment of
       { lhs : var

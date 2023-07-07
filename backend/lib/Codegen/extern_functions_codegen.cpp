@@ -40,6 +40,16 @@ void IRCodegenVisitor::codegenExternFunctionDeclarations() {
   oobGV->setAlignment(llvm::Align());
   oobGV->setInitializer(oobPtr);
 
+  llvm::StringRef nlen = "Array len cannot be negative. Length attempted:%d\n";
+  auto nlenPtr = llvm::ConstantDataArray::getString(*context, nlen);
+  module->getOrInsertGlobal(getNegativeLenFormatVar(), nlenPtr->getType());
+  llvm::GlobalVariable *nlenGV =
+      module->getNamedGlobal(getNegativeLenFormatVar());
+  nlenGV->setLinkage(llvm::GlobalValue::PrivateLinkage);
+  nlenGV->setConstant(true);
+  nlenGV->setAlignment(llvm::Align());
+  nlenGV->setInitializer(nlenPtr);
+
   module->getOrInsertFunction(
       "printf", llvm::FunctionType::get(
                     llvm::IntegerType::getInt32Ty(*context),

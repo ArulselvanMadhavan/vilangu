@@ -35,18 +35,28 @@ let get_ast_type pos = function
   | _ -> raise AstTypeNotFound
 ;;
 
-let compare_and_cast pos lhs_ty rhs_ty =
+(* Check lhs type with rhs type. If possible, find cast type. For wide casts. Find the recommended lhs cast *)
+let rec compare_and_cast pos lhs_ty rhs_ty =
   match lhs_ty, rhs_ty with
+  | T.ARRAY (lrank, lty), T.ARRAY (rrank, rty) when lrank = rrank ->
+    compare_and_cast pos lty rty
+  | T.ARRAY (lrank, _), T.ARRAY (rrank, _) when lrank <> rrank -> None, None
   | T.NAME (sym, _), T.ARRAY _ when sym = Env.obj_symbol ->
-    A.Wide, Some (A.Reference (A.ClassType (sym, pos)))
-  | _ -> A.Narrow, None
+    Some A.Wide, Some (A.Reference (A.ClassType (sym, pos)))
+  | T.NAME _, T.ARRAY _ ->
+    None, None (* No cast when rhs is Array and lhs is not object *)
+  | T.INT, T.INT ->
+    (* Possible via recursive element type checks *)
+    Some A.Identity, None
+  | T.ARRAY _, T.NAME (sym, _) when sym = Env.obj_symbol -> Some A.Narrow, None
+  | _, _ -> None, None
 ;;
 
 let assignment_cast (lhs_ty, rhs_ty, pos, rhs_exp) =
   let check_cast lhs_ty rhs_ty =
     match compare_and_cast pos lhs_ty rhs_ty with
-    | A.Wide, Some lhs_ty ->
-      A.CastType { type_ = lhs_ty; exp = rhs_exp; cast_type = Some A.Wide }
+    | Some A.Wide, Some lhs_ty ->
+      A.CastType { type_ = lhs_ty; exp = rhs_exp; cast_type = Some A.Wide; pos }
     (* | T.ARRAY (rank, ty), T.NAME (sym, _) when sym = Env.obj_symbol -> *)
     (*     A.CastType *)
     (*     { type_ = A.Reference (A.ArrayType (rank, get_ast_type pos ty)) *)
@@ -175,16 +185,19 @@ and trans_exp (venv, tenv, exp) =
   | A.VarExp (v, _) as exp ->
     let { ty; _ } = trans_var (venv, tenv, v) in
     { stmt = exp; ty }
-  | A.CastType { type_; exp; _ } ->
+  | A.CastType { type_; exp; pos; _ } as cexp ->
     let { stmt; ty = exp_ty } = trans_exp (venv, tenv, exp) in
     let cast_ty = trans_type tenv type_ in
     (* obj | i32arr *)
     let dummy_pos = (-1, -1), (-1, -1) in
     let stmt =
       match compare_and_cast dummy_pos cast_ty exp_ty with
-      | A.Wide, _ -> A.CastType { type_; exp = stmt; cast_type = Some A.Wide }
-      | A.Narrow, _ -> A.CastType { type_; exp = stmt; cast_type = Some A.Narrow }
-      | A.Identity, _ -> A.CastType { type_; exp = stmt; cast_type = Some A.Identity }
+      | Some A.Wide, _ -> A.CastType { type_; exp = stmt; cast_type = Some A.Wide; pos }
+      | Some A.Narrow, _ ->
+        A.CastType { type_; exp = stmt; cast_type = Some A.Narrow; pos }
+      | Some A.Identity, _ ->
+        A.CastType { type_; exp = stmt; cast_type = Some A.Identity; pos }
+      | None, _ -> error pos "cast not possible" cexp
     in
     { stmt; ty = cast_ty }
   | _ as exp -> err_stmty exp

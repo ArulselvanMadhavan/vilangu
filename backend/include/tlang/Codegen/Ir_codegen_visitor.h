@@ -42,6 +42,8 @@ protected:
   std::string getPrintIntFormatVar();
   std::string getCastErrFormatVar();
   std::string getOutOfBoundsFormatVar();
+  std::string getNegativeLenFormatVar();
+  void runtimeError(std::string formatStr, llvm::ArrayRef<llvm::Value *> args);
 
 public:
   IRCodegenVisitor();
