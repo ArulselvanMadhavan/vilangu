@@ -9,6 +9,7 @@ type symbol = Symbol.symbol [@@deriving sexp]
 let line_no pos =
   let (sl, _), _ = pos in
   Int32.of_int sl |> Option.value ~default:(Int32.neg Int32.one)
+;;
 
 type comp_unit =
   { main_decl : main list

@@ -54,6 +54,7 @@ let compile_file out_dir filename =
       None
   in
   let%bind parsed_ast = parsed_exp in
+  (* Sexplib0.Sexp.to_string_hum (Ast.sexp_of_comp_unit parsed_ast) |> Printf.printf "%s\n"; *)
   let%map venv, tenv, parsed_ast = check_types parsed_ast |> to_opt out_dir filename in
   let ir_file = gen_new_file out_dir filename ".ir" in
   let ast_file = gen_new_file out_dir filename ".ast" in
@@ -100,7 +101,8 @@ let out_dir_t =
 
 let backend_exec_t =
   let doc = "backend executable path" in
-  Arg.(value & pos 1 string "backend/build/tools/driver/tlang" & info [] ~docv:"BACKEND" ~doc)
+  Arg.(
+    value & pos 1 string "backend/build/tools/driver/tlang" & info [] ~docv:"BACKEND" ~doc)
 ;;
 
 let validate_fpath fname =

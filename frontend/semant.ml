@@ -148,6 +148,16 @@ and trans_exp (venv, tenv, exp) =
     else (
       let oper_str = A.sexp_of_bioper oper |> Sexplib0.Sexp.to_string_hum in
       error pos (oper_str ^ " operand types don't match") (err_stmty exp))
+  | A.OpExp (A.UnaryOp { oper; exp = unary_exp }, pos) as exp ->
+    let { stmt = unary_exp; ty } = trans_exp (venv, tenv, unary_exp) in
+    if T.is_int ty
+    then { stmt = A.OpExp (A.UnaryOp { oper; exp = unary_exp }, pos); ty }
+    else (
+      let oper_str = A.sexp_of_uoper oper |> Sexplib0.Sexp.to_string_hum in
+      error
+        pos
+        (oper_str ^ " is applied on incompatible type: " ^ T.type2str ty)
+        (err_stmty exp))
   | A.IntLit _ as exp -> { ty = T.INT; stmt = exp }
   | A.ArrayCreationExp { type_; exprs; pos } as exp ->
     let expr_rank = List.length exprs in

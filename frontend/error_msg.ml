@@ -13,7 +13,7 @@ exception Error
 
 let reset () = error_state := make ()
 let set_filename file_name = error_state := { !error_state with file_name }
-    
+
 let error (((sl, sr), (el, er)) : Ast.pos) (msg : string) =
   error_state := { !error_state with any_errors = true };
   (* let error_state = !error_state in *)
