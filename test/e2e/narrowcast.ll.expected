@@ -1,0 +1,218 @@
+; ModuleID = 'Module'
+source_filename = "Module"
+target triple = "x86_64-pc-linux-gnu"
+
+%Object_Vtable_type = type { %Object_Vtable_type*, i8* }
+%i32arr_Vtable_type = type { %Object_Vtable_type*, i8* }
+%Object = type { %Object_Vtable_type* }
+%i32arr = type { %i32arr_Vtable_type*, i32*, i32 }
+
+@printIntFormat = private constant [4 x i8] c"%d\0A\00", align 1
+@castErrFormat = private constant [38 x i8] c"Narrow cast err: %s is not a type %s\0A\00", align 1
+@outOfBoundsFormat = private constant [64 x i8] c"Array out of bounds exception at line %d. Index:%d | Length:%d\0A\00", align 1
+@Object_class_name = private constant [7 x i8] c"Object\00", align 1
+@Object_Vtable = global %Object_Vtable_type { %Object_Vtable_type* null, i8* getelementptr inbounds ([7 x i8], [7 x i8]* @Object_class_name, i32 0, i32 0) }
+@i32arr_class_name = private constant [7 x i8] c"i32arr\00", align 1
+@i32arr_Vtable = global %i32arr_Vtable_type { %Object_Vtable_type* @Object_Vtable, i8* getelementptr inbounds ([7 x i8], [7 x i8]* @i32arr_class_name, i32 0, i32 0) }
+
+declare i32 @printf(i8*, ...)
+
+declare i8* @malloc(i32)
+
+declare i8* @calloc(i32, i32)
+
+declare void @free(i8*)
+
+declare void @exit(i32)
+
+define i1 @Object_IsA(%Object* %0, %Object_Vtable_type* %1, i8* %2) {
+entry:
+  %object = alloca %Object*, align 8
+  store %Object* %0, %Object** %object, align 8
+  %vtbl = alloca %Object_Vtable_type*, align 8
+  store %Object_Vtable_type* %1, %Object_Vtable_type** %vtbl, align 8
+  %name = alloca i8*, align 8
+  store i8* %2, i8** %name, align 8
+  %3 = load %Object*, %Object** %object, align 8
+  %4 = ptrtoint %Object* %3 to i64
+  %equal = icmp eq i64 %4, 0
+  %not = xor i1 %equal, true
+  br i1 %not, label %then, label %else7
+
+then:                                             ; preds = %entry
+  %5 = load %Object*, %Object** %object, align 8
+  %6 = getelementptr inbounds %Object, %Object* %5, i32 0, i32 0
+  %7 = load %Object_Vtable_type*, %Object_Vtable_type** %6, align 8
+  store %Object_Vtable_type* %7, %Object_Vtable_type** %vtbl, align 8
+  br label %loopcond
+
+loopcond:                                         ; preds = %ifcont, %then
+  %8 = load %Object_Vtable_type*, %Object_Vtable_type** %vtbl, align 8
+  %9 = ptrtoint %Object_Vtable_type* %8 to i64
+  %equal1 = icmp eq i64 %9, 0
+  %not2 = xor i1 %equal1, true
+  br i1 %not2, label %loop, label %loopend
+
+loop:                                             ; preds = %loopcond
+  %10 = load %Object_Vtable_type*, %Object_Vtable_type** %vtbl, align 8
+  %11 = getelementptr inbounds %Object_Vtable_type, %Object_Vtable_type* %10, i32 0, i32 1
+  %12 = load i8*, i8** %11, align 8
+  %13 = load i8*, i8** %name, align 8
+  %14 = ptrtoint i8* %12 to i64
+  %15 = ptrtoint i8* %13 to i64
+  %equal3 = icmp eq i64 %14, %15
+  br i1 %equal3, label %then4, label %else
+
+then4:                                            ; preds = %loop
+  br label %loopend
+
+else:                                             ; preds = %loop
+  %16 = load %Object_Vtable_type*, %Object_Vtable_type** %vtbl, align 8
+  %17 = getelementptr inbounds %Object_Vtable_type, %Object_Vtable_type* %16, i32 0, i32 0
+  %18 = load %Object_Vtable_type*, %Object_Vtable_type** %17, align 8
+  store %Object_Vtable_type* %18, %Object_Vtable_type** %vtbl, align 8
+  br label %ifcont
+
+ifcont:                                           ; preds = %else
+  br label %loopcond
+
+loopend:                                          ; preds = %then4, %loopcond
+  %19 = load %Object_Vtable_type*, %Object_Vtable_type** %vtbl, align 8
+  %20 = ptrtoint %Object_Vtable_type* %19 to i64
+  %equal5 = icmp eq i64 %20, 0
+  %not6 = xor i1 %equal5, true
+  br label %ifcont8
+
+else7:                                            ; preds = %entry
+  br label %ifcont8
+
+ifcont8:                                          ; preds = %else7, %loopend
+  %iftmp = phi i1 [ %not6, %loopend ], [ false, %else7 ]
+  ret i1 %iftmp
+}
+
+define void @i32arr_Constructor(%i32arr* %0, %i32arr_Vtable_type* %1, i32* %2, i32 %3) {
+entry:
+  %this = alloca %i32arr*, align 8
+  store %i32arr* %0, %i32arr** %this, align 8
+  %vtable = alloca %i32arr_Vtable_type*, align 8
+  store %i32arr_Vtable_type* %1, %i32arr_Vtable_type** %vtable, align 8
+  %data = alloca i32*, align 8
+  store i32* %2, i32** %data, align 8
+  %length = alloca i32, align 4
+  store i32 %3, i32* %length, align 4
+  %4 = load %i32arr_Vtable_type*, %i32arr_Vtable_type** %vtable, align 8
+  %5 = load %i32arr*, %i32arr** %this, align 8
+  %6 = getelementptr inbounds %i32arr, %i32arr* %5, i32 0, i32 0
+  store %i32arr_Vtable_type* %4, %i32arr_Vtable_type** %6, align 8
+  %7 = load i32*, i32** %data, align 8
+  %8 = load %i32arr*, %i32arr** %this, align 8
+  %9 = getelementptr inbounds %i32arr, %i32arr* %8, i32 0, i32 1
+  store i32* %7, i32** %9, align 8
+  %10 = load i32, i32* %length, align 4
+  %11 = load %i32arr*, %i32arr** %this, align 8
+  %12 = getelementptr inbounds %i32arr, %i32arr* %11, i32 0, i32 2
+  store i32 %10, i32* %12, align 4
+  ret void
+}
+
+define i32 @main() {
+entry:
+  %a = alloca %i32arr*, align 8
+  store %i32arr* null, %i32arr** %a, align 8
+  %newArrayResult = alloca %i32arr, align 8
+  %0 = call dereferenceable_or_null(20) i8* @calloc(i32 5, i32 4)
+  %1 = bitcast i8* %0 to i32*
+  call void @i32arr_Constructor(%i32arr* nonnull %newArrayResult, %i32arr_Vtable_type* nonnull @i32arr_Vtable, i32* %1, i32 5)
+  store %i32arr* %newArrayResult, %i32arr** %a, align 8
+  %2 = getelementptr inbounds %i32arr, %i32arr* %newArrayResult, i64 0, i32 2
+  %3 = load i32, i32* %2, align 8
+  %4 = icmp sgt i32 %3, 3
+  br i1 %4, label %boundsCheckThen1, label %boundsCheckElse
+
+boundsCheckThen1:                                 ; preds = %entry
+  %5 = getelementptr inbounds %i32arr, %i32arr* %newArrayResult, i64 0, i32 1
+  %baseArrPtr = load i32*, i32** %5, align 8
+  %6 = getelementptr inbounds i32, i32* %baseArrPtr, i64 3
+  br label %boundsCheckIfcont
+
+boundsCheckElse:                                  ; preds = %entry
+  %7 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([64 x i8], [64 x i8]* @outOfBoundsFormat, i64 0, i64 0), i32 5, i32 3, i32 %3)
+  call void @exit(i32 -1)
+  br label %boundsCheckIfcont
+
+boundsCheckIfcont:                                ; preds = %boundsCheckElse, %boundsCheckThen1
+  store i32 3, i32* %6, align 4
+  %8 = bitcast %i32arr** %a to %Object**
+  %9 = load %Object*, %Object** %8, align 8
+  %10 = call i1 @Object_IsA(%Object* %9, %Object_Vtable_type* nonnull @Object_Vtable, i8* getelementptr inbounds ([7 x i8], [7 x i8]* @i32arr_class_name, i64 0, i64 0))
+  br i1 %10, label %then, label %else
+
+then:                                             ; preds = %boundsCheckIfcont
+  br label %ifcont
+
+else:                                             ; preds = %boundsCheckIfcont
+  %11 = alloca [7 x i8], align 1
+  %.repack = getelementptr inbounds [7 x i8], [7 x i8]* %11, i64 0, i64 0
+  store i8 79, i8* %.repack, align 1
+  %.repack6 = getelementptr inbounds [7 x i8], [7 x i8]* %11, i64 0, i64 1
+  store i8 98, i8* %.repack6, align 1
+  %.repack7 = getelementptr inbounds [7 x i8], [7 x i8]* %11, i64 0, i64 2
+  store i8 106, i8* %.repack7, align 1
+  %.repack8 = getelementptr inbounds [7 x i8], [7 x i8]* %11, i64 0, i64 3
+  store i8 101, i8* %.repack8, align 1
+  %.repack9 = getelementptr inbounds [7 x i8], [7 x i8]* %11, i64 0, i64 4
+  store i8 99, i8* %.repack9, align 1
+  %.repack10 = getelementptr inbounds [7 x i8], [7 x i8]* %11, i64 0, i64 5
+  store i8 116, i8* %.repack10, align 1
+  %.repack11 = getelementptr inbounds [7 x i8], [7 x i8]* %11, i64 0, i64 6
+  store i8 0, i8* %.repack11, align 1
+  %12 = getelementptr inbounds [7 x i8], [7 x i8]* %11, i64 0, i64 0
+  %13 = alloca [9 x i8], align 1
+  %.repack12 = getelementptr inbounds [9 x i8], [9 x i8]* %13, i64 0, i64 0
+  store i8 37, i8* %.repack12, align 1
+  %.repack13 = getelementptr inbounds [9 x i8], [9 x i8]* %13, i64 0, i64 1
+  store i8 105, i8* %.repack13, align 1
+  %.repack14 = getelementptr inbounds [9 x i8], [9 x i8]* %13, i64 0, i64 2
+  store i8 51, i8* %.repack14, align 1
+  %.repack15 = getelementptr inbounds [9 x i8], [9 x i8]* %13, i64 0, i64 3
+  store i8 50, i8* %.repack15, align 1
+  %.repack16 = getelementptr inbounds [9 x i8], [9 x i8]* %13, i64 0, i64 4
+  store i8 97, i8* %.repack16, align 1
+  %.repack17 = getelementptr inbounds [9 x i8], [9 x i8]* %13, i64 0, i64 5
+  store i8 114, i8* %.repack17, align 1
+  %.repack18 = getelementptr inbounds [9 x i8], [9 x i8]* %13, i64 0, i64 6
+  store i8 114, i8* %.repack18, align 1
+  %.repack19 = getelementptr inbounds [9 x i8], [9 x i8]* %13, i64 0, i64 7
+  store i8 42, i8* %.repack19, align 1
+  %.repack20 = getelementptr inbounds [9 x i8], [9 x i8]* %13, i64 0, i64 8
+  store i8 0, i8* %.repack20, align 1
+  %14 = getelementptr inbounds [9 x i8], [9 x i8]* %13, i64 0, i64 0
+  %15 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([38 x i8], [38 x i8]* @castErrFormat, i64 0, i64 0), i8* nonnull %12, i8* nonnull %14)
+  call void @exit(i32 -1)
+  br label %ifcont
+
+ifcont:                                           ; preds = %else, %then
+  %16 = getelementptr inbounds %Object, %Object* %9, i64 2
+  %17 = bitcast %Object* %16 to i32*
+  %18 = load i32, i32* %17, align 4
+  %19 = icmp sgt i32 %18, 3
+  br i1 %19, label %boundsCheckThen3, label %boundsCheckElse4
+
+boundsCheckThen3:                                 ; preds = %ifcont
+  %20 = getelementptr inbounds %Object, %Object* %9, i64 1
+  %21 = bitcast %Object* %20 to i32**
+  %baseArrPtr2 = load i32*, i32** %21, align 8
+  br label %boundsCheckIfcont5
+
+boundsCheckElse4:                                 ; preds = %ifcont
+  %22 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([64 x i8], [64 x i8]* @outOfBoundsFormat, i64 0, i64 0), i32 8, i32 3, i32 %18)
+  call void @exit(i32 -1)
+  br label %boundsCheckIfcont5
+
+boundsCheckIfcont5:                               ; preds = %boundsCheckElse4, %boundsCheckThen3
+  %23 = getelementptr inbounds i32, i32* %baseArrPtr2, i64 3
+  %24 = load i32, i32* %23, align 4
+  %25 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([4 x i8], [4 x i8]* @printIntFormat, i64 0, i64 0), i32 %24)
+  ret i32 0
+}
