@@ -90,7 +90,7 @@ let ir_to_backend backend_exec out_dir ir_file =
 
 let source_file_t =
   let doc = ".t file to compile" in
-  Arg.(value & pos 0 string "dummy.t" & info [] ~docv:"SOURCE" ~doc)
+  Arg.(value & pos 0 string "<file_to_compile>.t" & info [] ~docv:"SOURCE" ~doc)
 ;;
 
 let out_dir_t =
