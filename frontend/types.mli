@@ -15,3 +15,4 @@ val type2str : ty -> string
 val type_match : ty -> ty -> bool
 val gen_type_expr : ty -> FT.type_expr
 val is_int : ty -> bool
+val is_array : ty -> bool

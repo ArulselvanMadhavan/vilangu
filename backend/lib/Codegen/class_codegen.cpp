@@ -18,8 +18,11 @@ void IRCodegenVisitor::codegenClasses(
     llvm::Type *vTableTy = llvm::StructType::getTypeByName(
         *context, getVtableTypeName(currClass->className));
     bodyTypes.push_back(vTableTy->getPointerTo());
+    // inits.push_back(llvm::Constant::getNullValue(vTableTy->getPointerTo()));
     for (auto &field : currClass->fields) {
-      bodyTypes.push_back(field->codegen(*this));
+      llvm::Type *fieldType = field->codegen(*this);
+      bodyTypes.push_back(fieldType);
+      // inits.push_back(llvm::Constant::getNullValue(fieldType));
     }
     classType->setBody(llvm::ArrayRef<llvm::Type *>(bodyTypes));
   }
@@ -50,7 +53,7 @@ void IRCodegenVisitor::codegenVTables(
       inits.push_back(baseClassVtable);
     }
 
-    // class name - global var
+    // class name is kept as global var; It’s a string. Reuse addGlobalVarStr
     auto classNameVal =
         llvm::ConstantDataArray::getString(*context, currClass->className);
     std::string classNameGlobalVarName = currClass->className + "_class_name";

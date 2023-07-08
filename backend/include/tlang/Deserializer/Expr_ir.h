@@ -77,6 +77,7 @@ struct SubscriptVarIR : public VarIR {
 struct FieldVarIR : public VarIR {
   std::unique_ptr<ExprIR> baseExpr;
   int field_index;
+  int fieldLineNo;
   FieldVarIR(const Frontend_ir::Var::_Field &var);
   virtual llvm::Value *codegen(IRVisitor &visitor) override;
 };

@@ -57,22 +57,22 @@ let gen_expr tenv e =
     | A.SubscriptVar ((A.FieldVar _ as v), exp, pos) ->
       (match gen_var v with
        | FT.Field { base_expr; _ } as base_var ->
-         let len_var = FT.Field { base_expr; field_index = Int32.of_int 2 } in
          let line_no = A.line_no pos in
+         let len_var = FT.Field { base_expr; field_index = Int32.of_int 2; field_line_no = line_no} in         
          FT.Subscript { base_var; var_exp = gexpr exp; len_var; line_no }
        | _ -> raise SubscriptAccessException)
     | A.SubscriptVar (v, exp, pos) ->
       let line_no = A.line_no pos in
       FT.Subscript
         { base_var =
-            FT.Field { base_expr = FT.Var_exp (gen_var v); field_index = Int32.one }
+            FT.Field { base_expr = FT.Var_exp (gen_var v); field_index = Int32.one ; field_line_no = line_no}
         ; len_var =
-            FT.Field { base_expr = FT.Var_exp (gen_var v); field_index = Int32.of_int 2 }
+            FT.Field { base_expr = FT.Var_exp (gen_var v); field_index = Int32.of_int 2; field_line_no = line_no }
         ; var_exp = gexpr exp
         ; line_no
         }
-    | A.FieldVar (base_exp, _, _) ->
-      FT.Field { base_expr = gexpr base_exp; field_index = Int32.of_int 2 }
+    | A.FieldVar (base_exp, _, pos) ->
+      FT.Field { base_expr = gexpr base_exp; field_index = Int32.of_int 2; field_line_no = A.line_no pos}
       (* Always defaults to length field *)
     | A.LoadVar v -> FT.Load_var { var = gen_var v }
   in
@@ -138,7 +138,7 @@ let mk_arr_constr name rank type_ =
   let lower_rank = rank - 1 in
   let lower_type = mk_arr_inner_type lower_rank type_ in
   let this_field field_index =
-    FT.Field { base_expr = FT.Var_exp (FT.Simple { var_name = "this" }); field_index }
+    FT.Field { base_expr = FT.Var_exp (FT.Simple { var_name = "this" }); field_index; field_line_no = Int32.zero }
   in
   let this_assign field_index field_name =
     FT.Expr_stmt
@@ -332,9 +332,9 @@ let obj_is_a_fun =
     let vtbl = make_id param2.param_name in
     let while_cond = FT.Unop { op = FT.Not; uexpr = check_equal vtbl FT.Null_lit } in
     let vtbl_base =
-      FT.Var_exp (FT.Field { base_expr = vtbl; field_index = Int32.zero })
+      FT.Var_exp (FT.Field { base_expr = vtbl; field_index = Int32.zero; field_line_no = Int32.zero })
     in
-    let vtbl_name = FT.Var_exp (FT.Field { base_expr = vtbl; field_index = Int32.one }) in
+    let vtbl_name = FT.Var_exp (FT.Field { base_expr = vtbl; field_index = Int32.one ; field_line_no = Int32.zero}) in
     let assign_base =
       FT.Assign { lhs = FT.Simple { var_name = param2.param_name }; rhs = vtbl_base }
     in
@@ -352,7 +352,7 @@ let obj_is_a_fun =
     FT.While { while_cond; while_block }
   in
   let obj_vtbl =
-    FT.Field { base_expr = make_id obj_param_name; field_index = Int32.zero }
+    FT.Field { base_expr = make_id obj_param_name; field_index = Int32.zero; field_line_no = Int32.zero }
   in
   let if_obj_not_null =
     FT.If_stmt

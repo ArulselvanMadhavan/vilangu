@@ -2443,6 +2443,7 @@ class Var__Field PROTOBUF_FINAL :
   enum : int {
     kBaseExprFieldNumber = 1,
     kFieldIndexFieldNumber = 2,
+    kFieldLineNoFieldNumber = 3,
   };
   // required .Frontend_ir.Expr base_expr = 1;
   bool has_base_expr() const;
@@ -2475,6 +2476,19 @@ class Var__Field PROTOBUF_FINAL :
   void _internal_set_field_index(::PROTOBUF_NAMESPACE_ID::int32 value);
   public:
 
+  // required int32 field_line_no = 3;
+  bool has_field_line_no() const;
+  private:
+  bool _internal_has_field_line_no() const;
+  public:
+  void clear_field_line_no();
+  ::PROTOBUF_NAMESPACE_ID::int32 field_line_no() const;
+  void set_field_line_no(::PROTOBUF_NAMESPACE_ID::int32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::int32 _internal_field_line_no() const;
+  void _internal_set_field_line_no(::PROTOBUF_NAMESPACE_ID::int32 value);
+  public:
+
   // @@protoc_insertion_point(class_scope:Frontend_ir.Var._Field)
  private:
   class _Internal;
@@ -2489,6 +2503,7 @@ class Var__Field PROTOBUF_FINAL :
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   ::Frontend_ir::Expr* base_expr_;
   ::PROTOBUF_NAMESPACE_ID::int32 field_index_;
+  ::PROTOBUF_NAMESPACE_ID::int32 field_line_no_;
   friend struct ::TableStruct_frontend_2eproto;
 };
 // -------------------------------------------------------------------
@@ -10244,6 +10259,34 @@ inline void Var__Field::_internal_set_field_index(::PROTOBUF_NAMESPACE_ID::int32
 inline void Var__Field::set_field_index(::PROTOBUF_NAMESPACE_ID::int32 value) {
   _internal_set_field_index(value);
   // @@protoc_insertion_point(field_set:Frontend_ir.Var._Field.field_index)
+}
+
+// required int32 field_line_no = 3;
+inline bool Var__Field::_internal_has_field_line_no() const {
+  bool value = (_has_bits_[0] & 0x00000004u) != 0;
+  return value;
+}
+inline bool Var__Field::has_field_line_no() const {
+  return _internal_has_field_line_no();
+}
+inline void Var__Field::clear_field_line_no() {
+  field_line_no_ = 0;
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 Var__Field::_internal_field_line_no() const {
+  return field_line_no_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 Var__Field::field_line_no() const {
+  // @@protoc_insertion_point(field_get:Frontend_ir.Var._Field.field_line_no)
+  return _internal_field_line_no();
+}
+inline void Var__Field::_internal_set_field_line_no(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  _has_bits_[0] |= 0x00000004u;
+  field_line_no_ = value;
+}
+inline void Var__Field::set_field_line_no(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  _internal_set_field_line_no(value);
+  // @@protoc_insertion_point(field_set:Frontend_ir.Var._Field.field_line_no)
 }
 
 // -------------------------------------------------------------------

@@ -47,3 +47,8 @@ let is_int = function
   | INT -> true
   | _ -> false
 ;;
+
+let is_array = function
+  | ARRAY _ -> true
+  | _ -> false
+;;

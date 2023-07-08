@@ -42,6 +42,7 @@ message Var {
   message _Field {
     required Expr base_expr = 1;
     required int32 field_index = 2;
+    required int32 field_line_no = 3;
   }
   message _Load {
     required Var var = 1;

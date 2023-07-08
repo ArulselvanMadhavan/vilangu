@@ -9,9 +9,13 @@ any desired architecture.
   bash run.sh
 #+end_src
 ** Pending tasks
-- [ ] Ref types init to null at variable declaration time. Handle the case when they are used
+- [X] Ref types init to null at variable declaration time. Handle the case when they are used
   without proper initialization.
-- [ ] Pass line number with all subscript accesses
+- [X] Pass line number with all subscript accesses
+- [X] Uninit Arrays. Null check
+- [X] object.length should not be allowed.
+- [ ] Handle the case when arrays aren’t declared by used.
+- [ ] Divide by zero check
 - [X] Array type should be int*.
 - [X] Respect multiple ranks
 - [X] Generate loop blocks to init array based on rank

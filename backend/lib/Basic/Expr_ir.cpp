@@ -135,6 +135,7 @@ SubscriptVarIR::SubscriptVarIR(const Frontend_ir::Var::_Subscript &var) {
 FieldVarIR::FieldVarIR(const Frontend_ir::Var::_Field &var) {
   baseExpr = deserializeExpr(var.base_expr());
   field_index = var.field_index();
+  fieldLineNo = var.field_line_no();
 };
 
 std::unique_ptr<VarIR> deserializeVar(const Frontend_ir::Var &var) {

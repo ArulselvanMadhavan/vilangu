@@ -31,6 +31,8 @@ void IRCodegenVisitor::codegenExternFunctionDeclarations() {
   llvm::StringRef nlen =
       "Line: %d | Array len cannot be negative. Length attempted:%d\n";
   addGlobalVarStr(getNegativeLenFormatVar(), nlen);
+  llvm::StringRef nullDeref = "Line: %d | Null dereference\n";
+  addGlobalVarStr(getNullDerefFormatVar(), nullDeref);
 
   module->getOrInsertFunction(
       "printf", llvm::FunctionType::get(

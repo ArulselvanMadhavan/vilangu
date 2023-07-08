@@ -37,9 +37,10 @@ let get_ast_type pos = function
 
 let widen_array lty =
   match lty with
-  | Some (A.Reference (A.ArrayType (rank, lty))) -> Some (A.Reference (A.ArrayType (rank + 1, lty)))
+  | Some (A.Reference (A.ArrayType (rank, lty))) ->
+    Some (A.Reference (A.ArrayType (rank + 1, lty)))
   | Some (A.Reference (A.ClassType _) as lty) -> Some (A.Reference (A.ArrayType (1, lty)))
-  | Some _ as x -> x            (* No widening of non-primitive type *)
+  | Some _ as x -> x (* No widening of non-primitive type *)
   | None -> None
 ;;
 
@@ -154,8 +155,14 @@ let rec trans_var (venv, tenv, var) =
     then error pos "field access on non-object type" err_stmty_unit
     else if not (String.equal sym_name "length")
     then error pos ("unknown field " ^ sym_name) err_stmty_unit
-    else { (* This has to be length *)
+    else if T.is_array exp_ty
+    then { (* This has to be length *)
            ty = T.INT; stmt = () }
+    else
+      error
+        pos
+        ("length field is not allowed on type:" ^ T.type2str exp_ty)
+        err_stmty_unit
   | A.LoadVar var -> trans_var (venv, tenv, var)
 
 and trans_exp (venv, tenv, exp) =

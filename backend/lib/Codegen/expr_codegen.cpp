@@ -106,6 +106,7 @@ llvm::Value *IRCodegenVisitor::codegen(const ExprAssignIR &expr) {
     llvm::outs() << "Trying to assign to a null id";
     return nullptr;
   }
+
   // lhs - i32* or struct_type* or struct_type**
   llvm::Value *lhsVal = lhs;
   llvm::Type *lhsType = lhs->getType();
@@ -209,6 +210,25 @@ llvm::Value *IRCodegenVisitor::codegen(const SubscriptVarIR &var) {
 
 llvm::Value *IRCodegenVisitor::codegen(const FieldVarIR &var) {
   llvm::Value *baseValPtr = var.baseExpr->codegen(*this);
+  // Check if baseValPtr is pointing to null
+  llvm::Function *parentFunction = builder->GetInsertBlock()->getParent();
+  llvm::BasicBlock *thenBB =
+      llvm::BasicBlock::Create(*context, "nullDerefThen", parentFunction);
+  llvm::BasicBlock *elseBB =
+      llvm::BasicBlock::Create(*context, "nullDerefElse");
+  llvm::Value *condValue = builder->CreateICmpEQ(
+      baseValPtr, llvm::Constant::getNullValue(baseValPtr->getType()));
+  builder->CreateCondBr(condValue, thenBB, elseBB);
+  parentFunction->getBasicBlockList().push_back(thenBB);
+  builder->SetInsertPoint(thenBB);
+  std::vector<llvm::Value *> printfArgs;
+  printfArgs.push_back(llvm::ConstantInt::getSigned(
+      llvm::Type::getInt32Ty(*context), var.fieldLineNo));
+  runtimeError(getNullDerefFormatVar(), printfArgs);
+  builder->CreateBr(elseBB);
+  parentFunction->getBasicBlockList().push_back(elseBB);
+  builder->SetInsertPoint(elseBB);
+  // if not null continue
   if (baseValPtr->getType()->isPointerTy()) {
     return builder->CreateStructGEP(baseValPtr->getType()->getContainedType(0),
                                     baseValPtr,
@@ -294,7 +314,7 @@ llvm::Value *IRCodegenVisitor::codegen(const ExprArrayMakeIR &expr) {
   builder->CreateCall(constructorFunc,
                       llvm::ArrayRef<llvm::Value *>{
                           newArrayResultPtr, arrVtable, callocHead, size});
-  return newArrayResultPtr;
+  return newArrayResultPtr; // i32arr*
 }
 
 llvm::Value *IRCodegenVisitor::codegen(const ExprVarIR &expr) {
@@ -320,7 +340,15 @@ llvm::Value *IRCodegenVisitor::codegen(const ExprCastIR &expr) {
   case Wide: {
     llvm::Type *castToTy = expr.castTo->codegen(*this);
     llvm::Value *castExprVal = expr.expr->codegen(*this);
-    return builder->CreateBitCast(castExprVal, castToTy);
+    // castExprVal->getType()->print(llvm::outs());
+    // castToTy->print(llvm::outs());
+    // i32arr* object
+    llvm::Value *res = builder->CreateBitCast(castExprVal, castToTy);
+    // res->getType()->print(llvm::outs());
+    // llvm::Value *nulres = llvm::ConstantStruct::getNullValue(
+    //     llvm::StructType::getTypeByName(*context, "Object"));
+    // nulres->getType()->print(llvm::outs());
+    return res;
   }
   case Narrow: {
     llvm::Value *castExprVal =

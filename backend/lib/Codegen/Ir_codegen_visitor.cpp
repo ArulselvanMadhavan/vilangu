@@ -38,6 +38,10 @@ std::string IRCodegenVisitor::getNegativeLenFormatVar() {
   return "negativeLenFormat";
 }
 
+std::string IRCodegenVisitor::getNullDerefFormatVar() {
+  return "nullDerefFormat";
+}
+
 void IRCodegenVisitor::codegenMainExpr(
     const std::vector<std::unique_ptr<StmtIR>> &mainExpr) {
   llvm::FunctionType *mainType =
