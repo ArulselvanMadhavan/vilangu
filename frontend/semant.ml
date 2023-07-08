@@ -35,12 +35,30 @@ let get_ast_type pos = function
   | _ -> raise AstTypeNotFound
 ;;
 
+let widen_array lty =
+  match lty with
+  | Some (A.Reference (A.ArrayType (rank, lty))) -> Some (A.Reference (A.ArrayType (rank + 1, lty)))
+  | Some (A.Reference (A.ClassType _) as lty) -> Some (A.Reference (A.ArrayType (1, lty)))
+  | Some _ as x -> x            (* No widening of non-primitive type *)
+  | None -> None
+;;
+
+let adjust_lty cast_ty lty =
+  match cast_ty with
+  | Some A.Wide -> Some A.Wide, widen_array lty
+  | _ -> cast_ty, lty
+;;
+
 (* Check lhs type with rhs type. If possible, find cast type. For wide casts. Find the recommended lhs cast *)
 let rec compare_and_cast pos lhs_ty rhs_ty =
   match lhs_ty, rhs_ty with
-  | T.ARRAY (lrank, lty), T.ARRAY (rrank, rty) when lrank = rrank ->
-    compare_and_cast pos lty rty
-  | T.ARRAY (lrank, _), T.ARRAY (rrank, _) when lrank <> rrank -> None, None
+  | T.ARRAY (lrank, lty), T.ARRAY (rrank, rty) ->
+    let get_ty rank ty =
+      let rank = rank - 1 in
+      if rank > 0 then T.ARRAY (rank, ty) else ty
+    in
+    let cast_ty, lty = compare_and_cast pos (get_ty lrank lty) (get_ty rrank rty) in
+    adjust_lty cast_ty lty
   | T.NAME (sym, _), T.ARRAY _ when sym = Env.obj_symbol ->
     Some A.Wide, Some (A.Reference (A.ClassType (sym, pos)))
   | T.NAME _, T.ARRAY _ ->
