@@ -41,7 +41,7 @@ void IRCodegenVisitor::codegenExternFunctionDeclarations() {
   oobGV->setInitializer(oobPtr);
 
   llvm::StringRef nlen =
-      "Line:%d | Array len cannot be negative. Length attempted:%d\n";
+      "Line: %d | Array len cannot be negative. Length attempted:%d\n";
   auto nlenPtr = llvm::ConstantDataArray::getString(*context, nlen);
   module->getOrInsertGlobal(getNegativeLenFormatVar(), nlenPtr->getType());
   llvm::GlobalVariable *nlenGV =

@@ -66,7 +66,7 @@ let assignment_cast (lhs_ty, rhs_ty, pos, rhs_exp) =
     | _ ->
       error
         pos
-        ("type mismatch. Assignment cast not possible. expecting"
+        ("type mismatch. Assignment cast not possible. expecting "
          ^ T.type2str lhs_ty
          ^ ", but got "
          ^ T.type2str rhs_ty)

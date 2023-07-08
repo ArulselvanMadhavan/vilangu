@@ -13,8 +13,8 @@ target triple = "x86_64-pc-linux-gnu"
 
 @printIntFormat = private constant [4 x i8] c"%d\0A\00", align 1
 @castErrFormat = private constant [38 x i8] c"Narrow cast err: %s is not a type %s\0A\00", align 1
-@outOfBoundsFormat = private constant [64 x i8] c"Array out of bounds exception at line %d. Index:%d | Length:%d\0A\00", align 1
-@negativeLenFormat = private constant [51 x i8] c"Array len cannot be negative. Length attempted:%d\0A\00", align 1
+@outOfBoundsFormat = private constant [72 x i8] c"Line: %d | Array out of bounds exception at line. Index:%d | Length:%d\0A\00", align 1
+@negativeLenFormat = private constant [62 x i8] c"Line: %d | Array len cannot be negative. Length attempted:%d\0A\00", align 1
 @Object_class_name = private constant [7 x i8] c"Object\00", align 1
 @Object_Vtable = global %Object_Vtable_type { %Object_Vtable_type* null, i8* getelementptr inbounds ([7 x i8], [7 x i8]* @Object_class_name, i32 0, i32 0) }
 @i32arr_class_name = private constant [7 x i8] c"i32arr\00", align 1
@@ -209,7 +209,7 @@ negativeLenCont3:                                 ; preds = %negativeLenThen2, %
   br i1 %8, label %boundsCheckThen5, label %boundsCheckElse
 
 boundsCheckThen5:                                 ; preds = %negativeLenCont3
-  %9 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([64 x i8], [64 x i8]* @outOfBoundsFormat, i64 0, i64 0), i32 4, i32 0, i32 %7)
+  %9 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([72 x i8], [72 x i8]* @outOfBoundsFormat, i64 0, i64 0), i32 4, i32 0, i32 %7)
   call void @exit(i32 -1)
   br label %boundsCheckElse
 
@@ -235,7 +235,7 @@ negativeLenCont7:                                 ; preds = %negativeLenThen6, %
   br i1 %16, label %boundsCheckThen10, label %boundsCheckElse11
 
 boundsCheckThen10:                                ; preds = %negativeLenCont7
-  %17 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([64 x i8], [64 x i8]* @outOfBoundsFormat, i64 0, i64 0), i32 5, i32 0, i32 %15)
+  %17 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([72 x i8], [72 x i8]* @outOfBoundsFormat, i64 0, i64 0), i32 5, i32 0, i32 %15)
   call void @exit(i32 -1)
   br label %boundsCheckElse11
 
@@ -251,7 +251,7 @@ boundsCheckElse11:                                ; preds = %boundsCheckThen10, 
   br i1 %23, label %boundsCheckThen14, label %boundsCheckElse15
 
 boundsCheckThen14:                                ; preds = %boundsCheckElse11
-  %24 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([64 x i8], [64 x i8]* @outOfBoundsFormat, i64 0, i64 0), i32 5, i32 0, i32 %22)
+  %24 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([72 x i8], [72 x i8]* @outOfBoundsFormat, i64 0, i64 0), i32 5, i32 0, i32 %22)
   call void @exit(i32 -1)
   br label %boundsCheckElse15
 
@@ -262,7 +262,7 @@ boundsCheckElse15:                                ; preds = %boundsCheckThen14, 
   br i1 %27, label %boundsCheckThen16, label %boundsCheckElse17
 
 boundsCheckThen16:                                ; preds = %boundsCheckElse15
-  %28 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([64 x i8], [64 x i8]* @outOfBoundsFormat, i64 0, i64 0), i32 5, i32 0, i32 %26)
+  %28 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([72 x i8], [72 x i8]* @outOfBoundsFormat, i64 0, i64 0), i32 5, i32 0, i32 %26)
   call void @exit(i32 -1)
   br label %boundsCheckElse17
 
@@ -281,7 +281,7 @@ boundsCheckElse17:                                ; preds = %boundsCheckThen16, 
   br i1 %36, label %boundsCheckThen20, label %boundsCheckElse21
 
 boundsCheckThen20:                                ; preds = %boundsCheckElse17
-  %37 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([64 x i8], [64 x i8]* @outOfBoundsFormat, i64 0, i64 0), i32 7, i32 0, i32 %35)
+  %37 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([72 x i8], [72 x i8]* @outOfBoundsFormat, i64 0, i64 0), i32 7, i32 0, i32 %35)
   call void @exit(i32 -1)
   br label %boundsCheckElse21
 
@@ -298,7 +298,7 @@ boundsCheckElse21:                                ; preds = %boundsCheckThen20, 
   br i1 %45, label %boundsCheckThen23, label %boundsCheckElse24
 
 boundsCheckThen23:                                ; preds = %boundsCheckElse21
-  %46 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([64 x i8], [64 x i8]* @outOfBoundsFormat, i64 0, i64 0), i32 8, i32 0, i32 %44)
+  %46 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([72 x i8], [72 x i8]* @outOfBoundsFormat, i64 0, i64 0), i32 8, i32 0, i32 %44)
   call void @exit(i32 -1)
   br label %boundsCheckElse24
 
@@ -314,7 +314,7 @@ boundsCheckElse24:                                ; preds = %boundsCheckThen23, 
   br i1 %52, label %boundsCheckThen27, label %boundsCheckElse28
 
 boundsCheckThen27:                                ; preds = %boundsCheckElse24
-  %53 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([64 x i8], [64 x i8]* @outOfBoundsFormat, i64 0, i64 0), i32 8, i32 0, i32 %51)
+  %53 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([72 x i8], [72 x i8]* @outOfBoundsFormat, i64 0, i64 0), i32 8, i32 0, i32 %51)
   call void @exit(i32 -1)
   br label %boundsCheckElse28
 
@@ -325,7 +325,7 @@ boundsCheckElse28:                                ; preds = %boundsCheckThen27, 
   br i1 %56, label %boundsCheckThen29, label %boundsCheckElse30
 
 boundsCheckThen29:                                ; preds = %boundsCheckElse28
-  %57 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([64 x i8], [64 x i8]* @outOfBoundsFormat, i64 0, i64 0), i32 8, i32 0, i32 %55)
+  %57 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([72 x i8], [72 x i8]* @outOfBoundsFormat, i64 0, i64 0), i32 8, i32 0, i32 %55)
   call void @exit(i32 -1)
   br label %boundsCheckElse30
 
@@ -342,7 +342,7 @@ boundsCheckElse30:                                ; preds = %boundsCheckThen29, 
   br i1 %65, label %boundsCheckThen32, label %boundsCheckElse33
 
 boundsCheckThen32:                                ; preds = %boundsCheckElse30
-  %66 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([64 x i8], [64 x i8]* @outOfBoundsFormat, i64 0, i64 0), i32 9, i32 1, i32 %64)
+  %66 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([72 x i8], [72 x i8]* @outOfBoundsFormat, i64 0, i64 0), i32 9, i32 1, i32 %64)
   call void @exit(i32 -1)
   br label %boundsCheckElse33
 
@@ -359,7 +359,7 @@ boundsCheckElse33:                                ; preds = %boundsCheckThen32, 
   br i1 %74, label %boundsCheckThen35, label %boundsCheckElse36
 
 boundsCheckThen35:                                ; preds = %boundsCheckElse33
-  %75 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([64 x i8], [64 x i8]* @outOfBoundsFormat, i64 0, i64 0), i32 10, i32 1, i32 %73)
+  %75 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([72 x i8], [72 x i8]* @outOfBoundsFormat, i64 0, i64 0), i32 10, i32 1, i32 %73)
   call void @exit(i32 -1)
   br label %boundsCheckElse36
 
@@ -375,7 +375,7 @@ boundsCheckElse36:                                ; preds = %boundsCheckThen35, 
   br i1 %81, label %boundsCheckThen39, label %boundsCheckElse40
 
 boundsCheckThen39:                                ; preds = %boundsCheckElse36
-  %82 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([64 x i8], [64 x i8]* @outOfBoundsFormat, i64 0, i64 0), i32 10, i32 1, i32 %80)
+  %82 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([72 x i8], [72 x i8]* @outOfBoundsFormat, i64 0, i64 0), i32 10, i32 1, i32 %80)
   call void @exit(i32 -1)
   br label %boundsCheckElse40
 
@@ -386,7 +386,7 @@ boundsCheckElse40:                                ; preds = %boundsCheckThen39, 
   br i1 %85, label %boundsCheckThen41, label %boundsCheckElse42
 
 boundsCheckThen41:                                ; preds = %boundsCheckElse40
-  %86 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([64 x i8], [64 x i8]* @outOfBoundsFormat, i64 0, i64 0), i32 10, i32 0, i32 %84)
+  %86 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([72 x i8], [72 x i8]* @outOfBoundsFormat, i64 0, i64 0), i32 10, i32 0, i32 %84)
   call void @exit(i32 -1)
   br label %boundsCheckElse42
 
