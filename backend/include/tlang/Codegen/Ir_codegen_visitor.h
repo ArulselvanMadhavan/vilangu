@@ -43,6 +43,7 @@ protected:
   std::string getCastErrFormatVar();
   std::string getOutOfBoundsFormatVar();
   std::string getNegativeLenFormatVar();
+  void addGlobalVarStr(std::string varName, llvm::StringRef content);
   void runtimeError(std::string formatStr, llvm::ArrayRef<llvm::Value *> args);
 
 public:
