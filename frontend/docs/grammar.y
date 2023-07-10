@@ -295,16 +295,6 @@ Primary
 	| PrimaryNoNewArray
 	;
 
-PrimaryNoNewArray
-	: ParenExpression
-	| THIS
-	| FieldAccess
-	| MethodInvocation
-	| ArrayAccess
-	| ClassInstanceCreationExpression
-	| Literal
-	;
-
 ClassInstanceCreationExpression
 	: NEW ClassType Arguments
 	;
@@ -343,6 +333,16 @@ MethodInvocation
 	: Identifier Arguments
 	| Primary '.' Identifier Arguments
 	| SUPER '.' Identifier Arguments
+	;
+
+PrimaryNoNewArray
+	: ParenExpression
+	| THIS
+	| FieldAccess
+	| MethodInvocation
+	| ArrayAccess
+	| ClassInstanceCreationExpression
+	| Literal
 	;
 
 ArrayAccess

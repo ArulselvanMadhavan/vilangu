@@ -9,14 +9,51 @@ any desired architecture.
   bash run.sh
 #+end_src
 ** Pending tasks
+- [X] Ref types init to null at variable declaration time. Handle the case when they are used
+  without proper initialization.
+- [X] Pass line number with all subscript accesses
+- [X] Uninit Arrays. Null check
+- [X] object.length should not be allowed.
+- [X] Handle the case when arrays aren’t declared by used.
+- [ ] Divide by zero check
+- [X] Array type should be int*.
+- [X] Respect multiple ranks
+- [X] Generate loop blocks to init array based on rank
+- [X] Return type of subscript var should be pointer
+- [X] Type should also keep track of length and ptr
+- [X] Add support for length field
 - [ ] Warn users of unreachable code blocks after break; continue statements
+- [X] Subscript exprs should eval to int type of rank 0
 - [ ] Warn Unused variables
-- [ ] Dockerize things
-  - [ ] Install ocaml libs
-  - [ ] Install protocol buffer
+- [X] Dockerize things
+  - [X] Install ocaml libs
+  - [X] Install protocol buffer
+- [ ] nounwind attribute to main, malloc, free, printf
+- 
+    
 ** Useful links
   - https://github.com/ksrky/tiger/tree/master
   - [[https://www.cs.columbia.edu/~sedwards/classes/2002/w4115/tiger.pdf][Tiger Lang specs]]
   - [[https://github.com/xandkar/tiger.ml][Tiger with tests upto chap 4]]
   - [[https://github.com/hkveeranki/Decaf-Compiler/tree/master][Decaf compiler]]
   - [[https://github.com/mukul-rathi/bolt/tree/master][Bolt compiler]]
+
+** Note
+== We're Using GitHub Under Protest ==
+
+This project is currently hosted on GitHub.  This is not ideal; GitHub is a
+proprietary, trade-secret system that is not Free and Open Souce Software
+(FOSS).  We are deeply concerned about using a proprietary system like GitHub
+to develop our FOSS project.  We have an
+[open {bug ticket, mailing list thread, etc.} ](INSERT_LINK) where the
+project contributors are actively discussing how we can move away from GitHub
+in the long term.  We urge you to read about the
+[Give up GitHub](https://GiveUpGitHub.org) campaign from
+[the Software Freedom Conservancy](https://sfconservancy.org) to understand
+some of the reasons why GitHub is not a good place to host FOSS projects.
+
+Any use of this project's code by GitHub Copilot, past or present, is done
+without our permission.  We do not consent to GitHub's use of this project's
+code in Copilot.
+
+![Logo of the GiveUpGitHub campaign](https://sfconservancy.org/img/GiveUpGitHub.png)

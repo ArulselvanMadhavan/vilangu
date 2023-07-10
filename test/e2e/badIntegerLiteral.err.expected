@@ -1,0 +1,4 @@
+./test/e2e/badIntegerLiteral.t:9:7 - 9:18: illegal integer literal
+./test/e2e/badIntegerLiteral.t:5:7 - 5:18: illegal integer literal
+./test/e2e/badIntegerLiteral.t:4:7 - 4:17: illegal integer literal
+./test/e2e/badIntegerLiteral.t:3:7 - 3:27: illegal integer literal

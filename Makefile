@@ -40,3 +40,7 @@ vilangu-rebuild:
 .PHONY: kill
 kill:
 	sudo docker kill $(shell docker ps -q)
+
+build:
+	mkdir -p backend/build && cd backend/build && cmake ../ && bear -- make
+	dune build

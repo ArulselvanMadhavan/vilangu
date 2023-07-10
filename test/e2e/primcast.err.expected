@@ -1,0 +1,1 @@
+./test/e2e/primcast.t:4:2 - 4:7: type mismatch. Assignment cast not possible. expecting Object, but got i32
