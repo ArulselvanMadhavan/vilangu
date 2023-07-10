@@ -146,7 +146,13 @@ and pp_expr_p_binop fmt (v : Frontend_types.expr_p_binop) =
   let pp_i fmt () =
     Pbrt.Pp.pp_record_field ~first:true "bin_op" pp_bin_op fmt v.Frontend_types.bin_op;
     Pbrt.Pp.pp_record_field ~first:false "lexpr" pp_expr fmt v.Frontend_types.lexpr;
-    Pbrt.Pp.pp_record_field ~first:false "rexpr" pp_expr fmt v.Frontend_types.rexpr
+    Pbrt.Pp.pp_record_field ~first:false "rexpr" pp_expr fmt v.Frontend_types.rexpr;
+    Pbrt.Pp.pp_record_field
+      ~first:false
+      "op_line_no"
+      Pbrt.Pp.pp_int32
+      fmt
+      v.Frontend_types.op_line_no
   in
   Pbrt.Pp.pp_brk pp_i fmt ()
 

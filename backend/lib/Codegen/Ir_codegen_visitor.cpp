@@ -42,6 +42,10 @@ std::string IRCodegenVisitor::getNullDerefFormatVar() {
   return "nullDerefFormat";
 }
 
+std::string IRCodegenVisitor::getDivByZeroFormatVar() {
+  return "divByZeroFormat";
+}
+
 void IRCodegenVisitor::codegenMainExpr(
     const std::vector<std::unique_ptr<StmtIR>> &mainExpr) {
   llvm::FunctionType *mainType =

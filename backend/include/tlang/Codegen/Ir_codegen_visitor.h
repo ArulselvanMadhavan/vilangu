@@ -44,6 +44,7 @@ protected:
   std::string getOutOfBoundsFormatVar();
   std::string getNegativeLenFormatVar();
   std::string getNullDerefFormatVar();
+  std::string getDivByZeroFormatVar();
   void addGlobalVarStr(std::string varName, llvm::StringRef content);
   void runtimeError(std::string formatStr, llvm::ArrayRef<llvm::Value *> args);
 

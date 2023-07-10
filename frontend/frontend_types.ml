@@ -77,6 +77,7 @@ and expr_p_binop =
   { bin_op : bin_op
   ; lexpr : expr
   ; rexpr : expr
+  ; op_line_no : int32
   }
 
 and expr_p_assign =
@@ -214,10 +215,11 @@ and default_expr_p_binop
   ?(bin_op : bin_op = default_bin_op ())
   ?(lexpr : expr = default_expr ())
   ?(rexpr : expr = default_expr ())
+  ?(op_line_no : int32 = 0l)
   ()
   : expr_p_binop
   =
-  { bin_op; lexpr; rexpr }
+  { bin_op; lexpr; rexpr; op_line_no }
 
 and default_expr_p_assign ?(lhs : var = default_var ()) ?(rhs : expr = default_expr ()) ()
   : expr_p_assign

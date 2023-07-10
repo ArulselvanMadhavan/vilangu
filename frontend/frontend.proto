@@ -97,6 +97,7 @@ message Expr {
     required Bin_op bin_op = 1;
     required Expr lexpr = 2;
     required Expr rexpr = 3;
+    required int32 op_line_no = 4;
   }
 
   message _Assign {    

@@ -4670,6 +4670,7 @@ class Expr__Binop PROTOBUF_FINAL :
     kBinOpFieldNumber = 1,
     kLexprFieldNumber = 2,
     kRexprFieldNumber = 3,
+    kOpLineNoFieldNumber = 4,
   };
   // required .Frontend_ir.Bin_op bin_op = 1;
   bool has_bin_op() const;
@@ -4725,6 +4726,19 @@ class Expr__Binop PROTOBUF_FINAL :
       ::Frontend_ir::Expr* rexpr);
   ::Frontend_ir::Expr* unsafe_arena_release_rexpr();
 
+  // required int32 op_line_no = 4;
+  bool has_op_line_no() const;
+  private:
+  bool _internal_has_op_line_no() const;
+  public:
+  void clear_op_line_no();
+  ::PROTOBUF_NAMESPACE_ID::int32 op_line_no() const;
+  void set_op_line_no(::PROTOBUF_NAMESPACE_ID::int32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::int32 _internal_op_line_no() const;
+  void _internal_set_op_line_no(::PROTOBUF_NAMESPACE_ID::int32 value);
+  public:
+
   // @@protoc_insertion_point(class_scope:Frontend_ir.Expr._Binop)
  private:
   class _Internal;
@@ -4740,6 +4754,7 @@ class Expr__Binop PROTOBUF_FINAL :
   ::Frontend_ir::Bin_op* bin_op_;
   ::Frontend_ir::Expr* lexpr_;
   ::Frontend_ir::Expr* rexpr_;
+  ::PROTOBUF_NAMESPACE_ID::int32 op_line_no_;
   friend struct ::TableStruct_frontend_2eproto;
 };
 // -------------------------------------------------------------------
@@ -11960,6 +11975,34 @@ inline void Expr__Binop::set_allocated_rexpr(::Frontend_ir::Expr* rexpr) {
   }
   rexpr_ = rexpr;
   // @@protoc_insertion_point(field_set_allocated:Frontend_ir.Expr._Binop.rexpr)
+}
+
+// required int32 op_line_no = 4;
+inline bool Expr__Binop::_internal_has_op_line_no() const {
+  bool value = (_has_bits_[0] & 0x00000008u) != 0;
+  return value;
+}
+inline bool Expr__Binop::has_op_line_no() const {
+  return _internal_has_op_line_no();
+}
+inline void Expr__Binop::clear_op_line_no() {
+  op_line_no_ = 0;
+  _has_bits_[0] &= ~0x00000008u;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 Expr__Binop::_internal_op_line_no() const {
+  return op_line_no_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 Expr__Binop::op_line_no() const {
+  // @@protoc_insertion_point(field_get:Frontend_ir.Expr._Binop.op_line_no)
+  return _internal_op_line_no();
+}
+inline void Expr__Binop::_internal_set_op_line_no(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  _has_bits_[0] |= 0x00000008u;
+  op_line_no_ = value;
+}
+inline void Expr__Binop::set_op_line_no(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  _internal_set_op_line_no(value);
+  // @@protoc_insertion_point(field_set:Frontend_ir.Expr._Binop.op_line_no)
 }
 
 // -------------------------------------------------------------------

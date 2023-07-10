@@ -50,6 +50,7 @@ ExprBinOpIR::ExprBinOpIR(const Frontend_ir::Expr::_Binop &binopExpr) {
   op = deserializeBinOp(binopExpr.bin_op());
   lexpr = deserializeExpr(binopExpr.lexpr());
   rexpr = deserializeExpr(binopExpr.rexpr());
+  opLineNo = binopExpr.op_line_no();
 };
 
 ExprFunctionAppIR::ExprFunctionAppIR(

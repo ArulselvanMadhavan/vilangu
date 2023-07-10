@@ -33,6 +33,8 @@ void IRCodegenVisitor::codegenExternFunctionDeclarations() {
   addGlobalVarStr(getNegativeLenFormatVar(), nlen);
   llvm::StringRef nullDeref = "Line: %d | Null dereference\n";
   addGlobalVarStr(getNullDerefFormatVar(), nullDeref);
+  llvm::StringRef divByZero = "Line: %d | Divide by zero exception\n";
+  addGlobalVarStr(getDivByZeroFormatVar(), divByZero);
 
   module->getOrInsertFunction(
       "printf", llvm::FunctionType::get(

@@ -61,12 +61,14 @@ type expr_p_binop_mutable =
   { mutable bin_op : Frontend_types.bin_op
   ; mutable lexpr : Frontend_types.expr
   ; mutable rexpr : Frontend_types.expr
+  ; mutable op_line_no : int32
   }
 
 let default_expr_p_binop_mutable () : expr_p_binop_mutable =
   { bin_op = Frontend_types.default_bin_op ()
   ; lexpr = Frontend_types.default_expr ()
   ; rexpr = Frontend_types.default_expr ()
+  ; op_line_no = 0l
   }
 ;;
 
@@ -579,6 +581,7 @@ and decode_expr_p_unop d =
 and decode_expr_p_binop d =
   let v = default_expr_p_binop_mutable () in
   let continue__ = ref true in
+  let op_line_no_is_set = ref false in
   let rexpr_is_set = ref false in
   let lexpr_is_set = ref false in
   let bin_op_is_set = ref false in
@@ -599,14 +602,20 @@ and decode_expr_p_binop d =
       v.rexpr <- decode_expr (Pbrt.Decoder.nested d);
       rexpr_is_set := true
     | Some (3, pk) -> Pbrt.Decoder.unexpected_payload "Message(expr_p_binop), field(3)" pk
+    | Some (4, Pbrt.Varint) ->
+      v.op_line_no <- Pbrt.Decoder.int32_as_varint d;
+      op_line_no_is_set := true
+    | Some (4, pk) -> Pbrt.Decoder.unexpected_payload "Message(expr_p_binop), field(4)" pk
     | Some (_, payload_kind) -> Pbrt.Decoder.skip d payload_kind
   done;
+  if not !op_line_no_is_set then Pbrt.Decoder.missing_field "op_line_no";
   if not !rexpr_is_set then Pbrt.Decoder.missing_field "rexpr";
   if not !lexpr_is_set then Pbrt.Decoder.missing_field "lexpr";
   if not !bin_op_is_set then Pbrt.Decoder.missing_field "bin_op";
   ({ Frontend_types.bin_op = v.bin_op
    ; Frontend_types.lexpr = v.lexpr
    ; Frontend_types.rexpr = v.rexpr
+   ; Frontend_types.op_line_no = v.op_line_no
    }
     : Frontend_types.expr_p_binop)
 
@@ -1239,6 +1248,8 @@ and encode_expr_p_binop (v : Frontend_types.expr_p_binop) encoder =
   Pbrt.Encoder.nested (encode_expr v.Frontend_types.lexpr) encoder;
   Pbrt.Encoder.key (3, Pbrt.Bytes) encoder;
   Pbrt.Encoder.nested (encode_expr v.Frontend_types.rexpr) encoder;
+  Pbrt.Encoder.key (4, Pbrt.Varint) encoder;
+  Pbrt.Encoder.int32_as_varint v.Frontend_types.op_line_no encoder;
   ()
 
 and encode_expr_p_assign (v : Frontend_types.expr_p_assign) encoder =

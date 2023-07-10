@@ -38,8 +38,13 @@ let gen_expr tenv e =
     | A.IntLit (i, _) -> FT.Integer i
     | A.OpExp (A.UnaryOp { oper = A.NegateOp; exp }, _) ->
       FT.Unop { op = FT.Neg; uexpr = gexpr exp }
-    | A.OpExp (A.BinaryOp { oper; left; right }, _) ->
-      FT.Binop { bin_op = gen_binop oper; lexpr = gexpr left; rexpr = gexpr right }
+    | A.OpExp (A.BinaryOp { oper; left; right }, pos) ->
+      FT.Binop
+        { bin_op = gen_binop oper
+        ; lexpr = gexpr left
+        ; rexpr = gexpr right
+        ; op_line_no = A.line_no pos
+        }
     | A.Assignment { lhs; exp; _ } -> FT.Assign { lhs = gen_var lhs; rhs = gexpr exp }
     | A.Identifier ((sym_name, _), _) ->
       FT.Expr_id { id = FT.Simple { var_name = sym_name } }
@@ -176,6 +181,7 @@ let mk_arr_constr name rank type_ =
             { bin_op = FT.Less_than
             ; lexpr = FT.Var_exp (FT.Simple { var_name = "i" })
             ; rexpr = FT.Var_exp (FT.Simple { var_name = "length" })
+            ; op_line_no = Int32.zero
             }
       ; while_block =
           FT.Block
@@ -204,6 +210,7 @@ let mk_arr_constr name rank type_ =
                                 { bin_op = FT.Plus
                                 ; lexpr = var_exp "i"
                                 ; rexpr = FT.Integer (Int32.of_int 2)
+                                ; op_line_no = Int32.zero
                                 }
                           }
                     }
@@ -334,7 +341,7 @@ let arr_class_defns venv tenv main_decl =
     | _ -> ()
   in
   let handle_ventry _symbol = function
-    | E.VarEntry {ty} -> handle_arr_type ty
+    | E.VarEntry { ty } -> handle_arr_type ty
     | _ -> ()
   in
   List.iter handle_arr_type arr_types;
@@ -386,7 +393,9 @@ let obj_is_a_fun =
   let param2 = FT.{ param_type = param2_ty; param_name = "vtbl" } in
   let param3 = FT.{ param_type = param3_ty; param_name = "name" } in
   let params = [ param1; param2; param3 ] in
-  let check_equal lexpr rexpr = FT.Binop { bin_op = FT.Equals; lexpr; rexpr } in
+  let check_equal lexpr rexpr =
+    FT.Binop { bin_op = FT.Equals; lexpr; rexpr; op_line_no = Int32.zero }
+  in
   let make_id var_name = FT.Var_exp (FT.Simple { var_name }) in
   let expr_stmt expr = FT.Expr_stmt { expr_stmt = expr } in
   let obj_is_not_null =

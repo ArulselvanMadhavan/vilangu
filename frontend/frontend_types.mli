@@ -79,6 +79,7 @@ and expr_p_binop =
   { bin_op : bin_op
   ; lexpr : expr
   ; rexpr : expr
+  ; op_line_no : int32
   }
 
 and expr_p_assign =
@@ -222,6 +223,7 @@ val default_expr_p_binop
   :  ?bin_op:bin_op
   -> ?lexpr:expr
   -> ?rexpr:expr
+  -> ?op_line_no:int32
   -> unit
   -> expr_p_binop
 

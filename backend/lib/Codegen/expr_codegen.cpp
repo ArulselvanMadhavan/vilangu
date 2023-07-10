@@ -92,8 +92,29 @@ llvm::Value *IRCodegenVisitor::codegen(const ExprBinOpIR &expr) {
     return builder->CreateICmpSGT(lexpr, rexpr, "sgt");
   case BinOpMult:
     return builder->CreateMul(lexpr, rexpr, "mul");
-  case BinOpDivide:
+  case BinOpDivide: {
+    llvm::Function *parentFunction = builder->GetInsertBlock()->getParent();
+    llvm::Value *condValue = builder->CreateICmpEQ(
+        rexpr,
+        llvm::ConstantInt::getSigned(llvm::Type::getInt32Ty(*context), 0));
+    llvm::BasicBlock *thenBB =
+        llvm::BasicBlock::Create(*context, "divByZeroThen", parentFunction);
+    llvm::BasicBlock *elseBB =
+        llvm::BasicBlock::Create(*context, "divByZeroElse");
+    builder->CreateCondBr(condValue, thenBB, elseBB);
+
+    parentFunction->getBasicBlockList().push_back(thenBB);
+    builder->SetInsertPoint(thenBB);
+    std::vector<llvm::Value *> printfArgs;
+    printfArgs.push_back(llvm::ConstantInt::getSigned(
+        llvm::Type::getInt32Ty(*context), expr.opLineNo));
+    runtimeError(getDivByZeroFormatVar(), printfArgs);
+    builder->CreateBr(elseBB);
+    // Print err in the else block
+    parentFunction->getBasicBlockList().push_back(elseBB);
+    builder->SetInsertPoint(elseBB);
     return builder->CreateExactSDiv(lexpr, rexpr, "sdiv");
+  }
   case BinOpSubtract:
     return builder->CreateSub(lexpr, rexpr, "sub");
   }
