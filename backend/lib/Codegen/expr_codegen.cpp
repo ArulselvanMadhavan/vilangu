@@ -216,11 +216,9 @@ llvm::Value *IRCodegenVisitor::codegen(const FieldVarIR &var) {
       llvm::BasicBlock::Create(*context, "nullDerefThen", parentFunction);
   llvm::BasicBlock *elseBB =
       llvm::BasicBlock::Create(*context, "nullDerefElse");
-  // if (baseValPtr == nullptr) {
-  //   llvm::outs() << "uninitialized base";
-  //   return nullptr;
-  // }
-  llvm::Value *condValue = builder->CreateICmpEQ(baseValPtr, llvm::Constant::getNullValue(baseValPtr->getType()));
+
+  llvm::Value *condValue = builder->CreateICmpEQ(
+      baseValPtr, llvm::Constant::getNullValue(baseValPtr->getType()));
   builder->CreateCondBr(condValue, thenBB, elseBB);
   parentFunction->getBasicBlockList().push_back(thenBB);
   builder->SetInsertPoint(thenBB);
@@ -231,11 +229,6 @@ llvm::Value *IRCodegenVisitor::codegen(const FieldVarIR &var) {
   builder->CreateBr(elseBB);
   parentFunction->getBasicBlockList().push_back(elseBB);
   builder->SetInsertPoint(elseBB);
-  // std::vector<llvm::Value *> printfArgs2;
-  // printfArgs2.push_back(llvm::ConstantInt::getSigned(
-  //     llvm::Type::getInt32Ty(*context), var.fieldLineNo));
-  // runtimeError(getNullDerefFormatVar(), printfArgs2);
-  // builder->CreateBr(elseBB);
   // if not null continue
   if (baseValPtr->getType()->isPointerTy()) {
     return builder->CreateStructGEP(baseValPtr->getType()->getContainedType(0),
