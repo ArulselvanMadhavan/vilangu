@@ -195,7 +195,7 @@ and trans_exp (venv, tenv, exp) =
         (err_stmty exp))
   | A.IntLit _ as exp -> { ty = T.INT; stmt = exp }
   | A.ArrayCreationExp { type_; exprs; pos } as exp ->
-    let expr_rank = List.length exprs in
+    (* let expr_rank = List.length exprs in *)
     let is_int acc exp =
       let { ty = res_ty; _ } = trans_exp (venv, tenv, exp) in
       T.is_int res_ty && acc
@@ -203,7 +203,7 @@ and trans_exp (venv, tenv, exp) =
     let is_int_exprs = List.fold_left is_int true exprs in
     if is_int_exprs
     then (
-      let type_ = A.append_rank_to_type expr_rank type_ in
+      (* let type_ = A.append_rank_to_type expr_rank type_ in *)
       let ty = trans_type tenv type_ in
       { stmt = exp; ty })
     else (error pos "Array Creation Expr has non int dim") (err_stmty exp)

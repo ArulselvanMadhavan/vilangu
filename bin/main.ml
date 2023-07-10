@@ -55,10 +55,10 @@ let compile_file out_dir filename =
   in
   let%bind parsed_ast = parsed_exp in
   (* Sexplib0.Sexp.to_string_hum (Ast.sexp_of_comp_unit parsed_ast) |> Printf.printf "%s\n"; *)
-  let%map venv, tenv, parsed_ast = check_types parsed_ast |> to_opt out_dir filename in
+  let%map _venv, tenv, parsed_ast = check_types parsed_ast |> to_opt out_dir filename in
   let ir_file = gen_new_file out_dir filename ".ir" in
   let ast_file = gen_new_file out_dir filename ".ast" in
-  Ir_gen.gen_prog (venv, tenv, parsed_ast)
+  Ir_gen.gen_prog (tenv, parsed_ast)
   |> Ir_gen.dump (Fpath.to_string ast_file) (Fpath.to_string ir_file);
   ir_file
 ;;

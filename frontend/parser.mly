@@ -255,9 +255,10 @@ let class_inst_creation :=
   | NEW; type_=class_type; ~=arguments; { ClassCreationExp {type_ = Reference type_; args=arguments; pos = (lp($loc))} }
 
 let arrayexpr :=
-  | NEW; ~=prim_type; ~=dimexprs; empty_dims=dimensions; { ArrayCreationExp {type_=append_rank_to_type empty_dims prim_type; exprs=dimexprs; pos = lp($loc)}}
+  | NEW; ~=prim_type; ~=dimexprs; empty_dims=dimensions; {
+     ArrayCreationExp {type_=append_rank_to_type (empty_dims + (List.length dimexprs)) prim_type; exprs=dimexprs; pos = lp($loc)}}
   | NEW; ~=prim_type; ~=dimexprs; { ArrayCreationExp {type_ = prim_type; exprs=dimexprs; pos= lp($loc)} }
-  | NEW; type_=class_type; ~=dimexprs; empty_dims=dimensions; { ArrayCreationExp {type_ = append_rank_to_type empty_dims (Reference type_); exprs=dimexprs; pos = lp($loc)}}
+  | NEW; type_=class_type; ~=dimexprs; empty_dims=dimensions; { ArrayCreationExp {type_ = append_rank_to_type (empty_dims + (List.length dimexprs)) (Reference type_); exprs=dimexprs; pos = lp($loc)}}
   | NEW; type_=class_type; ~=dimexprs; { ArrayCreationExp {type_ = Reference type_; exprs=dimexprs; pos = lp($loc)}}
 
 let dimexprs :=

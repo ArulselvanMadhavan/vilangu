@@ -14,7 +14,7 @@ any desired architecture.
 - [X] Pass line number with all subscript accesses
 - [X] Uninit Arrays. Null check
 - [X] object.length should not be allowed.
-- [ ] Handle the case when arrays aren’t declared by used.
+- [X] Handle the case when arrays aren’t declared by used.
 - [ ] Divide by zero check
 - [X] Array type should be int*.
 - [X] Respect multiple ranks

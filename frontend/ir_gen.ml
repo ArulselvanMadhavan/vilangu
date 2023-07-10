@@ -16,6 +16,7 @@ let gen_binop = function
 
 exception NoMatchingTypeExpr
 exception SubscriptAccessException
+exception NonArrayTypeException
 
 let gen_texpr tenv type_ =
   let ty = Semant.trans_type tenv type_ in
@@ -44,7 +45,7 @@ let gen_expr tenv e =
       FT.Expr_id { id = FT.Simple { var_name = sym_name } }
     | A.ArrayCreationExp { type_; exprs; pos } ->
       let ty = Semant.trans_type tenv type_ in
-      let texpr = T.ARRAY (List.length exprs, ty) |> T.gen_type_expr in
+      let texpr = T.gen_type_expr ty in
       let make_line_no = A.line_no pos in
       FT.Array_creation { creation_exprs = List.map gexpr exprs; texpr; make_line_no }
     | A.VarExp (v, _) -> FT.Var_exp (gen_var v)
@@ -58,21 +59,35 @@ let gen_expr tenv e =
       (match gen_var v with
        | FT.Field { base_expr; _ } as base_var ->
          let line_no = A.line_no pos in
-         let len_var = FT.Field { base_expr; field_index = Int32.of_int 2; field_line_no = line_no} in         
+         let len_var =
+           FT.Field { base_expr; field_index = Int32.of_int 2; field_line_no = line_no }
+         in
          FT.Subscript { base_var; var_exp = gexpr exp; len_var; line_no }
        | _ -> raise SubscriptAccessException)
     | A.SubscriptVar (v, exp, pos) ->
       let line_no = A.line_no pos in
       FT.Subscript
         { base_var =
-            FT.Field { base_expr = FT.Var_exp (gen_var v); field_index = Int32.one ; field_line_no = line_no}
+            FT.Field
+              { base_expr = FT.Var_exp (gen_var v)
+              ; field_index = Int32.one
+              ; field_line_no = line_no
+              }
         ; len_var =
-            FT.Field { base_expr = FT.Var_exp (gen_var v); field_index = Int32.of_int 2; field_line_no = line_no }
+            FT.Field
+              { base_expr = FT.Var_exp (gen_var v)
+              ; field_index = Int32.of_int 2
+              ; field_line_no = line_no
+              }
         ; var_exp = gexpr exp
         ; line_no
         }
     | A.FieldVar (base_exp, _, pos) ->
-      FT.Field { base_expr = gexpr base_exp; field_index = Int32.of_int 2; field_line_no = A.line_no pos}
+      FT.Field
+        { base_expr = gexpr base_exp
+        ; field_index = Int32.of_int 2
+        ; field_line_no = A.line_no pos
+        }
       (* Always defaults to length field *)
     | A.LoadVar v -> FT.Load_var { var = gen_var v }
   in
@@ -138,7 +153,11 @@ let mk_arr_constr name rank type_ =
   let lower_rank = rank - 1 in
   let lower_type = mk_arr_inner_type lower_rank type_ in
   let this_field field_index =
-    FT.Field { base_expr = FT.Var_exp (FT.Simple { var_name = "this" }); field_index; field_line_no = Int32.zero }
+    FT.Field
+      { base_expr = FT.Var_exp (FT.Simple { var_name = "this" })
+      ; field_index
+      ; field_line_no = Int32.zero
+      }
   in
   let this_assign field_index field_name =
     FT.Expr_stmt
@@ -230,7 +249,59 @@ let mk_arr_constr name rank type_ =
     }
 ;;
 
-let arr_class_defns venv =
+let filter_arr_creation_exp tenv main_decl =
+  let arr_types = ref [] in
+  let rec h_exp = function
+    | A.ArrayCreationExp { type_; _ } ->
+      let ty = Semant.trans_type tenv type_ in
+      arr_types := ty :: !arr_types
+      (* Printf.printf "%s|%d\n" (T.type2str ty) (List.length exprs) *)
+    | A.ClassCreationExp { args; _ } -> List.iter h_exp args
+    | A.MethodCall { base; field; args; _ } ->
+      List.iter h_exp args;
+      h_exp base;
+      Option.fold ~none:() ~some:h_exp field
+    | A.CastEvalExp { to_; from_ } ->
+      h_exp to_;
+      h_exp from_
+    | A.CastType { exp; _ } -> h_exp exp
+    | A.Assignment { exp; _ } -> h_exp exp
+    | Ast.Identifier (_, _)
+    | Ast.IntLit (_, _)
+    | Ast.OpExp (_, _)
+    | Ast.VarExp (_, _)
+    | Ast.NullLit _ | Ast.This _ | Ast.Super _ -> ()
+  in
+  let rec h_stmt = function
+    | A.Block stmts -> List.iter h_stmt stmts
+    | A.While { exp; block } ->
+      h_exp exp;
+      h_stmt block
+    | A.Output (exp, _) -> h_exp exp
+    | A.ReturnStmt (Some exp) -> h_exp exp
+    | A.ExprStmt exp -> h_exp exp
+    | A.Delete exp -> h_exp exp
+    | A.IfElse { exp; istmt; estmt; _ } ->
+      h_exp exp;
+      h_stmt istmt;
+      h_stmt estmt
+    | Ast.ReturnStmt None -> ()
+    | Ast.Empty | Ast.Break _ | Ast.Continue _ -> ()
+  in
+  let filter_main = function
+    | A.MainStmt stmt -> Some stmt
+    | _ -> None
+  in
+  let compare t1 t2 =
+    match t1, t2 with
+    | T.ARRAY (r1, _), T.ARRAY (r2, _) -> Int.compare r1 r2
+    | _, _ -> raise NonArrayTypeException
+  in
+  List.iter h_stmt (Base.List.filter_map ~f:filter_main main_decl);
+  Base.List.sort !arr_types ~compare
+;;
+
+let arr_class_defns tenv main_decl =
   let h = Base.Hash_set.create (module Base.String) in
   let class_results = ref [] in
   let func_results = ref [] in
@@ -254,17 +325,16 @@ let arr_class_defns venv =
       let const_func = mk_arr_constr name rank type_ in
       func_results := const_func :: !func_results)
   in
-  let handle_ventry _symbol = function
-    | E.VarEntry { ty } ->
-      (match ty with
-       | T.ARRAY (rank, type_) ->
-         let ranks = List.init rank (fun rank -> rank + 1) in
-         List.iter (add_class type_) ranks;
-         List.iter (add_constructor type_) ranks
-       | _ -> ())
+  let arr_types = filter_arr_creation_exp tenv main_decl in
+  let handle_arr_type = function
+    | T.ARRAY (rank, type_) ->
+      let ranks = List.init rank (fun rank -> rank + 1) in
+      List.iter (add_class type_) ranks;
+      List.iter (add_constructor type_) ranks
     | _ -> ()
   in
-  S.iter handle_ventry venv;
+  List.iter handle_arr_type arr_types;
+  (* S.iter handle_ventry venv; *)
   List.rev !class_results, List.rev !func_results
 ;;
 
@@ -332,9 +402,15 @@ let obj_is_a_fun =
     let vtbl = make_id param2.param_name in
     let while_cond = FT.Unop { op = FT.Not; uexpr = check_equal vtbl FT.Null_lit } in
     let vtbl_base =
-      FT.Var_exp (FT.Field { base_expr = vtbl; field_index = Int32.zero; field_line_no = Int32.zero })
+      FT.Var_exp
+        (FT.Field
+           { base_expr = vtbl; field_index = Int32.zero; field_line_no = Int32.zero })
     in
-    let vtbl_name = FT.Var_exp (FT.Field { base_expr = vtbl; field_index = Int32.one ; field_line_no = Int32.zero}) in
+    let vtbl_name =
+      FT.Var_exp
+        (FT.Field
+           { base_expr = vtbl; field_index = Int32.one; field_line_no = Int32.zero })
+    in
     let assign_base =
       FT.Assign { lhs = FT.Simple { var_name = param2.param_name }; rhs = vtbl_base }
     in
@@ -352,7 +428,11 @@ let obj_is_a_fun =
     FT.While { while_cond; while_block }
   in
   let obj_vtbl =
-    FT.Field { base_expr = make_id obj_param_name; field_index = Int32.zero; field_line_no = Int32.zero }
+    FT.Field
+      { base_expr = make_id obj_param_name
+      ; field_index = Int32.zero
+      ; field_line_no = Int32.zero
+      }
   in
   let if_obj_not_null =
     FT.If_stmt
@@ -380,13 +460,13 @@ let obj_is_a_fun =
   FT.{ name; return_t; params; body }
 ;;
 
-let gen_prog (venv, tenv, A.{ main_decl; class_decs }) =
+let gen_prog (tenv, A.{ main_decl; class_decs }) =
   let rec gen_main = function
     | [] -> []
     | A.VariableDecl decls :: xs -> gen_decls tenv decls @ gen_main xs
     | A.MainStmt s :: xs -> gen_stmt tenv s :: gen_main xs
   in
-  let arr_classdefs, arr_funcdefs = arr_class_defns venv in
+  let arr_classdefs, arr_funcdefs = arr_class_defns tenv main_decl in
   let classdefs = ir_gen_class_defns tenv class_decs in
   let obj_and_arr_classdefs = List.cons obj_class_defn arr_classdefs in
   let classdefs = List.append obj_and_arr_classdefs classdefs in

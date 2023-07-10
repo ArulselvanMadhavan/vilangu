@@ -1,4 +1,7 @@
 int main() {
   Object a;
-  a = new int[5];
+  int b[][];
+  a = new int[5][];
+  b = (int[][])a;
+  out b.length;
 }
