@@ -301,7 +301,7 @@ let filter_arr_creation_exp tenv main_decl =
   Base.List.sort !arr_types ~compare
 ;;
 
-let arr_class_defns tenv main_decl =
+let arr_class_defns venv tenv main_decl =
   let h = Base.Hash_set.create (module Base.String) in
   let class_results = ref [] in
   let func_results = ref [] in
@@ -333,8 +333,12 @@ let arr_class_defns tenv main_decl =
       List.iter (add_constructor type_) ranks
     | _ -> ()
   in
+  let handle_ventry _symbol = function
+    | E.VarEntry {ty} -> handle_arr_type ty
+    | _ -> ()
+  in
   List.iter handle_arr_type arr_types;
-  (* S.iter handle_ventry venv; *)
+  S.iter handle_ventry venv;
   List.rev !class_results, List.rev !func_results
 ;;
 
@@ -460,13 +464,13 @@ let obj_is_a_fun =
   FT.{ name; return_t; params; body }
 ;;
 
-let gen_prog (tenv, A.{ main_decl; class_decs }) =
+let gen_prog (venv, tenv, A.{ main_decl; class_decs }) =
   let rec gen_main = function
     | [] -> []
     | A.VariableDecl decls :: xs -> gen_decls tenv decls @ gen_main xs
     | A.MainStmt s :: xs -> gen_stmt tenv s :: gen_main xs
   in
-  let arr_classdefs, arr_funcdefs = arr_class_defns tenv main_decl in
+  let arr_classdefs, arr_funcdefs = arr_class_defns venv tenv main_decl in
   let classdefs = ir_gen_class_defns tenv class_decs in
   let obj_and_arr_classdefs = List.cons obj_class_defn arr_classdefs in
   let classdefs = List.append obj_and_arr_classdefs classdefs in
