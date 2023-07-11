@@ -1,13 +1,11 @@
 open Base
 module FT = Frontend_types
 
-type unique = unit ref
-
 type ty =
   | INT
   | VOID
   | NULL
-  | NAME of Symbol.symbol * ty option ref
+  | NAME of Symbol.symbol * (Symbol.symbol * ty) list (* class_name, field_names list *)
   | ARRAY of int * ty
 [@@deriving sexp]
 

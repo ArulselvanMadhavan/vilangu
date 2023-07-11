@@ -304,9 +304,32 @@ let trans_main (venv, tenv, main_stmts) =
   venv, tenv, List.map (fun { stmt; _ } -> stmt) stmtys
 ;;
 
+let class_fields tenv = function
+  | A.FieldDec xs ->
+    List.map (fun (A.Field { name; type_; pos }) -> name, trans_type tenv type_, pos) xs
+  | _ -> []
+;;
+
 let trans_class (tenv, class_decs) =
-  let tr_class (tenv, A.ClassDec { name; _ }) =
-    let ctype = T.NAME (name, ref None) in
+  let h = Base.Hash_set.create (module Base.String) in
+  let tr_class (tenv, A.ClassDec { name; class_body; _ }) =
+    let class_name, _ = name in
+    let fields = List.map (class_fields tenv) class_body |> List.concat in
+    (* duplicate field name check. This should only throw error for current class fields. When fields match with base class, they should be treated as overrides. *)
+    let remove_duplicate_fields (((field_name, _) as sym), ty, pos) =
+      if Base.Hash_set.mem h field_name
+      then
+        error
+          pos
+          ("field " ^ field_name ^ " is already present in class " ^ class_name)
+          None
+      else (
+        Base.Hash_set.add h field_name;
+        Some (sym, ty))
+    in
+    let fields = List.filter_map remove_duplicate_fields fields in
+    Base.Hash_set.clear h;
+    let ctype = T.NAME (name, fields) in
     let tenv = S.enter (tenv, name, ctype) in
     tenv, { stmt = (); ty = ctype }
   in

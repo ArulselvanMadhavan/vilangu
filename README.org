@@ -15,7 +15,7 @@ any desired architecture.
 - [X] Uninit Arrays. Null check
 - [X] object.length should not be allowed.
 - [X] Handle the case when arrays aren’t declared by used.
-- [ ] Divide by zero check
+- [X] Divide by zero check
 - [X] Array type should be int*.
 - [X] Respect multiple ranks
 - [X] Generate loop blocks to init array based on rank
@@ -29,6 +29,7 @@ any desired architecture.
   - [X] Install ocaml libs
   - [X] Install protocol buffer
 - [ ] nounwind attribute to main, malloc, free, printf
+- [ ] phase 3 tests should pass
 - 
     
 ** Useful links

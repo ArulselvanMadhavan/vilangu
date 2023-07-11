@@ -72,7 +72,7 @@ let class_mem :=
   | ~=mthd_decl; { mthd_decl }
 
 let field_decl :=
-  | type_=typ; ~=decls; SEMICOLON; { FieldDec (List.map (fun (rank, id) -> Field { type_ = append_rank_to_type rank type_; name = id}) decls) }
+  | type_=typ; ~=decls; SEMICOLON; { FieldDec (List.map (fun (rank, id) -> Field { type_ = append_rank_to_type rank type_; name = id; pos = lp($loc)}) decls) }
 
 let decls ==
   separated_list(COMMA, decl)

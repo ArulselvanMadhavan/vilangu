@@ -1,14 +1,12 @@
 open Base
 module FT = Frontend_types
 
-type unique = unit ref
-
 type ty =
   | INT
   | VOID
-  | NULL
     (* Used to represent error values. Internal use. Programmer can’t construct a NULL type. A null literal is an instance of object type *)
-  | NAME of Symbol.symbol * ty option ref
+  | NULL
+  | NAME of Symbol.symbol * (Symbol.symbol * ty) list (* class_name, field_names list *)
   | ARRAY of int * ty
 [@@deriving sexp]
 
