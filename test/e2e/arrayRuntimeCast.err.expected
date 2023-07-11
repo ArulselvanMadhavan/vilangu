@@ -1,0 +1,1 @@
+./test/e2e/arrayRuntimeCast.t:7:2 - 7:16: type mismatch. Assignment cast not possible. expecting Object, but got NULL

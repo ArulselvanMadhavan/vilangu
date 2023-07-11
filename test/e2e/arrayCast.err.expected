@@ -1,0 +1,4 @@
+./test/e2e/arrayCast.t:12:7 - 12:19: cast not possible
+./test/e2e/arrayCast.t:11:7 - 11:17: cast not possible
+./test/e2e/arrayCast.t:10:7 - 10:19: cast not possible
+./test/e2e/arrayCast.t:9:7 - 9:18: cast not possible

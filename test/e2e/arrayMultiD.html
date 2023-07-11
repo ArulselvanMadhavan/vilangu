@@ -1,0 +1,142 @@
+<head>
+<title> AST for arrayMultiD.t</title>
+</head>
+<body>
+<pre>
+CompilationUnit
+[classes]
+[main block]
+  MainVariableDeclarationStatement
+    (x, int[][])
+  ExpressionStatement
+    ASSIGN (int[][])
+    MainBlockVariable (int[][]) x
+    NewArray int 1
+      IntegerLiteral (int) 10
+  MainVariableDeclarationStatement
+    (i, int)
+  MainVariableDeclarationStatement
+    (j, int)
+  ExpressionStatement
+    ASSIGN (int)
+    MainBlockVariable (int) i
+    IntegerLiteral (int) 0
+  WhileStatement
+    LESS_THAN (int)
+    DEREF (int)
+    MainBlockVariable (int) i
+    IntegerLiteral (int) 10
+  Body
+    BlockStatement
+      ExpressionStatement
+        ArrayAssignment (int[])
+        DEREF (int[][])
+        MainBlockVariable (int[][]) x
+        DEREF (int)
+        MainBlockVariable (int) i
+        NewArray int 0
+          IntegerLiteral (int) 5
+      ExpressionStatement
+        ASSIGN (int)
+        MainBlockVariable (int) j
+        IntegerLiteral (int) 0
+      WhileStatement
+        LESS_THAN (int)
+        DEREF (int)
+        MainBlockVariable (int) j
+        IntegerLiteral (int) 5
+      Body
+        BlockStatement
+          ExpressionStatement
+            ArrayAssignment (int)
+            DEREF (int[])
+            ARRAY_ACCESS (int[])
+            DEREF (int[][])
+            MainBlockVariable (int[][]) x
+            DEREF (int)
+            MainBlockVariable (int) i
+            DEREF (int)
+            MainBlockVariable (int) j
+            ADD (int)
+            MULTIPLY (int)
+            DEREF (int)
+            MainBlockVariable (int) i
+            IntegerLiteral (int) 10
+            DEREF (int)
+            MainBlockVariable (int) j
+          ExpressionStatement
+            ASSIGN (int)
+            MainBlockVariable (int) j
+            ADD (int)
+            DEREF (int)
+            MainBlockVariable (int) j
+            IntegerLiteral (int) 1
+      ExpressionStatement
+        ASSIGN (int)
+        MainBlockVariable (int) i
+        ADD (int)
+        DEREF (int)
+        MainBlockVariable (int) i
+        IntegerLiteral (int) 1
+  MainVariableDeclarationStatement
+    (sum, int)
+  ExpressionStatement
+    ASSIGN (int)
+    MainBlockVariable (int) sum
+    IntegerLiteral (int) 0
+  ExpressionStatement
+    ASSIGN (int)
+    MainBlockVariable (int) i
+    IntegerLiteral (int) 0
+  WhileStatement
+    LESS_THAN (int)
+    DEREF (int)
+    MainBlockVariable (int) i
+    IntegerLiteral (int) 10
+  Body
+    BlockStatement
+      ExpressionStatement
+        ASSIGN (int)
+        MainBlockVariable (int) j
+        IntegerLiteral (int) 0
+      WhileStatement
+        LESS_THAN (int)
+        DEREF (int)
+        MainBlockVariable (int) j
+        IntegerLiteral (int) 5
+      Body
+        BlockStatement
+          ExpressionStatement
+            ASSIGN (int)
+            MainBlockVariable (int) sum
+            ADD (int)
+            DEREF (int)
+            MainBlockVariable (int) sum
+            DEREF (int)
+            ARRAY_ACCESS (int)
+            DEREF (int[])
+            ARRAY_ACCESS (int[])
+            DEREF (int[][])
+            MainBlockVariable (int[][]) x
+            DEREF (int)
+            MainBlockVariable (int) i
+            DEREF (int)
+            MainBlockVariable (int) j
+          ExpressionStatement
+            ASSIGN (int)
+            MainBlockVariable (int) j
+            ADD (int)
+            DEREF (int)
+            MainBlockVariable (int) j
+            IntegerLiteral (int) 1
+      ExpressionStatement
+        ASSIGN (int)
+        MainBlockVariable (int) i
+        ADD (int)
+        DEREF (int)
+        MainBlockVariable (int) i
+        IntegerLiteral (int) 1
+  OutputStatement
+    DEREF (int)
+    MainBlockVariable (int) sum
+</pre>

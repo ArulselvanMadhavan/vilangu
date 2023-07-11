@@ -1,0 +1,6 @@
+./test/e2e/arrayAssign.t:14:2 - 14:8: type mismatch. Assignment cast not possible. expecting i32, but got i32arrarr
+./test/e2e/arrayAssign.t:13:2 - 13:8: type mismatch. Assignment cast not possible. expecting i32, but got i32arr
+./test/e2e/arrayAssign.t:12:2 - 12:8: type mismatch. Assignment cast not possible. expecting i32arrarr, but got i32
+./test/e2e/arrayAssign.t:11:2 - 11:8: type mismatch. Assignment cast not possible. expecting i32arr, but got i32
+./test/e2e/arrayAssign.t:10:2 - 10:9: type mismatch. Assignment cast not possible. expecting i32arrarr, but got i32arr
+./test/e2e/arrayAssign.t:9:2 - 9:9: type mismatch. Assignment cast not possible. expecting i32arr, but got i32arrarr
