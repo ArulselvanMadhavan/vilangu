@@ -5,7 +5,10 @@ type ty =
   | INT
   | VOID
   | NULL
-  | NAME of Symbol.symbol * (Symbol.symbol * ty) list (* class_name, field_names list *)
+  | NAME of
+      Symbol.symbol
+      * (Symbol.symbol * ty) list
+      * Symbol.symbol option (* class_name, field_names list *)
   | ARRAY of int * ty
 [@@deriving sexp]
 

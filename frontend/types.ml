@@ -10,14 +10,17 @@ type ty =
   (* Find index based on field name -> We can use List.find - not efficient *)
   (* Hashtbl of name -> ty and index *)
   (* Sort hashtbl *)
-  | NAME of Symbol.symbol * (Symbol.symbol * ty) list (* class_name, field_names list *)
+  | NAME of
+      Symbol.symbol
+      * (Symbol.symbol * ty) list
+      * Symbol.symbol option (* class_name, field_names list *)
   | ARRAY of int * ty
 [@@deriving sexp]
 
 let rec type2str = function
   | NULL -> "NULL"
   | INT -> "i32"
-  | NAME (id, _) -> Symbol.name id
+  | NAME (id, _, _) -> Symbol.name id
   | VOID -> "void"
   | ARRAY (rank, ty) -> type2str ty ^ String.concat (List.init rank ~f:(fun _ -> "arr"))
 ;;
@@ -27,7 +30,7 @@ let rec type_match t1 t2 =
   | INT, INT -> true
   | VOID, VOID -> true
   | NULL, NULL -> true
-  | NAME ((_, id1), _), NAME ((_, id2), _) -> Int.(id1 = id2)
+  | NAME ((_, id1), _, _), NAME ((_, id2), _, _) -> Int.(id1 = id2)
   | ARRAY (rank1, ty1), ARRAY (rank2, ty2) ->
     if rank1 = rank2 then type_match ty1 ty2 else false
   | _, _ -> false
@@ -41,7 +44,7 @@ let gen_type_expr = function
   | ARRAY (_, _) as arr_type ->
     let name = type2str arr_type in
     FT.Pointer { data = FT.Class { name } }
-  | NAME ((name, _), _) -> FT.Pointer { data = FT.Class { name } }
+  | NAME ((name, _), _, _) -> FT.Pointer { data = FT.Class { name } }
   | _ -> FT.Int32
 ;;
 

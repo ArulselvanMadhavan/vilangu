@@ -21,6 +21,7 @@ and classdec =
       { name : symbol
       ; base : symbol option
       ; class_body : class_body list
+      ; pos : pos
       }
 
 and class_field =

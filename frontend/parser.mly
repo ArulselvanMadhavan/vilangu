@@ -51,8 +51,8 @@ let class_decls :=
   | ~=class_decl; { [ class_decl ] }
 
 let class_decl :=
-  | CLASS; ~=id; ~=class_body; { ClassDec {name = id; base=None; class_body} }
-  | CLASS; name=id; EXTENDS; class_type=id; ~=class_body; { ClassDec {name; base=Some class_type; class_body} }
+  | CLASS; ~=id; ~=class_body; { ClassDec {name = id; base=None; class_body; pos=lp($loc)} }
+  | CLASS; name=id; EXTENDS; class_type=id; ~=class_body; { ClassDec {name; base=Some class_type; class_body; pos=lp($loc)} }
 
 let class_body :=
   | LBRACE; ~=class_body_decls; RBRACE; { class_body_decls }

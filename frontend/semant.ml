@@ -50,30 +50,44 @@ let adjust_lty cast_ty lty =
   | _ -> cast_ty, lty
 ;;
 
+let rec is_subclass tenv lhs_ty rhs_ty =
+  match rhs_ty with
+  | T.NAME _ when T.type_match lhs_ty rhs_ty -> true
+  | T.NAME (_, _, Some base) ->
+    Base.Option.fold
+      ~init:false
+      ~f:(fun _ -> is_subclass tenv lhs_ty)
+      (S.look (tenv, base))
+  | _ -> false
+;;
+
 (* Check lhs type with rhs type. If possible, find cast type. For wide casts. Find the recommended lhs cast *)
-let rec compare_and_cast pos lhs_ty rhs_ty =
+let rec compare_and_cast tenv pos lhs_ty rhs_ty =
   match lhs_ty, rhs_ty with
   | T.ARRAY (lrank, lty), T.ARRAY (rrank, rty) ->
     let get_ty rank ty =
       let rank = rank - 1 in
       if rank > 0 then T.ARRAY (rank, ty) else ty
     in
-    let cast_ty, lty = compare_and_cast pos (get_ty lrank lty) (get_ty rrank rty) in
+    let cast_ty, lty = compare_and_cast tenv pos (get_ty lrank lty) (get_ty rrank rty) in
     adjust_lty cast_ty lty
-  | T.NAME (sym, _), T.ARRAY _ when sym = Env.obj_symbol ->
+  | T.NAME (sym, _, _), T.ARRAY _ when sym = Env.obj_symbol ->
     Some A.Wide, Some (A.Reference (A.ClassType (sym, pos)))
   | T.NAME _, T.ARRAY _ ->
     None, None (* No cast when rhs is Array and lhs is not object *)
+  | T.ARRAY _, T.NAME (sym, _, _) when sym = Env.obj_symbol -> Some A.Narrow, None
+  | T.NAME (sym1, _, _), T.NAME (sym2, _, _) when sym1 = sym2 -> Some A.Identity, None
+  | T.NAME (lhs_name, _, _), T.NAME _ when is_subclass tenv lhs_ty rhs_ty ->
+    Some A.Wide, Some (A.Reference (A.ClassType (lhs_name, pos)))
   | T.INT, T.INT ->
     (* Possible via recursive element type checks *)
     Some A.Identity, None
-  | T.ARRAY _, T.NAME (sym, _) when sym = Env.obj_symbol -> Some A.Narrow, None
   | _, _ -> None, None
 ;;
 
-let assignment_cast (lhs_ty, rhs_ty, pos, rhs_exp) =
+let assignment_cast tenv (lhs_ty, rhs_ty, pos, rhs_exp) =
   let check_cast lhs_ty rhs_ty =
-    match compare_and_cast pos lhs_ty rhs_ty with
+    match compare_and_cast tenv pos lhs_ty rhs_ty with
     | Some A.Wide, Some lhs_ty ->
       A.CastType { type_ = lhs_ty; exp = rhs_exp; cast_type = Some A.Wide; pos }
     (* | T.ARRAY (rank, ty), T.NAME (sym, _) when sym = Env.obj_symbol -> *)
@@ -137,8 +151,8 @@ let rec trans_var (venv, tenv, var) =
      | Some _ -> error pos "expecting a variable, not a function" (err_stmty subvar)
      | None -> error pos ("undefined variable " ^ S.name id) (err_stmty subvar))
   | A.SubscriptVar (var, exp, pos) as subvar ->
-    let { ty = var_ty; stmt=var } = trans_var (venv, tenv, var) in
-    let { ty = exp_ty; stmt=exp } = trans_exp (venv, tenv, exp) in
+    let { ty = var_ty; stmt = var } = trans_var (venv, tenv, var) in
+    let { ty = exp_ty; stmt = exp } = trans_exp (venv, tenv, exp) in
     let res_ty =
       match var_ty with
       | T.ARRAY (rank, low_ty) when rank > 1 ->
@@ -170,7 +184,7 @@ let rec trans_var (venv, tenv, var) =
        if not (String.equal sym_name "length")
        then error pos ("unknown field " ^ sym_name) (err_stmty var)
        else { ty = T.INT; stmt = A.FieldVar (exp, (sym_name, sym_id), 2, pos) }
-     | T.NAME ((class_name, _), fields) -> check_field class_name fields
+     | T.NAME ((class_name, _), fields, _) -> check_field class_name fields
      | _ -> error pos "field access on non-object type" (err_stmty var))
   | A.LoadVar var -> trans_var (venv, tenv, var)
 
@@ -179,7 +193,7 @@ and trans_exp (venv, tenv, exp) =
   | A.Assignment { lhs; exp; pos } ->
     let { ty = var_ty; stmt = lhs_var } = trans_var (venv, tenv, lhs) in
     let { ty = exp_ty; stmt = rhs_exp } = trans_exp (venv, tenv, exp) in
-    let rhs_exp = assignment_cast (var_ty, exp_ty, pos, rhs_exp) in
+    let rhs_exp = assignment_cast tenv (var_ty, exp_ty, pos, rhs_exp) in
     { stmt = A.Assignment { lhs = lhs_var; exp = rhs_exp; pos }; ty = T.VOID }
   | A.Identifier (id, pos) as exp ->
     let { ty; _ } = trans_var (venv, tenv, A.SimpleVar (id, pos)) in
@@ -226,7 +240,7 @@ and trans_exp (venv, tenv, exp) =
     (* obj | i32arr *)
     let dummy_pos = (-1, -1), (-1, -1) in
     let stmt =
-      match compare_and_cast dummy_pos cast_ty exp_ty with
+      match compare_and_cast tenv dummy_pos cast_ty exp_ty with
       | Some A.Wide, _ -> A.CastType { type_; exp = stmt; cast_type = Some A.Wide; pos }
       | Some A.Narrow, _ ->
         A.CastType { type_; exp = stmt; cast_type = Some A.Narrow; pos }
@@ -323,38 +337,97 @@ let class_fields tenv = function
   | _ -> []
 ;;
 
-let trans_class (tenv, class_decs) =
-  let tr_class (tenv, A.ClassDec { name; class_body; _ }) =
+let find_depth h class_decs =
+  let open Base in
+  let rec helper (A.ClassDec { base; name; pos; _ }) =
     let class_name, _ = name in
-    let fields = List.map (class_fields tenv) class_body |> List.concat in
-    let h = Base.Hashtbl.create (module Base.String) in
-    (* duplicate field name check. This should only throw error for current class fields. When fields match with base class, they should be treated as overrides. *)
-    (* field_index = 0 is reserved for vtable *)
-    let field_index = ref 1 in
-    let remove_duplicate_fields (((field_name, _) as sym), ty, pos) =
-      match Base.Hashtbl.add h ~key:field_name ~data:(ty, !field_index) with
-      | `Ok ->
-        field_index := !field_index + 1;
-        Some (sym, ty)
-      | _ ->
-        error
-          pos
-          ("field " ^ field_name ^ " is already present in class " ^ class_name)
-          None
+    let lookup _acc (name, _) =
+      let cdec = Hashtbl.find h name in
+      let err () =
+        error pos ("class " ^ class_name ^ " doesn't extend from a valid base " ^ name) 0
+      in
+      let handle_base _acc cd () = 1 + helper cd in
+      Option.fold cdec ~init:err ~f:handle_base ()
     in
-    let fields = List.filter_map remove_duplicate_fields fields in
-    let ctype = T.NAME (name, fields) in
+    Option.fold base ~init:0 ~f:lookup
+  in
+  List.map ~f:(fun cd -> helper cd, cd) class_decs
+;;
+
+let class_decs_tbl class_decs =
+  let open Base in
+  let h = Hashtbl.create (module String) in
+  let add_to_tbl (A.ClassDec { name; _ } as data) =
+    let name, _ = name in
+    let _ = Hashtbl.add h ~key:name ~data in
+    ()
+  in
+  List.iter ~f:add_to_tbl class_decs;
+  h
+;;
+
+let dedup_class_fields tenv class_body class_name =
+  let open Base in
+  let fields = List.map ~f:(class_fields tenv) class_body |> List.concat in
+  let h = Hashtbl.create (module String) in
+  (* duplicate field name check. This should only throw error for current class fields. When fields match with base class, they should be treated as overrides. *)
+  (* field_index = 0 is reserved for vtable *)
+  let field_index = ref 1 in
+  let remove_duplicate_fields (((field_name, _) as sym), ty, pos) =
+    match Base.Hashtbl.add h ~key:field_name ~data:(ty, !field_index) with
+    | `Ok ->
+      field_index := !field_index + 1;
+      Some (sym, ty)
+    | _ ->
+      error
+        pos
+        ("field " ^ field_name ^ " is already present in class " ^ class_name)
+        None
+  in
+  List.filter_map ~f:remove_duplicate_fields fields
+;;
+
+let rec dedup_classdec_fields h tenv (A.ClassDec { name; class_body; base; _ }) =
+  let open Base in
+  let name, _ = name in
+  let handle_base =
+    let open Base.Option.Let_syntax in
+    let%bind base = base in
+    let base, _ = base in
+    let%map base = Hashtbl.find h base in
+    dedup_classdec_fields h tenv base
+  in
+  let base_fields = Option.value handle_base ~default:[] in
+  let mem_fields = dedup_class_fields tenv class_body name in
+  List.append base_fields mem_fields
+;;
+
+let trans_class (tenv, class_decs) =
+  let open Base in
+  let h = class_decs_tbl class_decs in
+  let tr_class (tenv, class_dec) =
+    let fields = dedup_classdec_fields h tenv class_dec in
+    let (A.ClassDec { name; base; _ }) = class_dec in
+    let ctype = Types.NAME (name, fields, base) in
     let tenv = S.enter (tenv, name, ctype) in
     tenv, { stmt = (); ty = ctype }
   in
-  Base.List.fold class_decs ~init:(tenv, []) ~f:(fun (tenv, xs) cdec ->
-    let tenv, x = tr_class (tenv, cdec) in
-    tenv, x :: xs)
+  let class_depth = find_depth h class_decs in
+  let class_decs =
+    List.sort class_depth ~compare:(fun (d1, _) (d2, _) -> Int.compare d1 d2)
+  in
+  let class_decs = List.map ~f:(fun (_, cd) -> cd) class_decs in
+  let tenv, _ =
+    Base.List.fold class_decs ~init:(tenv, []) ~f:(fun (tenv, xs) cdec ->
+      let tenv, x = tr_class (tenv, cdec) in
+      tenv, x :: xs)
+  in
+  tenv, class_decs (* sorted by depth *)
 ;;
 
 let trans_prog comp_unit =
   let A.{ main_decl; class_decs } = comp_unit in
-  let tenv, _ = trans_class (E.base_tenv, class_decs) in
+  let tenv, class_decs = trans_class (E.base_tenv, class_decs) in
   (* Add class defs to module *)
   let venv, tenv, tr_main = trans_main (E.base_venv, tenv, main_decl) in
   (* Add array types to module *)
