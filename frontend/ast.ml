@@ -59,7 +59,7 @@ and param =
 and var =
   | SimpleVar of symbol * pos
   | SubscriptVar of var * exp * pos
-  | FieldVar of exp * symbol * pos
+  | FieldVar of exp * symbol * int * pos
   | LoadVar of var (* used only on lhs *)
 
 and variable =

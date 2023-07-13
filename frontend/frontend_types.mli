@@ -33,6 +33,8 @@ type expr_p_cast =
   | Wide_cast
   | Narrow_cast
 
+type expr_p_class_creation = { texpr : type_expr }
+
 type var_p_subscript =
   { base_var : var
   ; var_exp : expr
@@ -64,6 +66,7 @@ and expr =
   | Var_exp of var
   | Null_lit
   | Cast_expr of expr_p_cast_expr
+  | Class_creation of expr_p_class_creation
 
 and expr_p_function_app =
   { name : string
@@ -184,6 +187,9 @@ val default_type_expr_p_pointer : ?data:type_expr -> unit -> type_expr_p_pointer
 
 (** [default_expr_p_cast ()] is the default value for type [expr_p_cast] *)
 val default_expr_p_cast : unit -> expr_p_cast
+
+(** [default_expr_p_class_creation ()] is the default value for type [expr_p_class_creation] *)
+val default_expr_p_class_creation : ?texpr:type_expr -> unit -> expr_p_class_creation
 
 (** [default_var_p_subscript ()] is the default value for type [var_p_subscript] *)
 val default_var_p_subscript

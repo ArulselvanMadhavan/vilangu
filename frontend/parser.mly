@@ -276,8 +276,8 @@ let dimension :=
   | LSQB; RSQB; {}
 
 let field_access :=
-  | ~=primary; DOT; ~=id; { FieldVar (primary, id, lp($loc)) }
-  | SUPER; DOT; ~=id; { FieldVar ((Super (lp($loc))), id, lp($loc)) }
+  | ~=primary; DOT; ~=id; { FieldVar (primary, id, (-1), lp($loc)) }
+  | SUPER; DOT; ~=id; { FieldVar ((Super (lp($loc))), id, (-1), lp($loc)) }
 
 let mth_invoc :=
   | ~=id; ~=arguments; { MethodCall {base = Identifier (id, lp($loc)); field = None; args = arguments; pos = lp($loc)} }

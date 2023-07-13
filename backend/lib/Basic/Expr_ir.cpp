@@ -94,11 +94,18 @@ std::unique_ptr<ExprIR> deserializeExpr(const Frontend_ir::Expr &expr) {
     return std::unique_ptr<ExprIR>(new ExprNullIR());
   case Frontend_ir::Expr::kCastExpr:
     return std::unique_ptr<ExprIR>(new ExprCastIR(expr.castexpr()));
+  case Frontend_ir::Expr::kClassCreation:
+    return std::unique_ptr<ExprIR>(new ExprClassMakeIR(expr.classcreation()));
   default:
     // FIXME
     return std::unique_ptr<ExprIR>(new ExprIntegerIR(-1));
   }
 }
+
+ExprClassMakeIR::ExprClassMakeIR(
+    const Frontend_ir::Expr::_ClassCreation &expr) {
+  classType = deserializeType(expr.texpr());
+};
 
 CastType deserializeCastType(const Frontend_ir::Expr::_Cast c) {
   switch (c.value_case()) {
@@ -217,5 +224,8 @@ llvm::Value *ExprNullIR::codegen(IRVisitor &visitor) {
   return visitor.codegen(*this);
 }
 llvm::Value *ExprCastIR::codegen(IRVisitor &visitor) {
+  return visitor.codegen(*this);
+}
+llvm::Value *ExprClassMakeIR::codegen(IRVisitor &visitor) {
   return visitor.codegen(*this);
 }

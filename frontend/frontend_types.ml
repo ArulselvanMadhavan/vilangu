@@ -31,6 +31,8 @@ type expr_p_cast =
   | Wide_cast
   | Narrow_cast
 
+type expr_p_class_creation = { texpr : type_expr }
+
 type var_p_subscript =
   { base_var : var
   ; var_exp : expr
@@ -62,6 +64,7 @@ and expr =
   | Var_exp of var
   | Null_lit
   | Cast_expr of expr_p_cast_expr
+  | Class_creation of expr_p_class_creation
 
 and expr_p_function_app =
   { name : string
@@ -174,6 +177,12 @@ and default_type_expr_p_pointer ?(data : type_expr = default_type_expr ()) ()
 ;;
 
 let rec default_expr_p_cast () : expr_p_cast = No_cast
+
+let rec default_expr_p_class_creation ?(texpr : type_expr = default_type_expr ()) ()
+  : expr_p_class_creation
+  =
+  { texpr }
+;;
 
 let rec default_var_p_subscript
   ?(base_var : var = default_var ())

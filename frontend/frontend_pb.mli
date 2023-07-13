@@ -26,6 +26,12 @@ val encode_type_expr_p_pointer
 (** [encode_expr_p_cast v encoder] encodes [v] with the given [encoder] *)
 val encode_expr_p_cast : Frontend_types.expr_p_cast -> Pbrt.Encoder.t -> unit
 
+(** [encode_expr_p_class_creation v encoder] encodes [v] with the given [encoder] *)
+val encode_expr_p_class_creation
+  :  Frontend_types.expr_p_class_creation
+  -> Pbrt.Encoder.t
+  -> unit
+
 (** [encode_var_p_subscript v encoder] encodes [v] with the given [encoder] *)
 val encode_var_p_subscript : Frontend_types.var_p_subscript -> Pbrt.Encoder.t -> unit
 
@@ -123,6 +129,9 @@ val decode_type_expr_p_pointer : Pbrt.Decoder.t -> Frontend_types.type_expr_p_po
 
 (** [decode_expr_p_cast decoder] decodes a [expr_p_cast] value from [decoder] *)
 val decode_expr_p_cast : Pbrt.Decoder.t -> Frontend_types.expr_p_cast
+
+(** [decode_expr_p_class_creation decoder] decodes a [expr_p_class_creation] value from [decoder] *)
+val decode_expr_p_class_creation : Pbrt.Decoder.t -> Frontend_types.expr_p_class_creation
 
 (** [decode_var_p_subscript decoder] decodes a [var_p_subscript] value from [decoder] *)
 val decode_var_p_subscript : Pbrt.Decoder.t -> Frontend_types.var_p_subscript

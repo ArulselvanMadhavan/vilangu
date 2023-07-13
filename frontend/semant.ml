@@ -131,59 +131,69 @@ let trans_dec (venv, tenv, A.{ type_; id }) =
 
 let rec trans_var (venv, tenv, var) =
   match var with
-  | A.SimpleVar (id, pos) ->
+  | A.SimpleVar (id, pos) as subvar ->
     (match S.look (venv, id) with
-     | Some (E.VarEntry { ty }) -> { stmt = (); ty }
-     | Some _ -> error pos "expecting a variable, not a function" err_stmty_unit
-     | None -> error pos ("undefined variable " ^ S.name id) err_stmty_unit)
-  | A.SubscriptVar (var, exp, pos) ->
-    let { ty = var_ty; _ } = trans_var (venv, tenv, var) in
-    let { ty = exp_ty; _ } = trans_exp (venv, tenv, exp) in
+     | Some (E.VarEntry { ty }) -> { stmt = subvar; ty }
+     | Some _ -> error pos "expecting a variable, not a function" (err_stmty subvar)
+     | None -> error pos ("undefined variable " ^ S.name id) (err_stmty subvar))
+  | A.SubscriptVar (var, exp, pos) as subvar ->
+    let { ty = var_ty; stmt=var } = trans_var (venv, tenv, var) in
+    let { ty = exp_ty; stmt=exp } = trans_exp (venv, tenv, exp) in
     let res_ty =
       match var_ty with
       | T.ARRAY (rank, low_ty) when rank > 1 ->
-        { ty = T.ARRAY (rank - 1, low_ty); stmt = () }
-      | T.ARRAY (rank, low_ty) when rank > 0 -> { ty = low_ty; stmt = () }
-      | _ -> error pos "Subscript access on non-array type" err_stmty_unit
+        { ty = T.ARRAY (rank - 1, low_ty); stmt = A.SubscriptVar (var, exp, pos) }
+      | T.ARRAY (rank, low_ty) when rank > 0 ->
+        { ty = low_ty; stmt = A.SubscriptVar (var, exp, pos) }
+      | _ -> error pos "Subscript access on non-array type" (err_stmty subvar)
     in
     if T.is_int exp_ty
     then res_ty
-    else error pos "subscript access with non-int dim" err_stmty_unit
-  | A.FieldVar (exp, (sym_name, _), pos) ->
-    let { ty = exp_ty; _ } = trans_exp (venv, tenv, exp) in
-    if T.is_int exp_ty
-    then error pos "field access on non-object type" err_stmty_unit
-    else if not (String.equal sym_name "length")
-    then error pos ("unknown field " ^ sym_name) err_stmty_unit
-    else if T.is_array exp_ty
-    then { (* This has to be length *)
-           ty = T.INT; stmt = () }
-    else
-      error
-        pos
-        ("length field is not allowed on type:" ^ T.type2str exp_ty)
-        err_stmty_unit
+    else error pos "subscript access with non-int dim" (err_stmty subvar)
+  | A.FieldVar (exp, (sym_name, sym_id), _, pos) as var ->
+    let { ty = exp_ty; stmt = exp } = trans_exp (venv, tenv, exp) in
+    let check_field class_name fields =
+      let map_field idx ((name, _), ty) =
+        if String.equal name sym_name then Some (idx + 1, ty) else None
+      in
+      let field_opt = Base.List.find_mapi ~f:map_field fields in
+      match field_opt with
+      | Some (idx, ty) -> { ty; stmt = A.FieldVar (exp, (sym_name, sym_id), idx, pos) }
+      | None ->
+        error
+          pos
+          ("unknown field " ^ sym_name ^ " in class " ^ class_name)
+          (err_stmty var)
+    in
+    (match exp_ty with
+     | T.ARRAY _ ->
+       if not (String.equal sym_name "length")
+       then error pos ("unknown field " ^ sym_name) (err_stmty var)
+       else { ty = T.INT; stmt = A.FieldVar (exp, (sym_name, sym_id), 2, pos) }
+     | T.NAME ((class_name, _), fields) -> check_field class_name fields
+     | _ -> error pos "field access on non-object type" (err_stmty var))
   | A.LoadVar var -> trans_var (venv, tenv, var)
 
 and trans_exp (venv, tenv, exp) =
   match exp with
   | A.Assignment { lhs; exp; pos } ->
-    let { ty = var_ty; _ } = trans_var (venv, tenv, lhs) in
+    let { ty = var_ty; stmt = lhs_var } = trans_var (venv, tenv, lhs) in
     let { ty = exp_ty; stmt = rhs_exp } = trans_exp (venv, tenv, exp) in
     let rhs_exp = assignment_cast (var_ty, exp_ty, pos, rhs_exp) in
-    { stmt = A.Assignment { lhs; exp = rhs_exp; pos }; ty = T.VOID }
+    { stmt = A.Assignment { lhs = lhs_var; exp = rhs_exp; pos }; ty = T.VOID }
   | A.Identifier (id, pos) as exp ->
     let { ty; _ } = trans_var (venv, tenv, A.SimpleVar (id, pos)) in
     { stmt = exp; ty }
-  | A.OpExp (A.BinaryOp { left; oper; right }, pos) as exp ->
-    let lexp = trans_exp (venv, tenv, left) in
-    let rexp = trans_exp (venv, tenv, right) in
-    if T.type_match lexp.ty rexp.ty
-    then { ty = lexp.ty; stmt = exp }
+  | A.OpExp (A.BinaryOp { left; oper; right }, pos) ->
+    let { stmt = lexp; ty = lty } = trans_exp (venv, tenv, left) in
+    let { stmt = rexp; ty = rty } = trans_exp (venv, tenv, right) in
+    if T.type_match lty rty
+    then
+      { ty = lty; stmt = A.OpExp (A.BinaryOp { left = lexp; oper; right = rexp }, pos) }
     else (
       let oper_str = A.sexp_of_bioper oper |> Sexplib0.Sexp.to_string_hum in
       error pos (oper_str ^ " operand types don't match") (err_stmty exp))
-  | A.OpExp (A.UnaryOp { oper; exp = unary_exp }, pos) as exp ->
+  | A.OpExp (A.UnaryOp { oper; exp = unary_exp }, pos) ->
     let { stmt = unary_exp; ty } = trans_exp (venv, tenv, unary_exp) in
     if T.is_int ty
     then { stmt = A.OpExp (A.UnaryOp { oper; exp = unary_exp }, pos); ty }
@@ -207,9 +217,9 @@ and trans_exp (venv, tenv, exp) =
       let ty = trans_type tenv type_ in
       { stmt = exp; ty })
     else (error pos "Array Creation Expr has non int dim") (err_stmty exp)
-  | A.VarExp (v, _) as exp ->
-    let { ty; _ } = trans_var (venv, tenv, v) in
-    { stmt = exp; ty }
+  | A.VarExp (v, pos) ->
+    let { ty; stmt } = trans_var (venv, tenv, v) in
+    { stmt = A.VarExp (stmt, pos); ty }
   | A.CastType { type_; exp; pos; _ } as cexp ->
     let { stmt; ty = exp_ty } = trans_exp (venv, tenv, exp) in
     let cast_ty = trans_type tenv type_ in
@@ -225,6 +235,9 @@ and trans_exp (venv, tenv, exp) =
       | None, _ -> error pos "cast not possible" cexp
     in
     { stmt; ty = cast_ty }
+  | A.ClassCreationExp { type_; _ } as exp ->
+    let ty = trans_type tenv type_ in
+    { ty; stmt = exp }
   | _ as exp -> err_stmty exp
 ;;
 
@@ -311,24 +324,25 @@ let class_fields tenv = function
 ;;
 
 let trans_class (tenv, class_decs) =
-  let h = Base.Hash_set.create (module Base.String) in
   let tr_class (tenv, A.ClassDec { name; class_body; _ }) =
     let class_name, _ = name in
     let fields = List.map (class_fields tenv) class_body |> List.concat in
+    let h = Base.Hashtbl.create (module Base.String) in
     (* duplicate field name check. This should only throw error for current class fields. When fields match with base class, they should be treated as overrides. *)
+    (* field_index = 0 is reserved for vtable *)
+    let field_index = ref 1 in
     let remove_duplicate_fields (((field_name, _) as sym), ty, pos) =
-      if Base.Hash_set.mem h field_name
-      then
+      match Base.Hashtbl.add h ~key:field_name ~data:(ty, !field_index) with
+      | `Ok ->
+        field_index := !field_index + 1;
+        Some (sym, ty)
+      | _ ->
         error
           pos
           ("field " ^ field_name ^ " is already present in class " ^ class_name)
           None
-      else (
-        Base.Hash_set.add h field_name;
-        Some (sym, ty))
     in
     let fields = List.filter_map remove_duplicate_fields fields in
-    Base.Hash_set.clear h;
     let ctype = T.NAME (name, fields) in
     let tenv = S.enter (tenv, name, ctype) in
     tenv, { stmt = (); ty = ctype }

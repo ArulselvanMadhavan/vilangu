@@ -57,6 +57,8 @@ let gen_expr tenv e =
     | A.CastType { type_; exp; cast_type; _ } ->
       let cast_type = Option.fold cast_type ~none:FT.No_cast ~some:gen_cast_type in
       FT.Cast_expr { cast_to = gen_texpr tenv type_; expr = gexpr exp; cast_type }
+    | A.ClassCreationExp { type_; _ } ->
+      FT.Class_creation { texpr = gen_texpr tenv type_ }
     | _ -> FT.Integer (Int32.of_int (-1))
   and gen_var = function
     | A.SimpleVar ((sym_name, _), _) -> FT.Simple { var_name = sym_name }
@@ -87,10 +89,10 @@ let gen_expr tenv e =
         ; var_exp = gexpr exp
         ; line_no
         }
-    | A.FieldVar (base_exp, _, pos) ->
+    | A.FieldVar (base_exp, _, id, pos) ->
       FT.Field
         { base_expr = gexpr base_exp
-        ; field_index = Int32.of_int 2
+        ; field_index = Int32.of_int id
         ; field_line_no = A.line_no pos
         }
       (* Always defaults to length field *)

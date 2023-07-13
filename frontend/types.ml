@@ -6,6 +6,10 @@ type ty =
   | VOID
     (* Used to represent error values. Internal use. Programmer can’t construct a NULL type. A null literal is an instance of object type *)
   | NULL
+  (* field names -> types -> index *)
+  (* Find index based on field name -> We can use List.find - not efficient *)
+  (* Hashtbl of name -> ty and index *)
+  (* Sort hashtbl *)
   | NAME of Symbol.symbol * (Symbol.symbol * ty) list (* class_name, field_names list *)
   | ARRAY of int * ty
 [@@deriving sexp]

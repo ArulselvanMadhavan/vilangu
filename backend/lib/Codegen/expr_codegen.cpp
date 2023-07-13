@@ -271,6 +271,32 @@ llvm::Value *IRCodegenVisitor::codegen(const ExprEmptyIR &expr) {
   return llvm::Constant::getNullValue(llvm::Type::getInt32Ty(*context));
 }
 
+llvm::Value *IRCodegenVisitor::codegen(const ExprClassMakeIR &expr) {
+  llvm::Type *resultTypePtr = expr.classType->codegen(*this); // i32arr*
+  llvm::Type *resultType = resultTypePtr->getContainedType(0);
+  // llvm::AllocaInst *newClassPtr =
+  //     builder->CreateAlloca(resultType, nullptr,
+  //     llvm::Twine("newClassResult"));
+  llvm::Type *int32Type = llvm::Type::getInt32Ty(*context);
+  llvm::Value *intOne = llvm::ConstantInt::getSigned(int32Type, 1);
+  llvm::Value *sizeOfPtr = builder->CreateGEP(
+      resultType,
+      llvm::ConstantPointerNull::get(llvm::PointerType::get(resultType, 0)),
+      intOne, llvm::Twine("sizeOf"));
+  llvm::Value *sizeOf = builder->CreatePtrToInt(sizeOfPtr, int32Type);
+  llvm::Function *calloc = module->getFunction("calloc");
+  auto callocParams = llvm::ArrayRef<llvm::Value *>{intOne, sizeOf};
+  llvm::CallInst *callocRes = builder->CreateCall(calloc, callocParams);
+  llvm::Value *callocHead = builder->CreateBitCast(callocRes, resultTypePtr);
+  llvm::Twine classVTableName = resultType->getStructName() + "_Vtable";
+  llvm::GlobalVariable *classVtable =
+      module->getNamedGlobal(classVTableName.str());
+  llvm::Value *vTableField =
+      builder->CreateStructGEP(resultType, callocHead, 0);
+  builder->CreateStore(classVtable, vTableField);
+  return callocHead;
+}
+
 llvm::Value *IRCodegenVisitor::codegen(const ExprArrayMakeIR &expr) {
   auto &creationExpr = expr.creationExprs[0];
   llvm::Value *size = creationExpr->codegen(*this);

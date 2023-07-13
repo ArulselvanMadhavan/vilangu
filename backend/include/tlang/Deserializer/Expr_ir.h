@@ -119,6 +119,12 @@ struct ExprArrayMakeIR : public ExprIR {
   virtual llvm::Value *codegen(IRVisitor &visitor) override;
 };
 
+struct ExprClassMakeIR : public ExprIR {
+  std::unique_ptr<TypeIR> classType;
+  ExprClassMakeIR(const Frontend_ir::Expr::_ClassCreation &expr);
+  virtual llvm::Value *codegen(IRVisitor &visitor) override;
+};
+
 struct ExprNullIR : public ExprIR {
   virtual llvm::Value *codegen(IRVisitor &visitor) override;
 };
