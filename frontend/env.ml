@@ -5,7 +5,7 @@ module S = Symbol
 type ty = T.ty [@@deriving sexp]
 
 type enventry =
-  | VarEntry of { ty : ty }
+  | VarEntry of { ty : ty }     (* is_null = false when creation exp is encountered *)
   | FunEntry of
       { label : Temp.label
       ; formals : ty list

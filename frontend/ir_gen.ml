@@ -343,7 +343,7 @@ let arr_class_defns venv tenv main_decl =
     | _ -> ()
   in
   let handle_ventry _symbol = function
-    | E.VarEntry { ty } -> handle_arr_type ty
+    | E.VarEntry { ty; _ } -> handle_arr_type ty
     | _ -> ()
   in
   List.iter handle_arr_type arr_types;

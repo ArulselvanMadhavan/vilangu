@@ -36,9 +36,6 @@ let rec type_match t1 t2 =
   | _, _ -> false
 ;;
 
-(* let get_array_type ty rank = *)
-(*   let ty_str = type2str ty in *)
-(*   ty_str ^ Base.String.concat (List.init rank ~f:(fun _ -> "arr")) *)
 let gen_type_expr = function
   | INT -> FT.Int32
   | ARRAY (_, _) as arr_type ->
@@ -57,3 +54,7 @@ let is_array = function
   | ARRAY _ -> true
   | _ -> false
 ;;
+
+let is_ref = function
+  | ARRAY _ | NAME _ -> true
+  | _ -> false

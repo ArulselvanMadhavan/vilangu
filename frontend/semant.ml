@@ -90,12 +90,6 @@ let assignment_cast tenv (lhs_ty, rhs_ty, pos, rhs_exp) =
     match compare_and_cast tenv pos lhs_ty rhs_ty with
     | Some A.Wide, Some lhs_ty ->
       A.CastType { type_ = lhs_ty; exp = rhs_exp; cast_type = Some A.Wide; pos }
-    (* | T.ARRAY (rank, ty), T.NAME (sym, _) when sym = Env.obj_symbol -> *)
-    (*     A.CastType *)
-    (*     { type_ = A.Reference (A.ArrayType (rank, get_ast_type pos ty)) *)
-    (*     ; exp = rhs_exp *)
-    (*     ; cast_type = Some A.Narrow *)
-    (*     } *)
     | _ ->
       error
         pos
@@ -138,16 +132,21 @@ let rec trans_type tenv = function
 
 let trans_dec (venv, tenv, A.{ type_; id }) =
   let ty = trans_type tenv type_ in
-  (* If the base type exists, then ranks > 0 also exist *)
   let venv' = S.enter (venv, id, E.VarEntry { ty }) in
   venv', tenv, { stmt = (); ty = T.VOID }
+;;
+
+let is_init = function
+  | A.ArrayCreationExp _ -> true
+  | A.ClassCreationExp _ -> true
+  | _ -> false
 ;;
 
 let rec trans_var (venv, tenv, var) =
   match var with
   | A.SimpleVar (id, pos) as subvar ->
     (match S.look (venv, id) with
-     | Some (E.VarEntry { ty }) -> { stmt = subvar; ty }
+     | Some (E.VarEntry { ty; _ }) -> { stmt = subvar; ty }
      | Some _ -> error pos "expecting a variable, not a function" (err_stmty subvar)
      | None -> error pos ("undefined variable " ^ S.name id) (err_stmty subvar))
   | A.SubscriptVar (var, exp, pos) as subvar ->
@@ -190,6 +189,8 @@ let rec trans_var (venv, tenv, var) =
 
 and trans_exp (venv, tenv, exp) =
   match exp with
+  (* | A.Assignment {lhs; exp; pos } when is_init exp -> *)
+  (* (\* call trans_var with flag is_init = true *\) *)
   | A.Assignment { lhs; exp; pos } ->
     let { ty = var_ty; stmt = lhs_var } = trans_var (venv, tenv, lhs) in
     let { ty = exp_ty; stmt = rhs_exp } = trans_exp (venv, tenv, exp) in
