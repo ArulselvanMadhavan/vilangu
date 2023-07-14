@@ -1,0 +1,2 @@
+./test/e2e/fieldErr2.t:9:2 - 9:12: Output statement doesn't have an int expression
+./test/e2e/fieldErr2.t:9:6 - 9:11: field access on non-object type

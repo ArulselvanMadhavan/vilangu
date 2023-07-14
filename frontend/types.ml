@@ -58,3 +58,4 @@ let is_array = function
 let is_ref = function
   | ARRAY _ | NAME _ -> true
   | _ -> false
+;;

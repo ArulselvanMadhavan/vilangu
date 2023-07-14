@@ -18,10 +18,10 @@ int main() {
   c = new C();
 
   a = b;
-  b = (B) a;
+  b = (B) a; // narrow
 
   a = c;
-  c = (C) a;
+  c = (C) a; // narrow
 
   out(1066);
 }

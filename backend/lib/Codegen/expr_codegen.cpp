@@ -399,8 +399,12 @@ llvm::Value *IRCodegenVisitor::codegen(const ExprCastIR &expr) {
     return res;
   }
   case Narrow: {
+    llvm::Value *exprVal = expr.expr->codegen(*this);
+    llvm::Twine origTypeName =
+        exprVal->getType()->getContainedType(0)->getStructName();
+    llvm::Type *o = llvm::StructType::getTypeByName(*context, "Object");
     llvm::Value *castExprVal =
-        expr.expr->codegen(*this); // assume this is object type
+        builder->CreateBitCast(exprVal, o->getPointerTo());
     llvm::Type *exprType = castExprVal->getType()->getContainedType(0);
     llvm::Twine exprTypeName = exprType->getStructName();
     std::string exprTypeVtable = getVtableName(exprTypeName.str());
@@ -444,13 +448,12 @@ llvm::Value *IRCodegenVisitor::codegen(const ExprCastIR &expr) {
 
     std::vector<llvm::Value *> printfArgs;
     auto errorArg1 =
-        llvm::ConstantDataArray::getString(*context, exprTypeName.str());
+        llvm::ConstantDataArray::getString(*context, origTypeName.str());
     auto errArgLoc1 = builder->CreateAlloca(errorArg1->getType(), nullptr);
     builder->CreateStore(errorArg1, errArgLoc1);
     llvm::Value *errArg1Begin = builder->CreateInBoundsGEP(
         errorArg1->getType(), errArgLoc1,
         llvm::ArrayRef<llvm::Value *>{zeroIdx, zeroIdx});
-
     auto errorArg2 = llvm::ConstantDataArray::getString(
         *context, getTypeNameAsString(castToTyPtr));
     auto errArgLoc2 = builder->CreateAlloca(errorArg2->getType(), nullptr);

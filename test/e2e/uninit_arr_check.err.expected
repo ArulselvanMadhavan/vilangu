@@ -1,0 +1,2 @@
+./test/e2e/uninit_arr_check.t:3:2 - 3:11: Output statement doesn't have an int expression
+./test/e2e/uninit_arr_check.t:3:6 - 3:10: Subscript access on non-array type

@@ -5,7 +5,10 @@ module S = Symbol
 type ty = T.ty [@@deriving sexp]
 
 type enventry =
-  | VarEntry of { ty : ty }     (* is_null = false when creation exp is encountered *)
+  | VarEntry of
+      { ty : ty
+      ; is_null : bool
+      }
   | FunEntry of
       { label : Temp.label
       ; formals : ty list
@@ -24,4 +27,9 @@ let base_venv =
     S.symbol name, FunEntry { label; formals; result }
   in
   Stdlib.List.map make_sym base_v |> S.init
+;;
+
+let update_null = function
+  | Some (VarEntry { ty; _ }) -> Some (VarEntry { ty; is_null = false })
+  | x -> x
 ;;

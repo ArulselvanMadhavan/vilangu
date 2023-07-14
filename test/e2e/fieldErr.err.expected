@@ -1,0 +1,2 @@
+./test/e2e/fieldErr.t:9:2 - 9:10: Output statement doesn't have an int expression
+./test/e2e/fieldErr.t:9:6 - 9:9: unknown field j in class A

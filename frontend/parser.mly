@@ -26,6 +26,11 @@ open Ast
 %{
 let lp((sp, ep) : (Lexing.position * Lexing.position)) : pos
   = ((sp.pos_lnum, sp.pos_cnum - sp.pos_bol), (ep.pos_lnum, ep.pos_cnum - sp.pos_bol))
+
+exception NotAValidCastExp
+let get_type = function
+  | Ast.VarExp (Ast.SimpleVar (sym, pos), _) -> Ast.ClassType (sym, pos)
+  | _ -> raise NotAValidCastExp
 %}
 
 %%
@@ -233,7 +238,7 @@ let unaryexp :=
   | ~=castexp; <>
 
 let castexp :=
-  | ~=paren_exp; ~=castexp; { CastEvalExp {to_=paren_exp; from_=castexp}}
+  | ~=paren_exp; exp=castexp; { CastType { type_ = Reference (get_type paren_exp); exp; cast_type = None; pos = lp($loc) } }
   | LPAREN; type_=arr_type;RPAREN; exp=castexp; { CastType { type_ = Reference type_; exp; cast_type = None; pos = lp($loc)}}
   | ~=primary; { primary }
 

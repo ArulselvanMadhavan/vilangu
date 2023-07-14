@@ -30,3 +30,4 @@ let enter (env, k, v) = Table.add k v env
 let look (env, k) = Table.find_opt k env
 let init l = Table.of_seq (Stdlib.List.to_seq l)
 let iter = Table.iter
+let update = Table.update

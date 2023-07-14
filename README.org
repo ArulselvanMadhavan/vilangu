@@ -23,6 +23,8 @@ any desired architecture.
 - [X] Type should also keep track of length and ptr
 - [X] Add support for length field
 - [ ] Warn users of unreachable code blocks after break; continue statements
+- [ ] Add support for narrow cast without Object_IsA
+- [ ] Narrow cast line no
 - [X] Subscript exprs should eval to int type of rank 0
 - [ ] Warn Unused variables
 - [X] Dockerize things

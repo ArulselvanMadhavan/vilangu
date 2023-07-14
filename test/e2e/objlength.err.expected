@@ -1,2 +1,2 @@
 ./test/e2e/objlength.t:3:2 - 3:15: Output statement doesn't have an int expression
-./test/e2e/objlength.t:3:6 - 3:14: unknown field length in class Object
+./test/e2e/objlength.t:3:6 - 3:14: field access on non-object type
