@@ -135,6 +135,7 @@ message Expr {
     required Type_expr cast_to = 1;
     required Expr expr = 2;
     required _Cast cast_type = 3;
+    required int32 cast_line_no = 4;
   }
   
   oneof value {

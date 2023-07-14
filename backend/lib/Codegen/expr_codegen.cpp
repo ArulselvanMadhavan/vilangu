@@ -447,6 +447,8 @@ llvm::Value *IRCodegenVisitor::codegen(const ExprCastIR &expr) {
     builder->SetInsertPoint(elseBB);
 
     std::vector<llvm::Value *> printfArgs;
+    auto lineNo = llvm::ConstantInt::getSigned(llvm::Type::getInt32Ty(*context),
+                                               expr.castLineNo);
     auto errorArg1 =
         llvm::ConstantDataArray::getString(*context, origTypeName.str());
     auto errArgLoc1 = builder->CreateAlloca(errorArg1->getType(), nullptr);
@@ -461,7 +463,7 @@ llvm::Value *IRCodegenVisitor::codegen(const ExprCastIR &expr) {
     llvm::Value *errArg2Begin = builder->CreateInBoundsGEP(
         errorArg2->getType(), errArgLoc2,
         llvm::ArrayRef<llvm::Value *>{zeroIdx, zeroIdx});
-
+    printfArgs.push_back(lineNo);
     printfArgs.push_back(errArg1Begin);
     printfArgs.push_back(errArg2Begin);
     runtimeError(getCastErrFormatVar(), printfArgs);

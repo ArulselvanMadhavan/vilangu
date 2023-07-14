@@ -135,6 +135,7 @@ struct ExprCastIR : public ExprIR {
   std::unique_ptr<TypeIR> castTo;
   std::unique_ptr<ExprIR> expr;
   enum CastType castType;
+  int castLineNo;
   ExprCastIR(const Frontend_ir::Expr::_CastExpr);
   virtual llvm::Value *codegen(IRVisitor &visitor) override;
 };

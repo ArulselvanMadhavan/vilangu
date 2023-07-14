@@ -23,7 +23,8 @@ void IRCodegenVisitor::addGlobalVarStr(std::string varName,
 void IRCodegenVisitor::codegenExternFunctionDeclarations() {
   llvm::StringRef initVal = "%d\n";
   addGlobalVarStr(getPrintIntFormatVar(), initVal);
-  llvm::StringRef castErr = "Narrow cast err: %s is not a type %s\n";
+  llvm::StringRef castErr =
+      "Line no: %d | Narrow cast err: %s is not a type %s\n";
   addGlobalVarStr(getCastErrFormatVar(), castErr);
   llvm::StringRef oob = "Line: %d | Array out of bounds exception at line. "
                         "Index:%d | Length:%d\n";

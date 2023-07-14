@@ -125,6 +125,7 @@ ExprCastIR::ExprCastIR(const Frontend_ir::Expr::_CastExpr castExpr) {
   castType = deserializeCastType(castExpr.cast_type());
   castTo = deserializeType(castExpr.cast_to());
   expr = deserializeExpr(castExpr.expr());
+  castLineNo = castExpr.cast_line_no();
 };
 
 ExprVarIR::ExprVarIR(const Frontend_ir::Var &v) { var = deserializeVar(v); };
