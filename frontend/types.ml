@@ -21,7 +21,7 @@ type ty =
 let rec type2str = function
   | NULL -> "NULL"
   | INT -> "i32"
-  | NAME (id, fields, _) -> Symbol.name id ^ Printf.sprintf "|%d\n" (List.length fields)
+  | NAME (id, _, _) -> Symbol.name id
   | NAMEREF id -> Symbol.name id
   | VOID -> "void"
   | ARRAY (rank, ty) -> type2str ty ^ String.concat (List.init rank ~f:(fun _ -> "arr"))

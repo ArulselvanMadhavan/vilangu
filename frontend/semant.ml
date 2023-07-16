@@ -441,7 +441,7 @@ let replace_namerefs tenv =
     | Some (T.NAME (id, fields, base)) ->
       let fields = List.map map_ref fields in
       Some (T.NAME (id, fields, base))
-    | _ -> None
+    | x -> x
   in
   let iter_type sym _ty = result := S.update sym update_type !result in
   S.iter iter_type tenv;

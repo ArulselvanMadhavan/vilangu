@@ -351,8 +351,15 @@ let arr_class_defns venv tenv main_decl =
     | E.VarEntry { ty; _ } -> handle_arr_type ty
     | _ -> ()
   in
+  let rec handle_tentry _sym = function
+    | T.NAME (_ty_name, fields, _) ->
+      List.iter (fun (sym, ty) -> handle_tentry sym ty) fields
+    | T.ARRAY _ as arr -> handle_arr_type arr
+    | _ -> ()
+  in
   List.iter handle_arr_type arr_types;
   S.iter handle_ventry venv;
+  S.iter handle_tentry tenv;
   List.rev !class_results, List.rev !func_results
 ;;
 
