@@ -78,9 +78,8 @@ let rec compare_and_cast tenv pos lhs_ty rhs_ty =
   | T.ARRAY _, T.NAME (sym, _, _) when sym = Env.obj_symbol -> Some A.Narrow, None
   | T.NAME (sym1, _, _), T.NAME (sym2, _, _) when sym1 = sym2 -> Some A.Identity, None
   | T.NAME (lhs_name, _, _), T.NAME _ when is_subclass tenv lhs_ty rhs_ty ->
-     Some A.Wide, Some (A.Reference (A.ClassType (lhs_name, pos)))
-  | T.NAME _, T.NAME _ when is_subclass tenv rhs_ty lhs_ty ->
-     Some A.Narrow, None
+    Some A.Wide, Some (A.Reference (A.ClassType (lhs_name, pos)))
+  | T.NAME _, T.NAME _ when is_subclass tenv rhs_ty lhs_ty -> Some A.Narrow, None
   | T.NAME (lhs_name, _, _), T.NULL ->
     Some A.Wide, Some (A.Reference (A.ClassType (lhs_name, pos)))
   | T.INT, T.INT ->
@@ -433,7 +432,8 @@ let trans_class (tenv, class_decs) =
     let fields = dedup_classdec_fields h tenv class_dec in
     let (A.ClassDec { name; base; _ }) = class_dec in
     let ctype = Types.NAME (name, fields, base) in
-    let tenv = S.enter (tenv, name, ctype) in
+    let update_fn = Option.map ~f:(fun _ -> ctype) in
+    let tenv = S.update name update_fn tenv in
     tenv, { stmt = (); ty = ctype }
   in
   let class_depth = find_depth h class_decs in
@@ -441,6 +441,11 @@ let trans_class (tenv, class_decs) =
     List.sort class_depth ~compare:(fun (d1, _) (d2, _) -> Int.compare d1 d2)
   in
   let class_decs = List.map ~f:(fun (_, cd) -> cd) class_decs in
+  (* Enter class names *)
+  let tenv =
+    List.fold class_decs ~init:tenv ~f:(fun tenv (A.ClassDec { name; _ }) ->
+      S.enter (tenv, name, Types.NAME (name, [], None)))
+  in
   let tenv, _ =
     Base.List.fold class_decs ~init:(tenv, []) ~f:(fun (tenv, xs) cdec ->
       let tenv, x = tr_class (tenv, cdec) in

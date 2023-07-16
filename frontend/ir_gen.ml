@@ -56,7 +56,12 @@ let gen_expr tenv e =
     | A.VarExp (v, _) -> FT.Var_exp (gen_var v)
     | A.CastType { type_; exp; cast_type; pos } ->
       let cast_type = Option.fold cast_type ~none:FT.No_cast ~some:gen_cast_type in
-      FT.Cast_expr { cast_to = gen_texpr tenv type_; expr = gexpr exp; cast_type; cast_line_no = A.line_no pos }
+      FT.Cast_expr
+        { cast_to = gen_texpr tenv type_
+        ; expr = gexpr exp
+        ; cast_type
+        ; cast_line_no = A.line_no pos
+        }
     | A.ClassCreationExp { type_; _ } ->
       FT.Class_creation { texpr = gen_texpr tenv type_ }
     | _ -> FT.Integer (Int32.of_int (-1))
