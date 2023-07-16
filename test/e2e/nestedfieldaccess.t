@@ -3,19 +3,18 @@ class Lang {
 }
 
 class French extends Lang {
-  Lang[] derivatives;
+  int[] langs;                  //ref type
 }
 
 int main() {
-  int i;
-  Lang[] l;
+  int[] v;
+  int k;
+  Lang[] ll;
   French f;
-  Lang ll;
-  i = 5;
   f = new French();
-  l = new Lang[i];
-  f.derivatives = l;
-  f.id = 100;
-  f.derivatives[0] = new Lang();
-  out f.id;  
+  f.langs = new int[5];
+  v = f.langs; // subscript access always happens on ref type
+  k = v[0];
+  v[1] = 34;
+  out f.langs[1];
 }

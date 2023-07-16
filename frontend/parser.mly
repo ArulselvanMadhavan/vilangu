@@ -291,6 +291,7 @@ let mth_invoc :=
 
 let primary_no_new_array :=
   | ~=array_access; { array_access }
+  | ~=field_access; { field_access }
 
 let array_access :=
   | ~=id; ~=dimexpr; { SubscriptVar (SimpleVar (id, lp($loc)), dimexpr, lp($loc)) }

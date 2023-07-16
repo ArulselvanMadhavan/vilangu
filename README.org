@@ -9,7 +9,8 @@ any desired architecture.
   bash run.sh
 #+end_src
 ** Pending tasks
-- [ ] Classes - Add names with empty list of fields first. Then, update fields here
+- [X] Classes - Add names with empty list of fields first. Then, update fields here
+- [ ] class.arrayField.[0] returns Lang***
 - [X] Ref types init to null at variable declaration time. Handle the case when they are used
   without proper initialization.
 - [X] Pass line number with all subscript accesses
