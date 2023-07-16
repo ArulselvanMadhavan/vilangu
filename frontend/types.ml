@@ -14,13 +14,15 @@ type ty =
       Symbol.symbol
       * (Symbol.symbol * ty) list
       * Symbol.symbol option (* class_name, field_names list *)
+  | NAMEREF of Symbol.symbol
   | ARRAY of int * ty
 [@@deriving sexp]
 
 let rec type2str = function
   | NULL -> "NULL"
   | INT -> "i32"
-  | NAME (id, _, _) -> Symbol.name id
+  | NAME (id, fields, _) -> Symbol.name id ^ Printf.sprintf "|%d\n" (List.length fields)
+  | NAMEREF id -> Symbol.name id
   | VOID -> "void"
   | ARRAY (rank, ty) -> type2str ty ^ String.concat (List.init rank ~f:(fun _ -> "arr"))
 ;;
@@ -56,6 +58,6 @@ let is_array = function
 ;;
 
 let is_ref = function
-  | ARRAY _ | NAME _ -> true
+  | ARRAY _ | NAME _ | NAMEREF _ -> true
   | _ -> false
 ;;

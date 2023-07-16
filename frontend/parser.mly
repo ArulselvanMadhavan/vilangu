@@ -60,7 +60,7 @@ let class_decl :=
   | CLASS; name=id; EXTENDS; class_type=id; ~=class_body; { ClassDec {name; base=Some class_type; class_body; pos=lp($loc)} }
 
 let class_body :=
-  | LBRACE; ~=class_body_decls; RBRACE; { class_body_decls }
+  | LBRACE; ~=class_body_decls; RBRACE; { List.rev class_body_decls }
   | LBRACE; RBRACE; { [] }
 
 let class_body_decls :=
@@ -77,7 +77,7 @@ let class_mem :=
   | ~=mthd_decl; { mthd_decl }
 
 let field_decl :=
-  | type_=typ; ~=decls; SEMICOLON; { FieldDec (List.map (fun (rank, id) -> Field { type_ = append_rank_to_type rank type_; name = id; pos = lp($loc)}) decls) }
+  | type_=typ; ~=decls; SEMICOLON; { FieldDec (List.map (fun (rank, id) -> Field { type_ = append_rank_to_type rank type_; name = id; pos = lp($loc)}) (decls)) }
 
 let decls ==
   separated_list(COMMA, decl)

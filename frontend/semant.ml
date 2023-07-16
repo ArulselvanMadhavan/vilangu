@@ -174,10 +174,11 @@ let rec trans_var ?(lhs = false) ?(is_init = false) (venv, tenv, var) =
   | A.FieldVar (exp, (sym_name, sym_id), _, pos) as var ->
     let venv, { ty = exp_ty; stmt = exp } = trans_exp (venv, tenv, exp) in
     let check_field class_name fields =
+      let len = List.length fields in
       let map_field idx ((name, _), ty) =
-        if String.equal name sym_name then Some (idx + 1, ty) else None
+        if String.equal name sym_name then Some (len - idx, ty) else None
       in
-      let field_opt = Base.List.find_mapi ~f:map_field fields in
+      let field_opt = Base.List.find_mapi ~f:map_field (List.rev fields) in
       match field_opt with
       | Some (idx, ty) ->
         venv, { ty; stmt = A.FieldVar (exp, (sym_name, sym_id), idx, pos) }
@@ -394,13 +395,9 @@ let dedup_class_fields tenv class_body class_name =
   let fields = List.map ~f:(class_fields tenv) class_body |> List.concat in
   let h = Hashtbl.create (module String) in
   (* duplicate field name check. This should only throw error for current class fields. When fields match with base class, they should be treated as overrides. *)
-  (* field_index = 0 is reserved for vtable *)
-  let field_index = ref 1 in
   let remove_duplicate_fields (((field_name, _) as sym), ty, pos) =
-    match Base.Hashtbl.add h ~key:field_name ~data:(ty, !field_index) with
-    | `Ok ->
-      field_index := !field_index + 1;
-      Some (sym, ty)
+    match Base.Hashtbl.add h ~key:field_name ~data:ty with
+    | `Ok -> Some (sym, ty)
     | _ ->
       error
         pos
@@ -425,6 +422,32 @@ let rec dedup_classdec_fields h tenv (A.ClassDec { name; class_body; base; _ }) 
   List.append base_fields mem_fields
 ;;
 
+exception NameRefToNameException
+
+let replace_namerefs tenv =
+  let result = ref tenv in
+  let nameref_to_name id =
+    match S.look (!result, id) with
+    | Some (T.NAME (id, fields, base)) -> T.NAME (id, fields, base)
+    | _ -> raise NameRefToNameException
+  in
+  let map_ref (field_name, field_ty) =
+    match field_ty with
+    | T.NAMEREF id -> field_name, nameref_to_name id
+    | x -> field_name, x
+  in
+  let update_type = function
+    | Some (T.NAMEREF id) -> Some (nameref_to_name id)
+    | Some (T.NAME (id, fields, base)) ->
+      let fields = List.map map_ref fields in
+      Some (T.NAME (id, fields, base))
+    | _ -> None
+  in
+  let iter_type sym _ty = result := S.update sym update_type !result in
+  S.iter iter_type tenv;
+  !result
+;;
+
 let trans_class (tenv, class_decs) =
   let open Base in
   let h = class_decs_tbl class_decs in
@@ -444,13 +467,17 @@ let trans_class (tenv, class_decs) =
   (* Enter class names *)
   let tenv =
     List.fold class_decs ~init:tenv ~f:(fun tenv (A.ClassDec { name; _ }) ->
-      S.enter (tenv, name, Types.NAME (name, [], None)))
+      S.enter (tenv, name, Types.NAMEREF name))
   in
   let tenv, _ =
     Base.List.fold class_decs ~init:(tenv, []) ~f:(fun (tenv, xs) cdec ->
       let tenv, x = tr_class (tenv, cdec) in
+      (* This should update fields *)
       tenv, x :: xs)
   in
+  (* All type defns are complete. *)
+  (* Now update placeholder definitions. For typedef with a T.NAME name, use tenv *)
+  let tenv = replace_namerefs tenv in
   tenv, class_decs (* sorted by depth *)
 ;;
 

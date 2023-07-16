@@ -11,11 +11,11 @@ class A {
 }
 
 int main() {
-  A a;
   B b;
-  a = new A();
-  a = new B();
   b = new B();
+  b.b = new B();
+  b.b.e = 31;
   out 42;
+  out b.b.e;
 }
 
