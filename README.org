@@ -1,4 +1,18 @@
-* Vilangu in OCaml
+* Note
+== We're Using GitHub Under Protest ==
+
+This project is currently hosted on GitHub.  This is not ideal; GitHub is a
+proprietary, trade-secret system that is not Free and Open Souce Software
+(FOSS).  We are deeply concerned about using a proprietary system like GitHub
+to develop our FOSS project.  We urge you to read about the [[https://GiveUpGitHub.org][Give Up
+GitHub]] campaign from [[https://sfconservancy.org][Software conservancy]] to understand some of the
+reasons why GitHub is not a good place to host FOSS projects. Any use
+of this project's code by GitHub Copilot, past or present, is done
+without our permission.  We do not consent to GitHub's use of this
+project's code in Copilot.
+
+[[https://sfconservancy.org/img/GiveUpGitHub.png][Logo of the GiveUpGitHub campaign]]
+* Vilangu
 Vilangu is a compiler for the [[https://www.cs.unh.edu/~cs712/T_language_spec/][T-lang]]. Compiler frontend is written in
 OCaml. The backend uses the LLVM infrastructure to generate code for
 any desired architecture.
@@ -10,7 +24,6 @@ any desired architecture.
 #+end_src
 ** Pending tasks
 - [X] Classes - Add names with empty list of fields first. Then, update fields here
-- [ ] class.arrayField.[0] returns Lang***
 - [X] Ref types init to null at variable declaration time. Handle the case when they are used
   without proper initialization.
 - [X] Pass line number with all subscript accesses
@@ -33,8 +46,7 @@ any desired architecture.
   - [X] Install ocaml libs
   - [X] Install protocol buffer
 - [ ] nounwind attribute to main, malloc, free, printf
-- [ ] phase 3 tests should pass
-- 
+- [X] phase 3 tests should pass
     
 ** Useful links
   - https://github.com/ksrky/tiger/tree/master
@@ -42,23 +54,3 @@ any desired architecture.
   - [[https://github.com/xandkar/tiger.ml][Tiger with tests upto chap 4]]
   - [[https://github.com/hkveeranki/Decaf-Compiler/tree/master][Decaf compiler]]
   - [[https://github.com/mukul-rathi/bolt/tree/master][Bolt compiler]]
-
-** Note
-== We're Using GitHub Under Protest ==
-
-This project is currently hosted on GitHub.  This is not ideal; GitHub is a
-proprietary, trade-secret system that is not Free and Open Souce Software
-(FOSS).  We are deeply concerned about using a proprietary system like GitHub
-to develop our FOSS project.  We have an
-[open {bug ticket, mailing list thread, etc.} ](INSERT_LINK) where the
-project contributors are actively discussing how we can move away from GitHub
-in the long term.  We urge you to read about the
-[Give up GitHub](https://GiveUpGitHub.org) campaign from
-[the Software Freedom Conservancy](https://sfconservancy.org) to understand
-some of the reasons why GitHub is not a good place to host FOSS projects.
-
-Any use of this project's code by GitHub Copilot, past or present, is done
-without our permission.  We do not consent to GitHub's use of this project's
-code in Copilot.
-
-![Logo of the GiveUpGitHub campaign](https://sfconservancy.org/img/GiveUpGitHub.png)
