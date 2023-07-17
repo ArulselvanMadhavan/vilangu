@@ -7,14 +7,14 @@ class French extends Lang {
 }
 
 int main() {
-  int[] v;
-  int k;
-  Lang[] ll;
+  int[][] v;
   French f;
   f = new French();
   f.langs = new int[5];
-  v = f.langs; // subscript access always happens on ref type
-  k = v[0];
-  v[1] = 34;
-  out f.langs[1];
+  v = new int[3][];
+  v[0] = new int[30];
+  f.langs[4] = 5;  // f.langs - i32arr*
+  v[0][0] = 900;
+  out f.langs[4];
+  out v[0][0];
 }

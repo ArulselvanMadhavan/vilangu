@@ -144,7 +144,7 @@ nullDerefThen1:                                   ; preds = %entry
   br label %nullDerefElse
 
 nullDerefElse:                                    ; preds = %nullDerefThen1, %entry
-  %6 = getelementptr inbounds %B, %B* %.cast, i64 0, i32 3
+  %6 = getelementptr inbounds %B, %B* %.cast, i64 0, i32 4
   store i32 20, i32* %6, align 4
   %7 = load %B*, %B** %b, align 8
   %8 = icmp eq %B* %7, null
@@ -156,7 +156,7 @@ nullDerefThen2:                                   ; preds = %nullDerefElse
   br label %nullDerefElse3
 
 nullDerefElse3:                                   ; preds = %nullDerefThen2, %nullDerefElse
-  %10 = getelementptr inbounds %B, %B* %7, i64 0, i32 2
+  %10 = getelementptr inbounds %B, %B* %7, i64 0, i32 3
   store i32 22, i32* %10, align 4
   %11 = load %B*, %B** %b, align 8
   %12 = icmp eq %B* %11, null
@@ -168,7 +168,7 @@ nullDerefThen4:                                   ; preds = %nullDerefElse3
   br label %nullDerefElse5
 
 nullDerefElse5:                                   ; preds = %nullDerefThen4, %nullDerefElse3
-  %14 = getelementptr inbounds %B, %B* %11, i64 0, i32 2
+  %14 = getelementptr inbounds %B, %B* %11, i64 0, i32 3
   %15 = load i32, i32* %14, align 4
   %16 = load %B*, %B** %b, align 8
   %17 = icmp eq %B* %16, null
@@ -180,7 +180,7 @@ nullDerefThen6:                                   ; preds = %nullDerefElse5
   br label %nullDerefElse7
 
 nullDerefElse7:                                   ; preds = %nullDerefThen6, %nullDerefElse5
-  %19 = getelementptr inbounds %B, %B* %16, i64 0, i32 3
+  %19 = getelementptr inbounds %B, %B* %16, i64 0, i32 4
   %20 = load i32, i32* %19, align 4
   %add = add i32 %15, %20
   %21 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([4 x i8], [4 x i8]* @printIntFormat, i64 0, i64 0), i32 %add)

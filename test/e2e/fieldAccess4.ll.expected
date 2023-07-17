@@ -6,7 +6,7 @@ target triple = "x86_64-pc-linux-gnu"
 %A_Vtable_type = type { %Object_Vtable_type*, i8* }
 %B_Vtable_type = type { %Object_Vtable_type*, i8* }
 %Object = type { %Object_Vtable_type* }
-%B = type { %B_Vtable_type*, i32, %A* }
+%B = type { %B_Vtable_type*, %A*, i32 }
 %A = type { %A_Vtable_type*, i32, i32 }
 
 @printIntFormat = private constant [4 x i8] c"%d\0A\00", align 1
@@ -149,7 +149,7 @@ nullDerefThen1:                                   ; preds = %entry
   br label %nullDerefElse
 
 nullDerefElse:                                    ; preds = %nullDerefThen1, %entry
-  %9 = getelementptr inbounds %B, %B* %.cast, i64 0, i32 2
+  %9 = getelementptr inbounds %B, %B* %.cast, i64 0, i32 1
   %10 = bitcast %A** %9 to i8**
   store i8* %4, i8** %10, align 8
   %11 = load %B*, %B** %b, align 8
@@ -162,7 +162,7 @@ nullDerefThen2:                                   ; preds = %nullDerefElse
   br label %nullDerefElse3
 
 nullDerefElse3:                                   ; preds = %nullDerefThen2, %nullDerefElse
-  %14 = getelementptr inbounds %B, %B* %11, i64 0, i32 1
+  %14 = getelementptr inbounds %B, %B* %11, i64 0, i32 2
   store i32 9, i32* %14, align 4
   %15 = load %B*, %B** %b, align 8
   %16 = icmp eq %B* %15, null
@@ -174,7 +174,7 @@ nullDerefThen4:                                   ; preds = %nullDerefElse3
   br label %nullDerefElse5
 
 nullDerefElse5:                                   ; preds = %nullDerefThen4, %nullDerefElse3
-  %18 = getelementptr inbounds %B, %B* %15, i64 0, i32 2
+  %18 = getelementptr inbounds %B, %B* %15, i64 0, i32 1
   %19 = load %A*, %A** %18, align 8
   %20 = icmp eq %A* %19, null
   br i1 %20, label %nullDerefThen6, label %nullDerefElse7
@@ -185,7 +185,7 @@ nullDerefThen6:                                   ; preds = %nullDerefElse5
   br label %nullDerefElse7
 
 nullDerefElse7:                                   ; preds = %nullDerefThen6, %nullDerefElse5
-  %22 = getelementptr inbounds %A, %A* %19, i64 0, i32 2
+  %22 = getelementptr inbounds %A, %A* %19, i64 0, i32 1
   store i32 22, i32* %22, align 4
   %23 = load %B*, %B** %b, align 8
   %24 = icmp eq %B* %23, null
@@ -197,7 +197,7 @@ nullDerefThen8:                                   ; preds = %nullDerefElse7
   br label %nullDerefElse9
 
 nullDerefElse9:                                   ; preds = %nullDerefThen8, %nullDerefElse7
-  %26 = getelementptr inbounds %B, %B* %23, i64 0, i32 2
+  %26 = getelementptr inbounds %B, %B* %23, i64 0, i32 1
   %27 = load %A*, %A** %26, align 8
   %28 = icmp eq %A* %27, null
   br i1 %28, label %nullDerefThen10, label %nullDerefElse11
@@ -208,7 +208,7 @@ nullDerefThen10:                                  ; preds = %nullDerefElse9
   br label %nullDerefElse11
 
 nullDerefElse11:                                  ; preds = %nullDerefThen10, %nullDerefElse9
-  %30 = getelementptr inbounds %A, %A* %27, i64 0, i32 1
+  %30 = getelementptr inbounds %A, %A* %27, i64 0, i32 2
   store i32 11, i32* %30, align 4
   %31 = load %B*, %B** %b, align 8
   %32 = icmp eq %B* %31, null
@@ -220,7 +220,7 @@ nullDerefThen12:                                  ; preds = %nullDerefElse11
   br label %nullDerefElse13
 
 nullDerefElse13:                                  ; preds = %nullDerefThen12, %nullDerefElse11
-  %34 = getelementptr inbounds %B, %B* %31, i64 0, i32 2
+  %34 = getelementptr inbounds %B, %B* %31, i64 0, i32 1
   %35 = load %A*, %A** %34, align 8
   %36 = icmp eq %A* %35, null
   br i1 %36, label %nullDerefThen14, label %nullDerefElse15
@@ -231,7 +231,7 @@ nullDerefThen14:                                  ; preds = %nullDerefElse13
   br label %nullDerefElse15
 
 nullDerefElse15:                                  ; preds = %nullDerefThen14, %nullDerefElse13
-  %38 = getelementptr inbounds %A, %A* %35, i64 0, i32 2
+  %38 = getelementptr inbounds %A, %A* %35, i64 0, i32 1
   %39 = load i32, i32* %38, align 4
   %40 = load %B*, %B** %b, align 8
   %41 = icmp eq %B* %40, null
@@ -243,7 +243,7 @@ nullDerefThen16:                                  ; preds = %nullDerefElse15
   br label %nullDerefElse17
 
 nullDerefElse17:                                  ; preds = %nullDerefThen16, %nullDerefElse15
-  %43 = getelementptr inbounds %B, %B* %40, i64 0, i32 2
+  %43 = getelementptr inbounds %B, %B* %40, i64 0, i32 1
   %44 = load %A*, %A** %43, align 8
   %45 = icmp eq %A* %44, null
   br i1 %45, label %nullDerefThen18, label %nullDerefElse19
@@ -254,7 +254,7 @@ nullDerefThen18:                                  ; preds = %nullDerefElse17
   br label %nullDerefElse19
 
 nullDerefElse19:                                  ; preds = %nullDerefThen18, %nullDerefElse17
-  %47 = getelementptr inbounds %A, %A* %44, i64 0, i32 1
+  %47 = getelementptr inbounds %A, %A* %44, i64 0, i32 2
   %48 = load i32, i32* %47, align 4
   %49 = load %B*, %B** %b, align 8
   %50 = icmp eq %B* %49, null
@@ -267,7 +267,7 @@ nullDerefThen20:                                  ; preds = %nullDerefElse19
 
 nullDerefElse21:                                  ; preds = %nullDerefThen20, %nullDerefElse19
   %add = add i32 %39, %48
-  %52 = getelementptr inbounds %B, %B* %49, i64 0, i32 1
+  %52 = getelementptr inbounds %B, %B* %49, i64 0, i32 2
   %53 = load i32, i32* %52, align 4
   %add22 = add i32 %add, %53
   %54 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([4 x i8], [4 x i8]* @printIntFormat, i64 0, i64 0), i32 %add22)

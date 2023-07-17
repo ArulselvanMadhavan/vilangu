@@ -67,19 +67,19 @@ let gen_expr tenv e =
     | _ -> FT.Integer (Int32.of_int (-1))
   and gen_var = function
     | A.SimpleVar ((sym_name, _), _) -> FT.Simple { var_name = sym_name }
-    | A.SubscriptVar ((A.FieldVar _ as v), exp, pos) ->
-      (match gen_var v with
-       | FT.Field _ as base_var ->
-         let line_no = A.line_no pos in
-         let len_var =
-           FT.Field
-             { base_expr = FT.Var_exp base_var (* This will walk to the array field *)
-             ; field_index = Int32.of_int 2    (* This will access the length field of the array *)
-             ; field_line_no = line_no
-             }
-         in
-         FT.Subscript { base_var; var_exp = gexpr exp; len_var; line_no }
-       | _ -> raise SubscriptAccessException)
+    (* | A.SubscriptVar ((A.FieldVar _ as v), exp, pos) -> *)
+    (*   (match gen_var v with *)
+    (*    | FT.Field _ as base_var -> *)
+    (*      let line_no = A.line_no pos in *)
+    (*      let len_var = *)
+    (*        FT.Field *)
+    (*          { base_expr = FT.Var_exp base_var (\* This will walk to the array field *\) *)
+    (*          ; field_index = Int32.of_int 2    (\* This will access the length field of the array *\) *)
+    (*          ; field_line_no = line_no *)
+    (*          } *)
+    (*      in *)
+    (*      FT.Subscript { base_var; var_exp = gexpr exp; len_var; line_no } *)
+    (*    | _ -> raise SubscriptAccessException) *)
     | A.SubscriptVar (v, exp, pos) ->
       let line_no = A.line_no pos in
       FT.Subscript
