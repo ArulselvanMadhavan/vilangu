@@ -5,7 +5,10 @@ module S = Symbol
 type ty = T.ty [@@deriving sexp]
 
 type enventry =
-  | VarEntry of { ty : ty }
+  | VarEntry of
+      { ty : ty
+      ; is_null : bool
+      }
   | FunEntry of
       { label : Temp.label
       ; formals : ty list
@@ -15,7 +18,7 @@ type enventry =
 
 let int_symbol = S.symbol "int"
 let obj_symbol = S.symbol "Object"
-let base_tenv = S.init [ int_symbol, T.INT; obj_symbol, T.NAME (obj_symbol, ref None) ]
+let base_tenv = S.init [ int_symbol, T.INT; obj_symbol, T.NAME (obj_symbol, [], None) ]
 
 let base_venv =
   let base_v = [ "out", [ T.INT ], T.VOID ] in
@@ -24,4 +27,9 @@ let base_venv =
     S.symbol name, FunEntry { label; formals; result }
   in
   Stdlib.List.map make_sym base_v |> S.init
+;;
+
+let update_null = function
+  | Some (VarEntry { ty; _ }) -> Some (VarEntry { ty; is_null = false })
+  | x -> x
 ;;

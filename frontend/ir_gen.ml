@@ -54,21 +54,32 @@ let gen_expr tenv e =
       let make_line_no = A.line_no pos in
       FT.Array_creation { creation_exprs = List.map gexpr exprs; texpr; make_line_no }
     | A.VarExp (v, _) -> FT.Var_exp (gen_var v)
-    | A.CastType { type_; exp; cast_type; _ } ->
+    | A.CastType { type_; exp; cast_type; pos } ->
       let cast_type = Option.fold cast_type ~none:FT.No_cast ~some:gen_cast_type in
-      FT.Cast_expr { cast_to = gen_texpr tenv type_; expr = gexpr exp; cast_type }
+      FT.Cast_expr
+        { cast_to = gen_texpr tenv type_
+        ; expr = gexpr exp
+        ; cast_type
+        ; cast_line_no = A.line_no pos
+        }
+    | A.ClassCreationExp { type_; _ } ->
+      FT.Class_creation { texpr = gen_texpr tenv type_ }
     | _ -> FT.Integer (Int32.of_int (-1))
   and gen_var = function
     | A.SimpleVar ((sym_name, _), _) -> FT.Simple { var_name = sym_name }
-    | A.SubscriptVar ((A.FieldVar _ as v), exp, pos) ->
-      (match gen_var v with
-       | FT.Field { base_expr; _ } as base_var ->
-         let line_no = A.line_no pos in
-         let len_var =
-           FT.Field { base_expr; field_index = Int32.of_int 2; field_line_no = line_no }
-         in
-         FT.Subscript { base_var; var_exp = gexpr exp; len_var; line_no }
-       | _ -> raise SubscriptAccessException)
+    (* | A.SubscriptVar ((A.FieldVar _ as v), exp, pos) -> *)
+    (*   (match gen_var v with *)
+    (*    | FT.Field _ as base_var -> *)
+    (*      let line_no = A.line_no pos in *)
+    (*      let len_var = *)
+    (*        FT.Field *)
+    (*          { base_expr = FT.Var_exp base_var (\* This will walk to the array field *\) *)
+    (*          ; field_index = Int32.of_int 2    (\* This will access the length field of the array *\) *)
+    (*          ; field_line_no = line_no *)
+    (*          } *)
+    (*      in *)
+    (*      FT.Subscript { base_var; var_exp = gexpr exp; len_var; line_no } *)
+    (*    | _ -> raise SubscriptAccessException) *)
     | A.SubscriptVar (v, exp, pos) ->
       let line_no = A.line_no pos in
       FT.Subscript
@@ -87,10 +98,10 @@ let gen_expr tenv e =
         ; var_exp = gexpr exp
         ; line_no
         }
-    | A.FieldVar (base_exp, _, pos) ->
+    | A.FieldVar (base_exp, _, id, pos) ->
       FT.Field
         { base_expr = gexpr base_exp
-        ; field_index = Int32.of_int 2
+        ; field_index = Int32.of_int id
         ; field_line_no = A.line_no pos
         }
       (* Always defaults to length field *)
@@ -341,11 +352,18 @@ let arr_class_defns venv tenv main_decl =
     | _ -> ()
   in
   let handle_ventry _symbol = function
-    | E.VarEntry { ty } -> handle_arr_type ty
+    | E.VarEntry { ty; _ } -> handle_arr_type ty
+    | _ -> ()
+  in
+  let rec handle_tentry _sym = function
+    | T.NAME (_ty_name, fields, _) ->
+      List.iter (fun (sym, ty) -> handle_tentry sym ty) fields
+    | T.ARRAY _ as arr -> handle_arr_type arr
     | _ -> ()
   in
   List.iter handle_arr_type arr_types;
   S.iter handle_ventry venv;
+  S.iter handle_tentry tenv;
   List.rev !class_results, List.rev !func_results
 ;;
 

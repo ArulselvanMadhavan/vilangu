@@ -12,7 +12,7 @@ target triple = "x86_64-pc-linux-gnu"
 %i32arrarr = type { %i32arrarr_Vtable_type*, %i32arr*, i32 }
 
 @printIntFormat = private constant [4 x i8] c"%d\0A\00", align 1
-@castErrFormat = private constant [38 x i8] c"Narrow cast err: %s is not a type %s\0A\00", align 1
+@castErrFormat = private constant [52 x i8] c"Line no: %d | Narrow cast err: %s is not a type %s\0A\00", align 1
 @outOfBoundsFormat = private constant [72 x i8] c"Line: %d | Array out of bounds exception at line. Index:%d | Length:%d\0A\00", align 1
 @negativeLenFormat = private constant [62 x i8] c"Line: %d | Array len cannot be negative. Length attempted:%d\0A\00", align 1
 @nullDerefFormat = private constant [29 x i8] c"Line: %d | Null dereference\0A\00", align 1
@@ -504,7 +504,7 @@ castElse:                                         ; preds = %boundsCheckElse32
   %.repack67 = getelementptr inbounds [9 x i8], [9 x i8]* %56, i64 0, i64 8
   store i8 0, i8* %.repack67, align 1
   %57 = getelementptr inbounds [9 x i8], [9 x i8]* %56, i64 0, i64 0
-  %58 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([38 x i8], [38 x i8]* @castErrFormat, i64 0, i64 0), i8* nonnull %55, i8* nonnull %57)
+  %58 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([52 x i8], [52 x i8]* @castErrFormat, i64 0, i64 0), i32 9, i8* nonnull %55, i8* nonnull %57)
   call void @exit(i32 -1)
   br label %castCont
 

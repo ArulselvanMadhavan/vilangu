@@ -47,7 +47,7 @@ struct TableStruct_frontend_2eproto {
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::AuxillaryParseTableField aux[]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
-  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[50]
+  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[51]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::FieldMetadata field_metadata[];
   static const ::PROTOBUF_NAMESPACE_ID::internal::SerializationTable serialization_table[];
@@ -109,6 +109,9 @@ extern Expr__Cast__NoCastDefaultTypeInternal _Expr__Cast__NoCast_default_instanc
 class Expr__Cast__WideCast;
 class Expr__Cast__WideCastDefaultTypeInternal;
 extern Expr__Cast__WideCastDefaultTypeInternal _Expr__Cast__WideCast_default_instance_;
+class Expr__ClassCreation;
+class Expr__ClassCreationDefaultTypeInternal;
+extern Expr__ClassCreationDefaultTypeInternal _Expr__ClassCreation_default_instance_;
 class Expr__Empty;
 class Expr__EmptyDefaultTypeInternal;
 extern Expr__EmptyDefaultTypeInternal _Expr__Empty_default_instance_;
@@ -225,6 +228,7 @@ template<> ::Frontend_ir::Expr__CastExpr* Arena::CreateMaybeMessage<::Frontend_i
 template<> ::Frontend_ir::Expr__Cast__NarrowCast* Arena::CreateMaybeMessage<::Frontend_ir::Expr__Cast__NarrowCast>(Arena*);
 template<> ::Frontend_ir::Expr__Cast__NoCast* Arena::CreateMaybeMessage<::Frontend_ir::Expr__Cast__NoCast>(Arena*);
 template<> ::Frontend_ir::Expr__Cast__WideCast* Arena::CreateMaybeMessage<::Frontend_ir::Expr__Cast__WideCast>(Arena*);
+template<> ::Frontend_ir::Expr__ClassCreation* Arena::CreateMaybeMessage<::Frontend_ir::Expr__ClassCreation>(Arena*);
 template<> ::Frontend_ir::Expr__Empty* Arena::CreateMaybeMessage<::Frontend_ir::Expr__Empty>(Arena*);
 template<> ::Frontend_ir::Expr__FunctionApp* Arena::CreateMaybeMessage<::Frontend_ir::Expr__FunctionApp>(Arena*);
 template<> ::Frontend_ir::Expr__NullLit* Arena::CreateMaybeMessage<::Frontend_ir::Expr__NullLit>(Arena*);
@@ -5259,6 +5263,160 @@ class Expr__ArrayCreation PROTOBUF_FINAL :
 };
 // -------------------------------------------------------------------
 
+class Expr__ClassCreation PROTOBUF_FINAL :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:Frontend_ir.Expr._ClassCreation) */ {
+ public:
+  inline Expr__ClassCreation() : Expr__ClassCreation(nullptr) {};
+  virtual ~Expr__ClassCreation();
+
+  Expr__ClassCreation(const Expr__ClassCreation& from);
+  Expr__ClassCreation(Expr__ClassCreation&& from) noexcept
+    : Expr__ClassCreation() {
+    *this = ::std::move(from);
+  }
+
+  inline Expr__ClassCreation& operator=(const Expr__ClassCreation& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline Expr__ClassCreation& operator=(Expr__ClassCreation&& from) noexcept {
+    if (GetArena() == from.GetArena()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  inline const ::PROTOBUF_NAMESPACE_ID::UnknownFieldSet& unknown_fields() const {
+    return _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance);
+  }
+  inline ::PROTOBUF_NAMESPACE_ID::UnknownFieldSet* mutable_unknown_fields() {
+    return _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const Expr__ClassCreation& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const Expr__ClassCreation* internal_default_instance() {
+    return reinterpret_cast<const Expr__ClassCreation*>(
+               &_Expr__ClassCreation_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    30;
+
+  friend void swap(Expr__ClassCreation& a, Expr__ClassCreation& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(Expr__ClassCreation* other) {
+    if (other == this) return;
+    if (GetArena() == other->GetArena()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(Expr__ClassCreation* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArena() == other->GetArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline Expr__ClassCreation* New() const final {
+    return CreateMaybeMessage<Expr__ClassCreation>(nullptr);
+  }
+
+  Expr__ClassCreation* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<Expr__ClassCreation>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const Expr__ClassCreation& from);
+  void MergeFrom(const Expr__ClassCreation& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(Expr__ClassCreation* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "Frontend_ir.Expr._ClassCreation";
+  }
+  protected:
+  explicit Expr__ClassCreation(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  private:
+  static void ArenaDtor(void* object);
+  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_frontend_2eproto);
+    return ::descriptor_table_frontend_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kTexprFieldNumber = 1,
+  };
+  // required .Frontend_ir.Type_expr texpr = 1;
+  bool has_texpr() const;
+  private:
+  bool _internal_has_texpr() const;
+  public:
+  void clear_texpr();
+  const ::Frontend_ir::Type_expr& texpr() const;
+  ::Frontend_ir::Type_expr* release_texpr();
+  ::Frontend_ir::Type_expr* mutable_texpr();
+  void set_allocated_texpr(::Frontend_ir::Type_expr* texpr);
+  private:
+  const ::Frontend_ir::Type_expr& _internal_texpr() const;
+  ::Frontend_ir::Type_expr* _internal_mutable_texpr();
+  public:
+  void unsafe_arena_set_allocated_texpr(
+      ::Frontend_ir::Type_expr* texpr);
+  ::Frontend_ir::Type_expr* unsafe_arena_release_texpr();
+
+  // @@protoc_insertion_point(class_scope:Frontend_ir.Expr._ClassCreation)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  ::PROTOBUF_NAMESPACE_ID::internal::HasBits<1> _has_bits_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  ::Frontend_ir::Type_expr* texpr_;
+  friend struct ::TableStruct_frontend_2eproto;
+};
+// -------------------------------------------------------------------
+
 class Expr__NullLit PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:Frontend_ir.Expr._NullLit) */ {
  public:
@@ -5308,7 +5466,7 @@ class Expr__NullLit PROTOBUF_FINAL :
                &_Expr__NullLit_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    30;
+    31;
 
   friend void swap(Expr__NullLit& a, Expr__NullLit& b) {
     a.Swap(&b);
@@ -5439,7 +5597,7 @@ class Expr__Cast__NoCast PROTOBUF_FINAL :
                &_Expr__Cast__NoCast_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    31;
+    32;
 
   friend void swap(Expr__Cast__NoCast& a, Expr__Cast__NoCast& b) {
     a.Swap(&b);
@@ -5570,7 +5728,7 @@ class Expr__Cast__WideCast PROTOBUF_FINAL :
                &_Expr__Cast__WideCast_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    32;
+    33;
 
   friend void swap(Expr__Cast__WideCast& a, Expr__Cast__WideCast& b) {
     a.Swap(&b);
@@ -5701,7 +5859,7 @@ class Expr__Cast__NarrowCast PROTOBUF_FINAL :
                &_Expr__Cast__NarrowCast_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    33;
+    34;
 
   friend void swap(Expr__Cast__NarrowCast& a, Expr__Cast__NarrowCast& b) {
     a.Swap(&b);
@@ -5839,7 +5997,7 @@ class Expr__Cast PROTOBUF_FINAL :
                &_Expr__Cast_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    34;
+    35;
 
   friend void swap(Expr__Cast& a, Expr__Cast& b) {
     a.Swap(&b);
@@ -6049,7 +6207,7 @@ class Expr__CastExpr PROTOBUF_FINAL :
                &_Expr__CastExpr_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    35;
+    36;
 
   friend void swap(Expr__CastExpr& a, Expr__CastExpr& b) {
     a.Swap(&b);
@@ -6252,6 +6410,7 @@ class Expr PROTOBUF_FINAL :
     kVarExp = 9,
     kNullLit = 10,
     kCastExpr = 11,
+    kClassCreation = 12,
     VALUE_NOT_SET = 0,
   };
 
@@ -6261,7 +6420,7 @@ class Expr PROTOBUF_FINAL :
                &_Expr_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    36;
+    37;
 
   friend void swap(Expr& a, Expr& b) {
     a.Swap(&b);
@@ -6335,6 +6494,7 @@ class Expr PROTOBUF_FINAL :
   typedef Expr__Assign _Assign;
   typedef Expr__Empty _Empty;
   typedef Expr__ArrayCreation _ArrayCreation;
+  typedef Expr__ClassCreation _ClassCreation;
   typedef Expr__NullLit _NullLit;
   typedef Expr__Cast _Cast;
   typedef Expr__CastExpr _CastExpr;
@@ -6353,6 +6513,7 @@ class Expr PROTOBUF_FINAL :
     kVarExpFieldNumber = 9,
     kNullLitFieldNumber = 10,
     kCastExprFieldNumber = 11,
+    kClassCreationFieldNumber = 12,
   };
   // int32 Integer = 1;
   bool has_integer() const;
@@ -6547,6 +6708,24 @@ class Expr PROTOBUF_FINAL :
       ::Frontend_ir::Expr__CastExpr* castexpr);
   ::Frontend_ir::Expr__CastExpr* unsafe_arena_release_castexpr();
 
+  // .Frontend_ir.Expr._ClassCreation ClassCreation = 12;
+  bool has_classcreation() const;
+  private:
+  bool _internal_has_classcreation() const;
+  public:
+  void clear_classcreation();
+  const ::Frontend_ir::Expr__ClassCreation& classcreation() const;
+  ::Frontend_ir::Expr__ClassCreation* release_classcreation();
+  ::Frontend_ir::Expr__ClassCreation* mutable_classcreation();
+  void set_allocated_classcreation(::Frontend_ir::Expr__ClassCreation* classcreation);
+  private:
+  const ::Frontend_ir::Expr__ClassCreation& _internal_classcreation() const;
+  ::Frontend_ir::Expr__ClassCreation* _internal_mutable_classcreation();
+  public:
+  void unsafe_arena_set_allocated_classcreation(
+      ::Frontend_ir::Expr__ClassCreation* classcreation);
+  ::Frontend_ir::Expr__ClassCreation* unsafe_arena_release_classcreation();
+
   void clear_value();
   ValueCase value_case() const;
   // @@protoc_insertion_point(class_scope:Frontend_ir.Expr)
@@ -6563,6 +6742,7 @@ class Expr PROTOBUF_FINAL :
   void set_has_varexp();
   void set_has_nulllit();
   void set_has_castexpr();
+  void set_has_classcreation();
 
   inline bool has_value() const;
   inline void clear_has_value();
@@ -6583,6 +6763,7 @@ class Expr PROTOBUF_FINAL :
     ::Frontend_ir::Var* varexp_;
     ::Frontend_ir::Expr__NullLit* nulllit_;
     ::Frontend_ir::Expr__CastExpr* castexpr_;
+    ::Frontend_ir::Expr__ClassCreation* classcreation_;
   } value_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   ::PROTOBUF_NAMESPACE_ID::uint32 _oneof_case_[1];
@@ -6640,7 +6821,7 @@ class Stmt__VarDecl PROTOBUF_FINAL :
                &_Stmt__VarDecl_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    37;
+    38;
 
   friend void swap(Stmt__VarDecl& a, Stmt__VarDecl& b) {
     a.Swap(&b);
@@ -6828,7 +7009,7 @@ class Stmt__Printf PROTOBUF_FINAL :
                &_Stmt__Printf_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    38;
+    39;
 
   friend void swap(Stmt__Printf& a, Stmt__Printf& b) {
     a.Swap(&b);
@@ -7013,7 +7194,7 @@ class Stmt__ExprStmt PROTOBUF_FINAL :
                &_Stmt__ExprStmt_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    39;
+    40;
 
   friend void swap(Stmt__ExprStmt& a, Stmt__ExprStmt& b) {
     a.Swap(&b);
@@ -7167,7 +7348,7 @@ class Stmt__While PROTOBUF_FINAL :
                &_Stmt__While_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    40;
+    41;
 
   friend void swap(Stmt__While& a, Stmt__While& b) {
     a.Swap(&b);
@@ -7344,7 +7525,7 @@ class Stmt__Block PROTOBUF_FINAL :
                &_Stmt__Block_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    41;
+    42;
 
   friend void swap(Stmt__Block& a, Stmt__Block& b) {
     a.Swap(&b);
@@ -7497,7 +7678,7 @@ class Stmt__Break PROTOBUF_FINAL :
                &_Stmt__Break_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    42;
+    43;
 
   friend void swap(Stmt__Break& a, Stmt__Break& b) {
     a.Swap(&b);
@@ -7628,7 +7809,7 @@ class Stmt__Continue PROTOBUF_FINAL :
                &_Stmt__Continue_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    43;
+    44;
 
   friend void swap(Stmt__Continue& a, Stmt__Continue& b) {
     a.Swap(&b);
@@ -7759,7 +7940,7 @@ class Stmt__If_stmt PROTOBUF_FINAL :
                &_Stmt__If_stmt_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    44;
+    45;
 
   friend void swap(Stmt__If_stmt& a, Stmt__If_stmt& b) {
     a.Swap(&b);
@@ -7968,7 +8149,7 @@ class Stmt PROTOBUF_FINAL :
                &_Stmt_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    45;
+    46;
 
   friend void swap(Stmt& a, Stmt& b) {
     a.Swap(&b);
@@ -8288,7 +8469,7 @@ class ClassDef PROTOBUF_FINAL :
                &_ClassDef_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    46;
+    47;
 
   friend void swap(ClassDef& a, ClassDef& b) {
     a.Swap(&b);
@@ -8507,7 +8688,7 @@ class Param PROTOBUF_FINAL :
                &_Param_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    47;
+    48;
 
   friend void swap(Param& a, Param& b) {
     a.Swap(&b);
@@ -8695,7 +8876,7 @@ class FunctionDef PROTOBUF_FINAL :
                &_FunctionDef_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    48;
+    49;
 
   friend void swap(FunctionDef& a, FunctionDef& b) {
     a.Swap(&b);
@@ -8923,7 +9104,7 @@ class Program PROTOBUF_FINAL :
                &_Program_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    49;
+    50;
 
   friend void swap(Program& a, Program& b) {
     a.Swap(&b);
@@ -12329,6 +12510,91 @@ inline void Expr__ArrayCreation::set_make_line_no(::PROTOBUF_NAMESPACE_ID::int32
 
 // -------------------------------------------------------------------
 
+// Expr__ClassCreation
+
+// required .Frontend_ir.Type_expr texpr = 1;
+inline bool Expr__ClassCreation::_internal_has_texpr() const {
+  bool value = (_has_bits_[0] & 0x00000001u) != 0;
+  PROTOBUF_ASSUME(!value || texpr_ != nullptr);
+  return value;
+}
+inline bool Expr__ClassCreation::has_texpr() const {
+  return _internal_has_texpr();
+}
+inline void Expr__ClassCreation::clear_texpr() {
+  if (texpr_ != nullptr) texpr_->Clear();
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline const ::Frontend_ir::Type_expr& Expr__ClassCreation::_internal_texpr() const {
+  const ::Frontend_ir::Type_expr* p = texpr_;
+  return p != nullptr ? *p : *reinterpret_cast<const ::Frontend_ir::Type_expr*>(
+      &::Frontend_ir::_Type_expr_default_instance_);
+}
+inline const ::Frontend_ir::Type_expr& Expr__ClassCreation::texpr() const {
+  // @@protoc_insertion_point(field_get:Frontend_ir.Expr._ClassCreation.texpr)
+  return _internal_texpr();
+}
+inline void Expr__ClassCreation::unsafe_arena_set_allocated_texpr(
+    ::Frontend_ir::Type_expr* texpr) {
+  if (GetArena() == nullptr) {
+    delete reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(texpr_);
+  }
+  texpr_ = texpr;
+  if (texpr) {
+    _has_bits_[0] |= 0x00000001u;
+  } else {
+    _has_bits_[0] &= ~0x00000001u;
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:Frontend_ir.Expr._ClassCreation.texpr)
+}
+inline ::Frontend_ir::Type_expr* Expr__ClassCreation::release_texpr() {
+  auto temp = unsafe_arena_release_texpr();
+  if (GetArena() != nullptr) {
+    temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  }
+  return temp;
+}
+inline ::Frontend_ir::Type_expr* Expr__ClassCreation::unsafe_arena_release_texpr() {
+  // @@protoc_insertion_point(field_release:Frontend_ir.Expr._ClassCreation.texpr)
+  _has_bits_[0] &= ~0x00000001u;
+  ::Frontend_ir::Type_expr* temp = texpr_;
+  texpr_ = nullptr;
+  return temp;
+}
+inline ::Frontend_ir::Type_expr* Expr__ClassCreation::_internal_mutable_texpr() {
+  _has_bits_[0] |= 0x00000001u;
+  if (texpr_ == nullptr) {
+    auto* p = CreateMaybeMessage<::Frontend_ir::Type_expr>(GetArena());
+    texpr_ = p;
+  }
+  return texpr_;
+}
+inline ::Frontend_ir::Type_expr* Expr__ClassCreation::mutable_texpr() {
+  // @@protoc_insertion_point(field_mutable:Frontend_ir.Expr._ClassCreation.texpr)
+  return _internal_mutable_texpr();
+}
+inline void Expr__ClassCreation::set_allocated_texpr(::Frontend_ir::Type_expr* texpr) {
+  ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArena();
+  if (message_arena == nullptr) {
+    delete texpr_;
+  }
+  if (texpr) {
+    ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena =
+      ::PROTOBUF_NAMESPACE_ID::Arena::GetArena(texpr);
+    if (message_arena != submessage_arena) {
+      texpr = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
+          message_arena, texpr, submessage_arena);
+    }
+    _has_bits_[0] |= 0x00000001u;
+  } else {
+    _has_bits_[0] &= ~0x00000001u;
+  }
+  texpr_ = texpr;
+  // @@protoc_insertion_point(field_set_allocated:Frontend_ir.Expr._ClassCreation.texpr)
+}
+
+// -------------------------------------------------------------------
+
 // Expr__NullLit
 
 // -------------------------------------------------------------------
@@ -13592,6 +13858,79 @@ inline ::Frontend_ir::Expr__CastExpr* Expr::_internal_mutable_castexpr() {
 inline ::Frontend_ir::Expr__CastExpr* Expr::mutable_castexpr() {
   // @@protoc_insertion_point(field_mutable:Frontend_ir.Expr.CastExpr)
   return _internal_mutable_castexpr();
+}
+
+// .Frontend_ir.Expr._ClassCreation ClassCreation = 12;
+inline bool Expr::_internal_has_classcreation() const {
+  return value_case() == kClassCreation;
+}
+inline bool Expr::has_classcreation() const {
+  return _internal_has_classcreation();
+}
+inline void Expr::set_has_classcreation() {
+  _oneof_case_[0] = kClassCreation;
+}
+inline void Expr::clear_classcreation() {
+  if (_internal_has_classcreation()) {
+    if (GetArena() == nullptr) {
+      delete value_.classcreation_;
+    }
+    clear_has_value();
+  }
+}
+inline ::Frontend_ir::Expr__ClassCreation* Expr::release_classcreation() {
+  // @@protoc_insertion_point(field_release:Frontend_ir.Expr.ClassCreation)
+  if (_internal_has_classcreation()) {
+    clear_has_value();
+      ::Frontend_ir::Expr__ClassCreation* temp = value_.classcreation_;
+    if (GetArena() != nullptr) {
+      temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+    }
+    value_.classcreation_ = nullptr;
+    return temp;
+  } else {
+    return nullptr;
+  }
+}
+inline const ::Frontend_ir::Expr__ClassCreation& Expr::_internal_classcreation() const {
+  return _internal_has_classcreation()
+      ? *value_.classcreation_
+      : *reinterpret_cast< ::Frontend_ir::Expr__ClassCreation*>(&::Frontend_ir::_Expr__ClassCreation_default_instance_);
+}
+inline const ::Frontend_ir::Expr__ClassCreation& Expr::classcreation() const {
+  // @@protoc_insertion_point(field_get:Frontend_ir.Expr.ClassCreation)
+  return _internal_classcreation();
+}
+inline ::Frontend_ir::Expr__ClassCreation* Expr::unsafe_arena_release_classcreation() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:Frontend_ir.Expr.ClassCreation)
+  if (_internal_has_classcreation()) {
+    clear_has_value();
+    ::Frontend_ir::Expr__ClassCreation* temp = value_.classcreation_;
+    value_.classcreation_ = nullptr;
+    return temp;
+  } else {
+    return nullptr;
+  }
+}
+inline void Expr::unsafe_arena_set_allocated_classcreation(::Frontend_ir::Expr__ClassCreation* classcreation) {
+  clear_value();
+  if (classcreation) {
+    set_has_classcreation();
+    value_.classcreation_ = classcreation;
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:Frontend_ir.Expr.ClassCreation)
+}
+inline ::Frontend_ir::Expr__ClassCreation* Expr::_internal_mutable_classcreation() {
+  if (!_internal_has_classcreation()) {
+    clear_value();
+    set_has_classcreation();
+    value_.classcreation_ = CreateMaybeMessage< ::Frontend_ir::Expr__ClassCreation >(GetArena());
+  }
+  return value_.classcreation_;
+}
+inline ::Frontend_ir::Expr__ClassCreation* Expr::mutable_classcreation() {
+  // @@protoc_insertion_point(field_mutable:Frontend_ir.Expr.ClassCreation)
+  return _internal_mutable_classcreation();
 }
 
 inline bool Expr::has_value() const {
@@ -15892,6 +16231,8 @@ Program::function_defs() const {
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

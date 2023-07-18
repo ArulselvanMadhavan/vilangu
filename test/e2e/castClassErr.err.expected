@@ -1,0 +1,6 @@
+./test/e2e/castClassErr.t:30:6 - 30:11: cast not possible
+./test/e2e/castClassErr.t:29:6 - 29:11: cast not possible
+./test/e2e/castClassErr.t:28:6 - 28:11: cast not possible
+./test/e2e/castClassErr.t:27:6 - 27:11: cast not possible
+./test/e2e/castClassErr.t:23:6 - 23:11: cast not possible
+./test/e2e/castClassErr.t:19:6 - 19:11: cast not possible

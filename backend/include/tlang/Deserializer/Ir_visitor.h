@@ -29,6 +29,7 @@ public:
   virtual llvm::Value *codegen(const ExprEmptyIR &expr) = 0;
   virtual llvm::Value *codegen(const StmtExprIR &expr) = 0;
   virtual llvm::Value *codegen(const ExprArrayMakeIR &expr) = 0;
+  virtual llvm::Value *codegen(const ExprClassMakeIR &expr) = 0;
   virtual llvm::Type *codegen(const TypeIntIR &texpr) = 0;
   virtual llvm::Type *codegen(const TypeClassIR &texpr) = 0;
   virtual llvm::Type *codegen(const TypePointerIR &texpr) = 0;

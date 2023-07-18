@@ -21,12 +21,14 @@ and classdec =
       { name : symbol
       ; base : symbol option
       ; class_body : class_body list
+      ; pos : pos
       }
 
 and class_field =
   | Field of
       { name : symbol
       ; type_ : type_ (* ; rank : int *)
+      ; pos : pos
       }
 
 and return_t = Return of { type_ : type_ (* ; rank : int *) }
@@ -58,7 +60,7 @@ and param =
 and var =
   | SimpleVar of symbol * pos
   | SubscriptVar of var * exp * pos
-  | FieldVar of exp * symbol * pos
+  | FieldVar of exp * symbol * int * pos
   | LoadVar of var (* used only on lhs *)
 
 and variable =

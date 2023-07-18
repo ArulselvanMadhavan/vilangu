@@ -50,38 +50,49 @@ let adjust_lty cast_ty lty =
   | _ -> cast_ty, lty
 ;;
 
+let rec is_subclass tenv lhs_ty rhs_ty =
+  match rhs_ty with
+  | T.NAME _ when T.type_match lhs_ty rhs_ty -> true
+  | T.NAME (_, _, Some base) ->
+    Base.Option.fold
+      ~init:false
+      ~f:(fun _ -> is_subclass tenv lhs_ty)
+      (S.look (tenv, base))
+  | _ -> false
+;;
+
 (* Check lhs type with rhs type. If possible, find cast type. For wide casts. Find the recommended lhs cast *)
-let rec compare_and_cast pos lhs_ty rhs_ty =
+let rec compare_and_cast tenv pos lhs_ty rhs_ty =
   match lhs_ty, rhs_ty with
   | T.ARRAY (lrank, lty), T.ARRAY (rrank, rty) ->
     let get_ty rank ty =
       let rank = rank - 1 in
       if rank > 0 then T.ARRAY (rank, ty) else ty
     in
-    let cast_ty, lty = compare_and_cast pos (get_ty lrank lty) (get_ty rrank rty) in
+    let cast_ty, lty = compare_and_cast tenv pos (get_ty lrank lty) (get_ty rrank rty) in
     adjust_lty cast_ty lty
-  | T.NAME (sym, _), T.ARRAY _ when sym = Env.obj_symbol ->
+  | T.NAME (sym, _, _), T.ARRAY _ when sym = Env.obj_symbol ->
     Some A.Wide, Some (A.Reference (A.ClassType (sym, pos)))
   | T.NAME _, T.ARRAY _ ->
     None, None (* No cast when rhs is Array and lhs is not object *)
+  | T.ARRAY _, T.NAME (sym, _, _) when sym = Env.obj_symbol -> Some A.Narrow, None
+  | T.NAME (sym1, _, _), T.NAME (sym2, _, _) when sym1 = sym2 -> Some A.Identity, None
+  | T.NAME (lhs_name, _, _), T.NAME _ when is_subclass tenv lhs_ty rhs_ty ->
+    Some A.Wide, Some (A.Reference (A.ClassType (lhs_name, pos)))
+  | T.NAME _, T.NAME _ when is_subclass tenv rhs_ty lhs_ty -> Some A.Narrow, None
+  | T.NAME (lhs_name, _, _), T.NULL ->
+    Some A.Wide, Some (A.Reference (A.ClassType (lhs_name, pos)))
   | T.INT, T.INT ->
     (* Possible via recursive element type checks *)
     Some A.Identity, None
-  | T.ARRAY _, T.NAME (sym, _) when sym = Env.obj_symbol -> Some A.Narrow, None
   | _, _ -> None, None
 ;;
 
-let assignment_cast (lhs_ty, rhs_ty, pos, rhs_exp) =
+let assignment_cast tenv (lhs_ty, rhs_ty, pos, rhs_exp) =
   let check_cast lhs_ty rhs_ty =
-    match compare_and_cast pos lhs_ty rhs_ty with
+    match compare_and_cast tenv pos lhs_ty rhs_ty with
     | Some A.Wide, Some lhs_ty ->
       A.CastType { type_ = lhs_ty; exp = rhs_exp; cast_type = Some A.Wide; pos }
-    (* | T.ARRAY (rank, ty), T.NAME (sym, _) when sym = Env.obj_symbol -> *)
-    (*     A.CastType *)
-    (*     { type_ = A.Reference (A.ArrayType (rank, get_ast_type pos ty)) *)
-    (*     ; exp = rhs_exp *)
-    (*     ; cast_type = Some A.Narrow *)
-    (*     } *)
     | _ ->
       error
         pos
@@ -124,80 +135,115 @@ let rec trans_type tenv = function
 
 let trans_dec (venv, tenv, A.{ type_; id }) =
   let ty = trans_type tenv type_ in
-  (* If the base type exists, then ranks > 0 also exist *)
-  let venv' = S.enter (venv, id, E.VarEntry { ty }) in
+  let is_null = if T.is_int ty || T.is_array ty then false else true in
+  let venv' = S.enter (venv, id, E.VarEntry { ty; is_null }) in
   venv', tenv, { stmt = (); ty = T.VOID }
 ;;
 
-let rec trans_var (venv, tenv, var) =
+let is_init = function
+  | A.ArrayCreationExp _ -> true
+  | A.ClassCreationExp _ -> true
+  | _ -> false
+;;
+
+let rec trans_var ?(lhs = false) ?(is_init = false) (venv, tenv, var) =
   match var with
-  | A.SimpleVar (id, pos) ->
-    (match S.look (venv, id) with
-     | Some (E.VarEntry { ty }) -> { stmt = (); ty }
-     | Some _ -> error pos "expecting a variable, not a function" err_stmty_unit
-     | None -> error pos ("undefined variable " ^ S.name id) err_stmty_unit)
-  | A.SubscriptVar (var, exp, pos) ->
-    let { ty = var_ty; _ } = trans_var (venv, tenv, var) in
-    let { ty = exp_ty; _ } = trans_exp (venv, tenv, exp) in
+  | A.SimpleVar (id, pos) as subvar ->
+    let venv' = if is_init then S.update id E.update_null venv else venv in
+    (match S.look (venv', id) with
+     | Some (E.VarEntry { ty; is_null }) ->
+       if lhs || not is_null
+       then venv', { stmt = subvar; ty }
+       else venv', { stmt = subvar; ty = T.NULL }
+     | Some _ -> venv, error pos "expecting a variable, not a function" (err_stmty subvar)
+     | None -> venv, error pos ("undefined variable " ^ S.name id) (err_stmty subvar))
+  | A.SubscriptVar (var, exp, pos) as subvar ->
+    let venv, { ty = exp_ty; stmt = exp } = trans_exp (venv, tenv, exp) in
+    let venv, { ty = var_ty; stmt = var } = trans_var (venv, tenv, var) in
     let res_ty =
       match var_ty with
       | T.ARRAY (rank, low_ty) when rank > 1 ->
-        { ty = T.ARRAY (rank - 1, low_ty); stmt = () }
-      | T.ARRAY (rank, low_ty) when rank > 0 -> { ty = low_ty; stmt = () }
-      | _ -> error pos "Subscript access on non-array type" err_stmty_unit
+        venv, { ty = T.ARRAY (rank - 1, low_ty); stmt = A.SubscriptVar (var, exp, pos) }
+      | T.ARRAY (rank, low_ty) when rank > 0 ->
+        venv, { ty = low_ty; stmt = A.SubscriptVar (var, exp, pos) }
+      | _ -> venv, error pos "Subscript access on non-array type" (err_stmty subvar)
     in
     if T.is_int exp_ty
     then res_ty
-    else error pos "subscript access with non-int dim" err_stmty_unit
-  | A.FieldVar (exp, (sym_name, _), pos) ->
-    let { ty = exp_ty; _ } = trans_exp (venv, tenv, exp) in
-    if T.is_int exp_ty
-    then error pos "field access on non-object type" err_stmty_unit
-    else if not (String.equal sym_name "length")
-    then error pos ("unknown field " ^ sym_name) err_stmty_unit
-    else if T.is_array exp_ty
-    then { (* This has to be length *)
-           ty = T.INT; stmt = () }
-    else
-      error
-        pos
-        ("length field is not allowed on type:" ^ T.type2str exp_ty)
-        err_stmty_unit
+    else venv, error pos "subscript access with non-int dim" (err_stmty subvar)
+  | A.FieldVar (exp, (sym_name, sym_id), _, pos) as var ->
+    let venv, { ty = exp_ty; stmt = exp } = trans_exp (venv, tenv, exp) in
+    let check_field class_name fields =
+      let len = List.length fields in
+      let map_field idx ((name, _), ty) =
+        if String.equal name sym_name then Some (len - idx, ty) else None
+      in
+      let field_opt = Base.List.find_mapi ~f:map_field (List.rev fields) in
+      match field_opt with
+      | Some (idx, ty) ->
+        venv, { ty; stmt = A.FieldVar (exp, (sym_name, sym_id), idx, pos) }
+      | None ->
+        ( venv
+        , error
+            pos
+            ("unknown field " ^ sym_name ^ " in class " ^ class_name)
+            (err_stmty var) )
+    in
+    (match exp_ty with
+     | T.ARRAY _ ->
+       if not (String.equal sym_name "length")
+       then venv, error pos ("unknown field " ^ sym_name) (err_stmty var)
+       else venv, { ty = T.INT; stmt = A.FieldVar (exp, (sym_name, sym_id), 2, pos) }
+     | T.NAME ((class_name, _), fields, _) -> check_field class_name fields
+     | _ -> venv, error pos "field access on non-object type" (err_stmty var))
   | A.LoadVar var -> trans_var (venv, tenv, var)
 
 and trans_exp (venv, tenv, exp) =
   match exp with
+  | A.Assignment { lhs; exp; pos } when is_init exp ->
+    let venv, { ty = exp_ty; stmt = rhs_exp } = trans_exp (venv, tenv, exp) in
+    let venv, { ty = var_ty; stmt = lhs_var } =
+      trans_var ~lhs:true ~is_init:true (venv, tenv, lhs)
+    in
+    let rhs_exp = assignment_cast tenv (var_ty, exp_ty, pos, rhs_exp) in
+    venv, { stmt = A.Assignment { lhs = lhs_var; exp = rhs_exp; pos }; ty = T.VOID }
   | A.Assignment { lhs; exp; pos } ->
-    let { ty = var_ty; _ } = trans_var (venv, tenv, lhs) in
-    let { ty = exp_ty; stmt = rhs_exp } = trans_exp (venv, tenv, exp) in
-    let rhs_exp = assignment_cast (var_ty, exp_ty, pos, rhs_exp) in
-    { stmt = A.Assignment { lhs; exp = rhs_exp; pos }; ty = T.VOID }
+    let venv, { ty = var_ty; stmt = lhs_var } =
+      trans_var ~lhs:true ~is_init:true (venv, tenv, lhs)
+    in
+    let venv, { ty = exp_ty; stmt = rhs_exp } = trans_exp (venv, tenv, exp) in
+    let rhs_exp = assignment_cast tenv (var_ty, exp_ty, pos, rhs_exp) in
+    venv, { stmt = A.Assignment { lhs = lhs_var; exp = rhs_exp; pos }; ty = T.VOID }
   | A.Identifier (id, pos) as exp ->
-    let { ty; _ } = trans_var (venv, tenv, A.SimpleVar (id, pos)) in
-    { stmt = exp; ty }
-  | A.OpExp (A.BinaryOp { left; oper; right }, pos) as exp ->
-    let lexp = trans_exp (venv, tenv, left) in
-    let rexp = trans_exp (venv, tenv, right) in
-    if T.type_match lexp.ty rexp.ty
-    then { ty = lexp.ty; stmt = exp }
+    let venv, { ty; _ } = trans_var (venv, tenv, A.SimpleVar (id, pos)) in
+    venv, { stmt = exp; ty }
+  | A.OpExp (A.BinaryOp { left; oper; right }, pos) ->
+    let venv, { stmt = lexp; ty = lty } = trans_exp (venv, tenv, left) in
+    let venv, { stmt = rexp; ty = rty } = trans_exp (venv, tenv, right) in
+    if T.type_match lty rty
+    then
+      ( venv
+      , { ty = lty; stmt = A.OpExp (A.BinaryOp { left = lexp; oper; right = rexp }, pos) }
+      )
     else (
       let oper_str = A.sexp_of_bioper oper |> Sexplib0.Sexp.to_string_hum in
-      error pos (oper_str ^ " operand types don't match") (err_stmty exp))
-  | A.OpExp (A.UnaryOp { oper; exp = unary_exp }, pos) as exp ->
-    let { stmt = unary_exp; ty } = trans_exp (venv, tenv, unary_exp) in
+      venv, error pos (oper_str ^ " operand types don't match") (err_stmty exp))
+  | A.OpExp (A.UnaryOp { oper; exp = unary_exp }, pos) ->
+    let venv, { stmt = unary_exp; ty } = trans_exp (venv, tenv, unary_exp) in
     if T.is_int ty
-    then { stmt = A.OpExp (A.UnaryOp { oper; exp = unary_exp }, pos); ty }
+    then venv, { stmt = A.OpExp (A.UnaryOp { oper; exp = unary_exp }, pos); ty }
     else (
       let oper_str = A.sexp_of_uoper oper |> Sexplib0.Sexp.to_string_hum in
-      error
-        pos
-        (oper_str ^ " is applied on incompatible type: " ^ T.type2str ty)
-        (err_stmty exp))
-  | A.IntLit _ as exp -> { ty = T.INT; stmt = exp }
+      ( venv
+      , error
+          pos
+          (oper_str ^ " is applied on incompatible type: " ^ T.type2str ty)
+          (err_stmty exp) ))
+  | A.IntLit _ as exp -> venv, { ty = T.INT; stmt = exp }
   | A.ArrayCreationExp { type_; exprs; pos } as exp ->
     (* let expr_rank = List.length exprs in *)
     let is_int acc exp =
-      let { ty = res_ty; _ } = trans_exp (venv, tenv, exp) in
+      let _venv, { ty = res_ty; _ } = trans_exp (venv, tenv, exp) in
       T.is_int res_ty && acc
     in
     let is_int_exprs = List.fold_left is_int true exprs in
@@ -205,18 +251,18 @@ and trans_exp (venv, tenv, exp) =
     then (
       (* let type_ = A.append_rank_to_type expr_rank type_ in *)
       let ty = trans_type tenv type_ in
-      { stmt = exp; ty })
-    else (error pos "Array Creation Expr has non int dim") (err_stmty exp)
-  | A.VarExp (v, _) as exp ->
-    let { ty; _ } = trans_var (venv, tenv, v) in
-    { stmt = exp; ty }
+      venv, { stmt = exp; ty })
+    else venv, (error pos "Array Creation Expr has non int dim") (err_stmty exp)
+  | A.VarExp (v, pos) ->
+    let venv, { ty; stmt } = trans_var (venv, tenv, v) in
+    venv, { stmt = A.VarExp (stmt, pos); ty }
   | A.CastType { type_; exp; pos; _ } as cexp ->
-    let { stmt; ty = exp_ty } = trans_exp (venv, tenv, exp) in
+    let venv, { stmt; ty = exp_ty } = trans_exp (venv, tenv, exp) in
     let cast_ty = trans_type tenv type_ in
     (* obj | i32arr *)
     let dummy_pos = (-1, -1), (-1, -1) in
     let stmt =
-      match compare_and_cast dummy_pos cast_ty exp_ty with
+      match compare_and_cast tenv dummy_pos cast_ty exp_ty with
       | Some A.Wide, _ -> A.CastType { type_; exp = stmt; cast_type = Some A.Wide; pos }
       | Some A.Narrow, _ ->
         A.CastType { type_; exp = stmt; cast_type = Some A.Narrow; pos }
@@ -224,8 +270,11 @@ and trans_exp (venv, tenv, exp) =
         A.CastType { type_; exp = stmt; cast_type = Some A.Identity; pos }
       | None, _ -> error pos "cast not possible" cexp
     in
-    { stmt; ty = cast_ty }
-  | _ as exp -> err_stmty exp
+    venv, { stmt; ty = cast_ty }
+  | A.ClassCreationExp { type_; _ } as exp ->
+    let ty = trans_type tenv type_ in
+    venv, { ty; stmt = exp }
+  | _ as exp -> venv, err_stmty exp
 ;;
 
 let inside_loop_check stmt pos =
@@ -235,39 +284,41 @@ let inside_loop_check stmt pos =
   else { stmt; ty = T.VOID }
 ;;
 
-let rec trans_stmt (venv, tenv, stmt) : 'a stmty =
+let rec trans_stmt (venv, tenv, stmt) =
   match stmt with
   | A.ExprStmt e ->
-    let { stmt; ty } = trans_exp (venv, tenv, e) in
-    { stmt = A.ExprStmt stmt; ty }
+    let venv, { stmt; ty } = trans_exp (venv, tenv, e) in
+    venv, { stmt = A.ExprStmt stmt; ty }
   | A.While { exp; block } ->
-    let { stmt = tr_exp; _ } = trans_exp (venv, tenv, exp) in
+    let venv, { stmt = tr_exp; _ } = trans_exp (venv, tenv, exp) in
     loop_nest_count := !loop_nest_count + 1;
-    let { stmt = block; ty } = trans_stmt (venv, tenv, block) in
+    let venv, { stmt = block; ty } = trans_stmt (venv, tenv, block) in
     loop_nest_count := !loop_nest_count - 1;
-    { stmt = A.While { exp = tr_exp; block }; ty }
+    venv, { stmt = A.While { exp = tr_exp; block }; ty }
   | A.Output (e, pos) as stmt ->
-    let { stmt = exp; ty } = trans_exp (venv, tenv, e) in
+    let venv, { stmt = exp; ty } = trans_exp (venv, tenv, e) in
     if T.is_int ty
-    then { stmt = A.Output (exp, pos); ty }
-    else error pos "Output statement doesn't have an int expression" (err_stmty stmt)
-  | A.Continue pos as stmt -> inside_loop_check stmt pos
-  | A.Break pos as stmt -> inside_loop_check stmt pos
+    then venv, { stmt = A.Output (exp, pos); ty }
+    else
+      venv, error pos "Output statement doesn't have an int expression" (err_stmty stmt)
+  | A.Continue pos as stmt -> venv, inside_loop_check stmt pos
+  | A.Break pos as stmt -> venv, inside_loop_check stmt pos
   | A.Block xs as stmt ->
-    let _ = trans_blk (venv, tenv) xs in
-    { stmt; ty = T.VOID }
+    let venv = trans_blk (venv, tenv) xs in
+    venv, { stmt; ty = T.VOID }
   | A.IfElse { exp; istmt; estmt; pos } ->
-    let { stmt = tr_exp; _ } = trans_exp (venv, tenv, exp) in
-    let ires = trans_stmt (venv, tenv, istmt) in
-    let eres = trans_stmt (venv, tenv, estmt) in
+    let venv, { stmt = tr_exp; _ } = trans_exp (venv, tenv, exp) in
+    let venv, ires = trans_stmt (venv, tenv, istmt) in
+    let venv, eres = trans_stmt (venv, tenv, estmt) in
     if T.type_match ires.ty eres.ty
-    then { stmt = A.IfElse { exp = tr_exp; istmt; estmt; pos }; ty = ires.ty }
-    else error pos "If and else branch types don't match" (err_stmty stmt)
-  | _ -> err_stmty stmt
+    then venv, { stmt = A.IfElse { exp = tr_exp; istmt; estmt; pos }; ty = ires.ty }
+    else venv, error pos "If and else branch types don't match" (err_stmty stmt)
+  | _ -> venv, err_stmty stmt
 
-and trans_blk (venv, tenv) = function
-  | [] -> []
-  | x :: xs -> trans_stmt (venv, tenv, x) :: trans_blk (venv, tenv) xs
+and trans_blk (venv, tenv) xs =
+  Base.List.fold xs ~init:venv ~f:(fun venv x ->
+    let venv, _ = trans_stmt (venv, tenv, x) in
+    venv)
 ;;
 
 let trans_vars (venv, tenv, vars) : venv * tenv * 'a stmty =
@@ -289,7 +340,7 @@ let trans_main (venv, tenv, main_stmts) =
       let venv, tenv, { ty; _ } = trans_vars (venv, tenv, vars) in
       venv, tenv, { stmt = A.VariableDecl vars; ty }
     | A.MainStmt stmt ->
-      let { stmt; ty } = trans_stmt (venv, tenv, stmt) in
+      let venv, { stmt; ty } = trans_stmt (venv, tenv, stmt) in
       venv, tenv, { stmt = A.MainStmt stmt; ty }
   in
   let venv, tenv, stmtys =
@@ -304,20 +355,135 @@ let trans_main (venv, tenv, main_stmts) =
   venv, tenv, List.map (fun { stmt; _ } -> stmt) stmtys
 ;;
 
+let class_fields tenv = function
+  | A.FieldDec xs ->
+    List.map (fun (A.Field { name; type_; pos }) -> name, trans_type tenv type_, pos) xs
+  | _ -> []
+;;
+
+let find_depth h class_decs =
+  let open Base in
+  let rec helper (A.ClassDec { base; name; pos; _ }) =
+    let class_name, _ = name in
+    let lookup _acc (name, _) =
+      let cdec = Hashtbl.find h name in
+      let err () =
+        error pos ("class " ^ class_name ^ " doesn't extend from a valid base " ^ name) 0
+      in
+      let handle_base _acc cd () = 1 + helper cd in
+      Option.fold cdec ~init:err ~f:handle_base ()
+    in
+    Option.fold base ~init:0 ~f:lookup
+  in
+  List.map ~f:(fun cd -> helper cd, cd) class_decs
+;;
+
+let class_decs_tbl class_decs =
+  let open Base in
+  let h = Hashtbl.create (module String) in
+  let add_to_tbl (A.ClassDec { name; _ } as data) =
+    let name, _ = name in
+    let _ = Hashtbl.add h ~key:name ~data in
+    ()
+  in
+  List.iter ~f:add_to_tbl class_decs;
+  h
+;;
+
+let dedup_class_fields tenv class_body class_name =
+  let open Base in
+  let fields = List.map ~f:(class_fields tenv) class_body |> List.concat in
+  let h = Hashtbl.create (module String) in
+  (* duplicate field name check. This should only throw error for current class fields. When fields match with base class, they should be treated as overrides. *)
+  let remove_duplicate_fields (((field_name, _) as sym), ty, pos) =
+    match Base.Hashtbl.add h ~key:field_name ~data:ty with
+    | `Ok -> Some (sym, ty)
+    | _ ->
+      error
+        pos
+        ("field " ^ field_name ^ " is already present in class " ^ class_name)
+        None
+  in
+  List.filter_map ~f:remove_duplicate_fields fields
+;;
+
+let rec dedup_classdec_fields h tenv (A.ClassDec { name; class_body; base; _ }) =
+  let open Base in
+  let name, _ = name in
+  let handle_base =
+    let open Base.Option.Let_syntax in
+    let%bind base = base in
+    let base, _ = base in
+    let%map base = Hashtbl.find h base in
+    dedup_classdec_fields h tenv base
+  in
+  let base_fields = Option.value handle_base ~default:[] in
+  let mem_fields = dedup_class_fields tenv class_body name in
+  List.append base_fields mem_fields
+;;
+
+exception NameRefToNameException
+
+let replace_namerefs tenv =
+  let result = ref tenv in
+  let nameref_to_name id =
+    match S.look (!result, id) with
+    | Some (T.NAME (id, fields, base)) -> T.NAME (id, fields, base)
+    | _ -> raise NameRefToNameException
+  in
+  let map_ref (field_name, field_ty) =
+    match field_ty with
+    | T.NAMEREF id -> field_name, nameref_to_name id
+    | x -> field_name, x
+  in
+  let update_type = function
+    | Some (T.NAMEREF id) -> Some (nameref_to_name id)
+    | Some (T.NAME (id, fields, base)) ->
+      let fields = List.map map_ref fields in
+      Some (T.NAME (id, fields, base))
+    | x -> x
+  in
+  let iter_type sym _ty = result := S.update sym update_type !result in
+  S.iter iter_type tenv;
+  !result
+;;
+
 let trans_class (tenv, class_decs) =
-  let tr_class (tenv, A.ClassDec { name; _ }) =
-    let ctype = T.NAME (name, ref None) in
-    let tenv = S.enter (tenv, name, ctype) in
+  let open Base in
+  let h = class_decs_tbl class_decs in
+  let tr_class (tenv, class_dec) =
+    let fields = dedup_classdec_fields h tenv class_dec in
+    let (A.ClassDec { name; base; _ }) = class_dec in
+    let ctype = Types.NAME (name, fields, base) in
+    let update_fn = Option.map ~f:(fun _ -> ctype) in
+    let tenv = S.update name update_fn tenv in
     tenv, { stmt = (); ty = ctype }
   in
-  Base.List.fold class_decs ~init:(tenv, []) ~f:(fun (tenv, xs) cdec ->
-    let tenv, x = tr_class (tenv, cdec) in
-    tenv, x :: xs)
+  let class_depth = find_depth h class_decs in
+  let class_decs =
+    List.sort class_depth ~compare:(fun (d1, _) (d2, _) -> Int.compare d1 d2)
+  in
+  let class_decs = List.map ~f:(fun (_, cd) -> cd) class_decs in
+  (* Enter class names *)
+  let tenv =
+    List.fold class_decs ~init:tenv ~f:(fun tenv (A.ClassDec { name; _ }) ->
+      S.enter (tenv, name, Types.NAMEREF name))
+  in
+  let tenv, _ =
+    Base.List.fold class_decs ~init:(tenv, []) ~f:(fun (tenv, xs) cdec ->
+      let tenv, x = tr_class (tenv, cdec) in
+      (* This should update fields *)
+      tenv, x :: xs)
+  in
+  (* All type defns are complete. *)
+  (* Now update placeholder definitions. For typedef with a T.NAME name, use tenv *)
+  let tenv = replace_namerefs tenv in
+  tenv, class_decs (* sorted by depth *)
 ;;
 
 let trans_prog comp_unit =
   let A.{ main_decl; class_decs } = comp_unit in
-  let tenv, _ = trans_class (E.base_tenv, class_decs) in
+  let tenv, class_decs = trans_class (E.base_tenv, class_decs) in
   (* Add class defs to module *)
   let venv, tenv, tr_main = trans_main (E.base_venv, tenv, main_decl) in
   (* Add array types to module *)

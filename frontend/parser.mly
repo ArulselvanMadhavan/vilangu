@@ -26,6 +26,11 @@ open Ast
 %{
 let lp((sp, ep) : (Lexing.position * Lexing.position)) : pos
   = ((sp.pos_lnum, sp.pos_cnum - sp.pos_bol), (ep.pos_lnum, ep.pos_cnum - sp.pos_bol))
+
+exception NotAValidCastExp
+let get_type = function
+  | Ast.VarExp (Ast.SimpleVar (sym, pos), _) -> Ast.ClassType (sym, pos)
+  | _ -> raise NotAValidCastExp
 %}
 
 %%
@@ -51,11 +56,11 @@ let class_decls :=
   | ~=class_decl; { [ class_decl ] }
 
 let class_decl :=
-  | CLASS; ~=id; ~=class_body; { ClassDec {name = id; base=None; class_body} }
-  | CLASS; name=id; EXTENDS; class_type=id; ~=class_body; { ClassDec {name; base=Some class_type; class_body} }
+  | CLASS; ~=id; ~=class_body; { ClassDec {name = id; base=None; class_body; pos=lp($loc)} }
+  | CLASS; name=id; EXTENDS; class_type=id; ~=class_body; { ClassDec {name; base=Some class_type; class_body; pos=lp($loc)} }
 
 let class_body :=
-  | LBRACE; ~=class_body_decls; RBRACE; { class_body_decls }
+  | LBRACE; ~=class_body_decls; RBRACE; { List.rev class_body_decls }
   | LBRACE; RBRACE; { [] }
 
 let class_body_decls :=
@@ -72,7 +77,7 @@ let class_mem :=
   | ~=mthd_decl; { mthd_decl }
 
 let field_decl :=
-  | type_=typ; ~=decls; SEMICOLON; { FieldDec (List.map (fun (rank, id) -> Field { type_ = append_rank_to_type rank type_; name = id}) decls) }
+  | type_=typ; ~=decls; SEMICOLON; { FieldDec (List.map (fun (rank, id) -> Field { type_ = append_rank_to_type rank type_; name = id; pos = lp($loc)}) (decls)) }
 
 let decls ==
   separated_list(COMMA, decl)
@@ -233,7 +238,7 @@ let unaryexp :=
   | ~=castexp; <>
 
 let castexp :=
-  | ~=paren_exp; ~=castexp; { CastEvalExp {to_=paren_exp; from_=castexp}}
+  | ~=paren_exp; exp=castexp; { CastType { type_ = Reference (get_type paren_exp); exp; cast_type = None; pos = lp($loc) } }
   | LPAREN; type_=arr_type;RPAREN; exp=castexp; { CastType { type_ = Reference type_; exp; cast_type = None; pos = lp($loc)}}
   | ~=primary; { primary }
 
@@ -276,8 +281,8 @@ let dimension :=
   | LSQB; RSQB; {}
 
 let field_access :=
-  | ~=primary; DOT; ~=id; { FieldVar (primary, id, lp($loc)) }
-  | SUPER; DOT; ~=id; { FieldVar ((Super (lp($loc))), id, lp($loc)) }
+  | ~=primary; DOT; ~=id; { FieldVar (primary, id, (-1), lp($loc)) }
+  | SUPER; DOT; ~=id; { FieldVar ((Super (lp($loc))), id, (-1), lp($loc)) }
 
 let mth_invoc :=
   | ~=id; ~=arguments; { MethodCall {base = Identifier (id, lp($loc)); field = None; args = arguments; pos = lp($loc)} }
@@ -286,6 +291,7 @@ let mth_invoc :=
 
 let primary_no_new_array :=
   | ~=array_access; { array_access }
+  | ~=field_access; { field_access }
 
 let array_access :=
   | ~=id; ~=dimexpr; { SubscriptVar (SimpleVar (id, lp($loc)), dimexpr, lp($loc)) }

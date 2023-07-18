@@ -14,6 +14,12 @@ let default_type_expr_p_pointer_mutable () : type_expr_p_pointer_mutable =
   { data = Frontend_types.default_type_expr () }
 ;;
 
+type expr_p_class_creation_mutable = { mutable texpr : Frontend_types.type_expr }
+
+let default_expr_p_class_creation_mutable () : expr_p_class_creation_mutable =
+  { texpr = Frontend_types.default_type_expr () }
+;;
+
 type var_p_subscript_mutable =
   { mutable base_var : Frontend_types.var
   ; mutable var_exp : Frontend_types.expr
@@ -101,12 +107,14 @@ type expr_p_cast_expr_mutable =
   { mutable cast_to : Frontend_types.type_expr
   ; mutable expr : Frontend_types.expr
   ; mutable cast_type : Frontend_types.expr_p_cast
+  ; mutable cast_line_no : int32
   }
 
 let default_expr_p_cast_expr_mutable () : expr_p_cast_expr_mutable =
   { cast_to = Frontend_types.default_type_expr ()
   ; expr = Frontend_types.default_expr ()
   ; cast_type = Frontend_types.default_expr_p_cast ()
+  ; cast_line_no = 0l
   }
 ;;
 
@@ -380,6 +388,26 @@ let rec decode_expr_p_cast d =
   loop ()
 ;;
 
+let rec decode_expr_p_class_creation d =
+  let v = default_expr_p_class_creation_mutable () in
+  let continue__ = ref true in
+  let texpr_is_set = ref false in
+  while !continue__ do
+    match Pbrt.Decoder.key d with
+    | None ->
+      ();
+      continue__ := false
+    | Some (1, Pbrt.Bytes) ->
+      v.texpr <- decode_type_expr (Pbrt.Decoder.nested d);
+      texpr_is_set := true
+    | Some (1, pk) ->
+      Pbrt.Decoder.unexpected_payload "Message(expr_p_class_creation), field(1)" pk
+    | Some (_, payload_kind) -> Pbrt.Decoder.skip d payload_kind
+  done;
+  if not !texpr_is_set then Pbrt.Decoder.missing_field "texpr";
+  ({ Frontend_types.texpr = v.texpr } : Frontend_types.expr_p_class_creation)
+;;
+
 let rec decode_var_p_subscript d =
   let v = default_var_p_subscript_mutable () in
   let continue__ = ref true in
@@ -521,6 +549,10 @@ and decode_expr d =
         (Frontend_types.Null_lit : Frontend_types.expr)
       | Some (11, _) ->
         (Frontend_types.Cast_expr (decode_expr_p_cast_expr (Pbrt.Decoder.nested d))
+          : Frontend_types.expr)
+      | Some (12, _) ->
+        (Frontend_types.Class_creation
+           (decode_expr_p_class_creation (Pbrt.Decoder.nested d))
           : Frontend_types.expr)
       | Some (n, payload_kind) ->
         Pbrt.Decoder.skip d payload_kind;
@@ -701,6 +733,7 @@ and decode_expr_p_array_creation d =
 and decode_expr_p_cast_expr d =
   let v = default_expr_p_cast_expr_mutable () in
   let continue__ = ref true in
+  let cast_line_no_is_set = ref false in
   let cast_type_is_set = ref false in
   let expr_is_set = ref false in
   let cast_to_is_set = ref false in
@@ -724,14 +757,21 @@ and decode_expr_p_cast_expr d =
       cast_type_is_set := true
     | Some (3, pk) ->
       Pbrt.Decoder.unexpected_payload "Message(expr_p_cast_expr), field(3)" pk
+    | Some (4, Pbrt.Varint) ->
+      v.cast_line_no <- Pbrt.Decoder.int32_as_varint d;
+      cast_line_no_is_set := true
+    | Some (4, pk) ->
+      Pbrt.Decoder.unexpected_payload "Message(expr_p_cast_expr), field(4)" pk
     | Some (_, payload_kind) -> Pbrt.Decoder.skip d payload_kind
   done;
+  if not !cast_line_no_is_set then Pbrt.Decoder.missing_field "cast_line_no";
   if not !cast_type_is_set then Pbrt.Decoder.missing_field "cast_type";
   if not !expr_is_set then Pbrt.Decoder.missing_field "expr";
   if not !cast_to_is_set then Pbrt.Decoder.missing_field "cast_to";
   ({ Frontend_types.cast_to = v.cast_to
    ; Frontend_types.expr = v.expr
    ; Frontend_types.cast_type = v.cast_type
+   ; Frontend_types.cast_line_no = v.cast_line_no
    }
     : Frontend_types.expr_p_cast_expr)
 
@@ -1153,6 +1193,12 @@ let rec encode_expr_p_cast (v : Frontend_types.expr_p_cast) encoder =
     Pbrt.Encoder.empty_nested encoder
 ;;
 
+let rec encode_expr_p_class_creation (v : Frontend_types.expr_p_class_creation) encoder =
+  Pbrt.Encoder.key (1, Pbrt.Bytes) encoder;
+  Pbrt.Encoder.nested (encode_type_expr v.Frontend_types.texpr) encoder;
+  ()
+;;
+
 let rec encode_var_p_subscript (v : Frontend_types.var_p_subscript) encoder =
   Pbrt.Encoder.key (1, Pbrt.Bytes) encoder;
   Pbrt.Encoder.nested (encode_var v.Frontend_types.base_var) encoder;
@@ -1223,6 +1269,9 @@ and encode_expr (v : Frontend_types.expr) encoder =
   | Frontend_types.Cast_expr x ->
     Pbrt.Encoder.key (11, Pbrt.Bytes) encoder;
     Pbrt.Encoder.nested (encode_expr_p_cast_expr x) encoder
+  | Frontend_types.Class_creation x ->
+    Pbrt.Encoder.key (12, Pbrt.Bytes) encoder;
+    Pbrt.Encoder.nested (encode_expr_p_class_creation x) encoder
 
 and encode_expr_p_function_app (v : Frontend_types.expr_p_function_app) encoder =
   Pbrt.Encoder.key (1, Pbrt.Bytes) encoder;
@@ -1283,6 +1332,8 @@ and encode_expr_p_cast_expr (v : Frontend_types.expr_p_cast_expr) encoder =
   Pbrt.Encoder.nested (encode_expr v.Frontend_types.expr) encoder;
   Pbrt.Encoder.key (3, Pbrt.Bytes) encoder;
   Pbrt.Encoder.nested (encode_expr_p_cast v.Frontend_types.cast_type) encoder;
+  Pbrt.Encoder.key (4, Pbrt.Varint) encoder;
+  Pbrt.Encoder.int32_as_varint v.Frontend_types.cast_line_no encoder;
   ()
 
 and encode_var_p_load (v : Frontend_types.var_p_load) encoder =

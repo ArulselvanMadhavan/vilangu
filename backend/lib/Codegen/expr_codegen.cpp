@@ -271,6 +271,32 @@ llvm::Value *IRCodegenVisitor::codegen(const ExprEmptyIR &expr) {
   return llvm::Constant::getNullValue(llvm::Type::getInt32Ty(*context));
 }
 
+llvm::Value *IRCodegenVisitor::codegen(const ExprClassMakeIR &expr) {
+  llvm::Type *resultTypePtr = expr.classType->codegen(*this); // i32arr*
+  llvm::Type *resultType = resultTypePtr->getContainedType(0);
+  // llvm::AllocaInst *newClassPtr =
+  //     builder->CreateAlloca(resultType, nullptr,
+  //     llvm::Twine("newClassResult"));
+  llvm::Type *int32Type = llvm::Type::getInt32Ty(*context);
+  llvm::Value *intOne = llvm::ConstantInt::getSigned(int32Type, 1);
+  llvm::Value *sizeOfPtr = builder->CreateGEP(
+      resultType,
+      llvm::ConstantPointerNull::get(llvm::PointerType::get(resultType, 0)),
+      intOne, llvm::Twine("sizeOf"));
+  llvm::Value *sizeOf = builder->CreatePtrToInt(sizeOfPtr, int32Type);
+  llvm::Function *calloc = module->getFunction("calloc");
+  auto callocParams = llvm::ArrayRef<llvm::Value *>{intOne, sizeOf};
+  llvm::CallInst *callocRes = builder->CreateCall(calloc, callocParams);
+  llvm::Value *callocHead = builder->CreateBitCast(callocRes, resultTypePtr);
+  llvm::Twine classVTableName = resultType->getStructName() + "_Vtable";
+  llvm::GlobalVariable *classVtable =
+      module->getNamedGlobal(classVTableName.str());
+  llvm::Value *vTableField =
+      builder->CreateStructGEP(resultType, callocHead, 0);
+  builder->CreateStore(classVtable, vTableField);
+  return callocHead;
+}
+
 llvm::Value *IRCodegenVisitor::codegen(const ExprArrayMakeIR &expr) {
   auto &creationExpr = expr.creationExprs[0];
   llvm::Value *size = creationExpr->codegen(*this);
@@ -373,8 +399,12 @@ llvm::Value *IRCodegenVisitor::codegen(const ExprCastIR &expr) {
     return res;
   }
   case Narrow: {
+    llvm::Value *exprVal = expr.expr->codegen(*this);
+    llvm::Twine origTypeName =
+        exprVal->getType()->getContainedType(0)->getStructName();
+    llvm::Type *o = llvm::StructType::getTypeByName(*context, "Object");
     llvm::Value *castExprVal =
-        expr.expr->codegen(*this); // assume this is object type
+        builder->CreateBitCast(exprVal, o->getPointerTo());
     llvm::Type *exprType = castExprVal->getType()->getContainedType(0);
     llvm::Twine exprTypeName = exprType->getStructName();
     std::string exprTypeVtable = getVtableName(exprTypeName.str());
@@ -417,14 +447,15 @@ llvm::Value *IRCodegenVisitor::codegen(const ExprCastIR &expr) {
     builder->SetInsertPoint(elseBB);
 
     std::vector<llvm::Value *> printfArgs;
+    auto lineNo = llvm::ConstantInt::getSigned(llvm::Type::getInt32Ty(*context),
+                                               expr.castLineNo);
     auto errorArg1 =
-        llvm::ConstantDataArray::getString(*context, exprTypeName.str());
+        llvm::ConstantDataArray::getString(*context, origTypeName.str());
     auto errArgLoc1 = builder->CreateAlloca(errorArg1->getType(), nullptr);
     builder->CreateStore(errorArg1, errArgLoc1);
     llvm::Value *errArg1Begin = builder->CreateInBoundsGEP(
         errorArg1->getType(), errArgLoc1,
         llvm::ArrayRef<llvm::Value *>{zeroIdx, zeroIdx});
-
     auto errorArg2 = llvm::ConstantDataArray::getString(
         *context, getTypeNameAsString(castToTyPtr));
     auto errArgLoc2 = builder->CreateAlloca(errorArg2->getType(), nullptr);
@@ -432,7 +463,7 @@ llvm::Value *IRCodegenVisitor::codegen(const ExprCastIR &expr) {
     llvm::Value *errArg2Begin = builder->CreateInBoundsGEP(
         errorArg2->getType(), errArgLoc2,
         llvm::ArrayRef<llvm::Value *>{zeroIdx, zeroIdx});
-
+    printfArgs.push_back(lineNo);
     printfArgs.push_back(errArg1Begin);
     printfArgs.push_back(errArg2Begin);
     runtimeError(getCastErrFormatVar(), printfArgs);

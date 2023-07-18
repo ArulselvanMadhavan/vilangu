@@ -1,13 +1,15 @@
 open Base
 module FT = Frontend_types
 
-type unique = unit ref
-
 type ty =
   | INT
   | VOID
   | NULL
-  | NAME of Symbol.symbol * ty option ref
+  | NAME of
+      Symbol.symbol
+      * (Symbol.symbol * ty) list
+      * Symbol.symbol option (* class_name, field_names list *)
+  | NAMEREF of Symbol.symbol
   | ARRAY of int * ty
 [@@deriving sexp]
 
@@ -16,3 +18,4 @@ val type_match : ty -> ty -> bool
 val gen_type_expr : ty -> FT.type_expr
 val is_int : ty -> bool
 val is_array : ty -> bool
+val is_ref : ty -> bool

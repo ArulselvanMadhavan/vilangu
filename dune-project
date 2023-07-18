@@ -29,6 +29,6 @@
           (ppx_let (>= 0.15.0))
           (cmdliner (>= 1.2.0)))
  (tags
-  (topics compiler tiger t-lang)))
+  (topics compiler t-lang)))
 
 ; See the complete stanza docs at https://dune.readthedocs.io/en/stable/dune-files.html#dune-project

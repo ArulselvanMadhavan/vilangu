@@ -5,7 +5,7 @@ description: "T-lang compiler"
 maintainer: ["Arulselvan Madhavan"]
 authors: ["Arulselvan Madhavan"]
 license: "LICENSE"
-tags: ["topics" "compiler" "tiger" "t-lang"]
+tags: ["topics" "compiler" "t-lang"]
 homepage: "https://github.com/ArulselvanMadhavan/vilangu"
 bug-reports: "https://github.com/ArulselvanMadhavan/vilangu/issues"
 depends: [
