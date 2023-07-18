@@ -29,6 +29,7 @@ let err_stmty_unit = { stmt = (); ty = T.NULL }
 *)
 
 exception AstTypeNotFound
+exception ThisTypeNotFound
 
 let get_ast_type pos = function
   | T.INT -> A.Primitive (Env.int_symbol, pos)
@@ -195,7 +196,12 @@ let rec trans_var ?(lhs = false) ?(is_init = false) (venv, tenv, var) =
        then venv, error pos ("unknown field " ^ sym_name) (err_stmty var)
        else venv, { ty = T.INT; stmt = A.FieldVar (exp, (sym_name, sym_id), 2, pos) }
      | T.NAME ((class_name, _), fields, _) -> check_field class_name fields
-     | _ -> venv, error pos "field access on non-object type" (err_stmty var))
+     | _ ->
+       ( venv
+       , error
+           pos
+           ("field access on non-object type " ^ T.type2str exp_ty)
+           (err_stmty var) ))
   | A.LoadVar var -> trans_var (venv, tenv, var)
 
 and trans_exp (venv, tenv, exp) =
@@ -274,6 +280,9 @@ and trans_exp (venv, tenv, exp) =
   | A.ClassCreationExp { type_; _ } as exp ->
     let ty = trans_type tenv type_ in
     venv, { ty; stmt = exp }
+  | A.This pos ->
+    let venv, { ty; stmt } = trans_var (venv, tenv, A.SimpleVar (E.this_symbol, pos)) in
+    venv, { ty; stmt = A.VarExp (stmt, pos) }
   | _ as exp -> venv, err_stmty exp
 ;;
 
@@ -303,9 +312,9 @@ let rec trans_stmt (venv, tenv, stmt) =
       venv, error pos "Output statement doesn't have an int expression" (err_stmty stmt)
   | A.Continue pos as stmt -> venv, inside_loop_check stmt pos
   | A.Break pos as stmt -> venv, inside_loop_check stmt pos
-  | A.Block xs as stmt ->
-    let venv = trans_blk (venv, tenv) xs in
-    venv, { stmt; ty = T.VOID }
+  | A.Block xs ->
+    let venv, stmts = trans_blk (venv, tenv) xs in
+    venv, { stmt = A.Block stmts; ty = T.VOID }
   | A.IfElse { exp; istmt; estmt; pos } ->
     let venv, { stmt = tr_exp; _ } = trans_exp (venv, tenv, exp) in
     let venv, ires = trans_stmt (venv, tenv, istmt) in
@@ -316,9 +325,13 @@ let rec trans_stmt (venv, tenv, stmt) =
   | _ -> venv, err_stmty stmt
 
 and trans_blk (venv, tenv) xs =
-  Base.List.fold xs ~init:venv ~f:(fun venv x ->
-    let venv, _ = trans_stmt (venv, tenv, x) in
-    venv)
+  let venv, stmts =
+    Base.List.fold xs ~init:(venv, []) ~f:(fun (venv, stmts) x ->
+      let venv, s = trans_stmt (venv, tenv, x) in
+      venv, s :: stmts)
+  in
+  let stmts = List.map (fun { stmt; _ } -> stmt) stmts in
+  venv, List.rev stmts
 ;;
 
 let trans_vars (venv, tenv, vars) : venv * tenv * 'a stmty =
@@ -448,16 +461,47 @@ let replace_namerefs tenv =
   !result
 ;;
 
+let build_this_param name =
+  let loc = -1, -1 in
+  let pos = loc, loc in
+  A.Param { name = E.this_symbol; type_ = A.Reference (A.ClassType (name, pos)) }
+;;
+
+let trans_constructor tenv = function
+  | A.Constructor { name; fparams; body } ->
+    let fparams = build_this_param name :: fparams in
+    let init_scope venv (A.Param { type_; name }) =
+      let var = A.{ type_; id = name } in
+      let venv, _, _ = trans_dec (venv, tenv, var) in
+      venv
+    in
+    let ty =
+      match S.look (tenv, name) with
+      | Some ty -> ty
+      | _ -> raise ThisTypeNotFound
+    in
+    let init_this = function
+      | Some (E.VarEntry _) -> Some (E.VarEntry { ty; is_null = false })
+      | _ -> None
+    in
+    let venv = Base.List.fold fparams ~init:E.base_venv ~f:init_scope in
+    let venv = S.update E.this_symbol init_this venv in
+    let _, { stmt = body; _ } = trans_stmt (venv, tenv, body) in
+    A.Constructor { name; fparams; body }
+  | x -> x
+;;
+
 let trans_class (tenv, class_decs) =
   let open Base in
   let h = class_decs_tbl class_decs in
   let tr_class (tenv, class_dec) =
     let fields = dedup_classdec_fields h tenv class_dec in
-    let (A.ClassDec { name; base; _ }) = class_dec in
+    let (A.ClassDec { name; base; class_body; pos }) = class_dec in
     let ctype = Types.NAME (name, fields, base) in
     let update_fn = Option.map ~f:(fun _ -> ctype) in
     let tenv = S.update name update_fn tenv in
-    tenv, { stmt = (); ty = ctype }
+    let class_body = List.map ~f:(trans_constructor tenv) class_body in
+    tenv, { stmt = A.ClassDec { name; base; pos; class_body }; ty = ctype }
   in
   let class_depth = find_depth h class_decs in
   let class_decs =
@@ -469,11 +513,11 @@ let trans_class (tenv, class_decs) =
     List.fold class_decs ~init:tenv ~f:(fun tenv (A.ClassDec { name; _ }) ->
       S.enter (tenv, name, Types.NAMEREF name))
   in
-  let tenv, _ =
+  let tenv, class_decs =
     Base.List.fold class_decs ~init:(tenv, []) ~f:(fun (tenv, xs) cdec ->
-      let tenv, x = tr_class (tenv, cdec) in
+      let tenv, { stmt; _ } = tr_class (tenv, cdec) in
       (* This should update fields *)
-      tenv, x :: xs)
+      tenv, stmt :: xs)
   in
   (* All type defns are complete. *)
   (* Now update placeholder definitions. For typedef with a T.NAME name, use tenv *)

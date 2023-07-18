@@ -26,12 +26,6 @@ val pp_type_expr_p_pointer
 (** [pp_expr_p_cast v] formats v *)
 val pp_expr_p_cast : Format.formatter -> Frontend_types.expr_p_cast -> unit
 
-(** [pp_expr_p_class_creation v] formats v *)
-val pp_expr_p_class_creation
-  :  Format.formatter
-  -> Frontend_types.expr_p_class_creation
-  -> unit
-
 (** [pp_var_p_subscript v] formats v *)
 val pp_var_p_subscript : Format.formatter -> Frontend_types.var_p_subscript -> unit
 
@@ -70,6 +64,12 @@ val pp_expr_p_array_creation
 
 (** [pp_expr_p_cast_expr v] formats v *)
 val pp_expr_p_cast_expr : Format.formatter -> Frontend_types.expr_p_cast_expr -> unit
+
+(** [pp_expr_p_class_creation v] formats v *)
+val pp_expr_p_class_creation
+  :  Format.formatter
+  -> Frontend_types.expr_p_class_creation
+  -> unit
 
 (** [pp_var_p_load v] formats v *)
 val pp_var_p_load : Format.formatter -> Frontend_types.var_p_load -> unit

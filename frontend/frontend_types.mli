@@ -33,8 +33,6 @@ type expr_p_cast =
   | Wide_cast
   | Narrow_cast
 
-type expr_p_class_creation = { texpr : type_expr }
-
 type var_p_subscript =
   { base_var : var
   ; var_exp : expr
@@ -103,6 +101,11 @@ and expr_p_cast_expr =
   ; expr : expr
   ; cast_type : expr_p_cast
   ; cast_line_no : int32
+  }
+
+and expr_p_class_creation =
+  { con_texpr : type_expr
+  ; con_args : expr list
   }
 
 and var_p_load = { var : var }
@@ -189,9 +192,6 @@ val default_type_expr_p_pointer : ?data:type_expr -> unit -> type_expr_p_pointer
 (** [default_expr_p_cast ()] is the default value for type [expr_p_cast] *)
 val default_expr_p_cast : unit -> expr_p_cast
 
-(** [default_expr_p_class_creation ()] is the default value for type [expr_p_class_creation] *)
-val default_expr_p_class_creation : ?texpr:type_expr -> unit -> expr_p_class_creation
-
 (** [default_var_p_subscript ()] is the default value for type [var_p_subscript] *)
 val default_var_p_subscript
   :  ?base_var:var
@@ -256,6 +256,13 @@ val default_expr_p_cast_expr
   -> ?cast_line_no:int32
   -> unit
   -> expr_p_cast_expr
+
+(** [default_expr_p_class_creation ()] is the default value for type [expr_p_class_creation] *)
+val default_expr_p_class_creation
+  :  ?con_texpr:type_expr
+  -> ?con_args:expr list
+  -> unit
+  -> expr_p_class_creation
 
 (** [default_var_p_load ()] is the default value for type [var_p_load] *)
 val default_var_p_load : ?var:var -> unit -> var_p_load

@@ -113,7 +113,8 @@ message Expr {
   }
 
   message _ClassCreation{
-    required Type_expr texpr = 1;
+    required Type_expr con_texpr = 1;
+    repeated Expr con_args = 2;
   }
 
   message _NullLit {

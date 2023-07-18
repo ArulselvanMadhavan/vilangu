@@ -62,8 +62,9 @@ let gen_expr tenv e =
         ; cast_type
         ; cast_line_no = A.line_no pos
         }
-    | A.ClassCreationExp { type_; _ } ->
-      FT.Class_creation { texpr = gen_texpr tenv type_ }
+    | A.ClassCreationExp { type_; args; _ } ->
+      let con_args = List.map gexpr args in
+      FT.Class_creation { con_texpr = gen_texpr tenv type_; con_args }
     | _ -> FT.Integer (Int32.of_int (-1))
   and gen_var = function
     | A.SimpleVar ((sym_name, _), _) -> FT.Simple { var_name = sym_name }
@@ -139,12 +140,54 @@ let gen_decls tenv xs =
 
 let ir_gen_field_defn tenv (A.Field { type_; _ }) = gen_texpr tenv type_
 
-let ir_gen_class_defn tenv class_defns (A.ClassDec { name; base; _ }) =
-  List.map (ir_gen_field_defn tenv) (Ir_gen_env.get_class_fields name class_defns)
-  |> fun ir_fields ->
-  let name, _ = name in
-  let base_class_name, _ = Option.value base ~default:Env.obj_symbol in
-  FT.{ name; fields = ir_fields; base_class_name }
+let gen_params tenv fparams =
+  let gparam (A.Param { name; type_ }) =
+    let param_name, _ = name in
+    let param_type = gen_texpr tenv type_ in
+    FT.{ param_name; param_type }
+  in
+  List.map gparam fparams
+;;
+
+let mk_constr tenv = function
+  | A.Constructor { name; fparams; body } ->
+    let name, _ = name in
+    (* Assume support for one constructor *)
+    let name = name ^ "_Constructor" in
+    let params = gen_params tenv fparams in
+    let body = gen_stmt tenv body in
+    FT.{ name; return_t = FT.Void; params; body } |> Option.some
+  | _ -> None
+;;
+
+let is_constructor = function
+  | A.Constructor _ -> true
+  | _ -> false
+;;
+
+let add_default_con name class_body =
+  let con =
+    A.Constructor { name; fparams = [ Semant.build_this_param name ]; body = A.Empty }
+  in
+  con :: class_body
+;;
+
+let add_default_const name class_body =
+  let has_con = Base.List.exists class_body ~f:is_constructor in
+  if has_con then class_body else add_default_con name class_body
+;;
+
+let ir_gen_class_defn tenv class_defns (A.ClassDec { name; base; class_body; _ }) =
+  let class_defn =
+    List.map (ir_gen_field_defn tenv) (Ir_gen_env.get_class_fields name class_defns)
+    |> fun ir_fields ->
+    let name, _ = name in
+    let base_class_name, _ = Option.value base ~default:Env.obj_symbol in
+    FT.{ name; fields = ir_fields; base_class_name }
+  in
+  let class_body = add_default_const name class_body in
+  let fun_defs = List.filter_map (mk_constr tenv) class_body in
+  class_defn, fun_defs
 ;;
 
 let ir_gen_class_defns tenv class_defns =
@@ -229,11 +272,6 @@ let mk_arr_constr name rank type_ =
             }
       }
   in
-  (* let zero_val_type = *)
-  (*   match lower_type with *)
-  (*   | FT.Pointer { data = elem } -> elem *)
-  (*   | _ -> raise NoMatchingTypeExpr *)
-  (* in *)
   let body =
     FT.Block
       { stmt_list =
@@ -498,11 +536,12 @@ let gen_prog (venv, tenv, A.{ main_decl; class_decs }) =
     | A.MainStmt s :: xs -> gen_stmt tenv s :: gen_main xs
   in
   let arr_classdefs, arr_funcdefs = arr_class_defns venv tenv main_decl in
-  let classdefs = ir_gen_class_defns tenv class_decs in
+  let classdefs, method_defs = ir_gen_class_defns tenv class_decs |> Base.List.unzip in
+  let method_defs = List.concat method_defs in
   let obj_and_arr_classdefs = List.cons obj_class_defn arr_classdefs in
   let classdefs = List.append obj_and_arr_classdefs classdefs in
   (* let funcdefs = ir_gen_function_defns tenv class_decs in *)
-  let function_defs = obj_is_a_fun :: arr_funcdefs in
+  let function_defs = List.append (obj_is_a_fun :: arr_funcdefs) method_defs in
   FT.{ main = gen_main main_decl; classdefs; function_defs }
 ;;
 

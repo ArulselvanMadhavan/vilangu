@@ -5383,25 +5383,44 @@ class Expr__ClassCreation PROTOBUF_FINAL :
   // accessors -------------------------------------------------------
 
   enum : int {
-    kTexprFieldNumber = 1,
+    kConArgsFieldNumber = 2,
+    kConTexprFieldNumber = 1,
   };
-  // required .Frontend_ir.Type_expr texpr = 1;
-  bool has_texpr() const;
+  // repeated .Frontend_ir.Expr con_args = 2;
+  int con_args_size() const;
   private:
-  bool _internal_has_texpr() const;
+  int _internal_con_args_size() const;
   public:
-  void clear_texpr();
-  const ::Frontend_ir::Type_expr& texpr() const;
-  ::Frontend_ir::Type_expr* release_texpr();
-  ::Frontend_ir::Type_expr* mutable_texpr();
-  void set_allocated_texpr(::Frontend_ir::Type_expr* texpr);
+  void clear_con_args();
+  ::Frontend_ir::Expr* mutable_con_args(int index);
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Frontend_ir::Expr >*
+      mutable_con_args();
   private:
-  const ::Frontend_ir::Type_expr& _internal_texpr() const;
-  ::Frontend_ir::Type_expr* _internal_mutable_texpr();
+  const ::Frontend_ir::Expr& _internal_con_args(int index) const;
+  ::Frontend_ir::Expr* _internal_add_con_args();
   public:
-  void unsafe_arena_set_allocated_texpr(
-      ::Frontend_ir::Type_expr* texpr);
-  ::Frontend_ir::Type_expr* unsafe_arena_release_texpr();
+  const ::Frontend_ir::Expr& con_args(int index) const;
+  ::Frontend_ir::Expr* add_con_args();
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Frontend_ir::Expr >&
+      con_args() const;
+
+  // required .Frontend_ir.Type_expr con_texpr = 1;
+  bool has_con_texpr() const;
+  private:
+  bool _internal_has_con_texpr() const;
+  public:
+  void clear_con_texpr();
+  const ::Frontend_ir::Type_expr& con_texpr() const;
+  ::Frontend_ir::Type_expr* release_con_texpr();
+  ::Frontend_ir::Type_expr* mutable_con_texpr();
+  void set_allocated_con_texpr(::Frontend_ir::Type_expr* con_texpr);
+  private:
+  const ::Frontend_ir::Type_expr& _internal_con_texpr() const;
+  ::Frontend_ir::Type_expr* _internal_mutable_con_texpr();
+  public:
+  void unsafe_arena_set_allocated_con_texpr(
+      ::Frontend_ir::Type_expr* con_texpr);
+  ::Frontend_ir::Type_expr* unsafe_arena_release_con_texpr();
 
   // @@protoc_insertion_point(class_scope:Frontend_ir.Expr._ClassCreation)
  private:
@@ -5412,7 +5431,8 @@ class Expr__ClassCreation PROTOBUF_FINAL :
   typedef void DestructorSkippable_;
   ::PROTOBUF_NAMESPACE_ID::internal::HasBits<1> _has_bits_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
-  ::Frontend_ir::Type_expr* texpr_;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Frontend_ir::Expr > con_args_;
+  ::Frontend_ir::Type_expr* con_texpr_;
   friend struct ::TableStruct_frontend_2eproto;
 };
 // -------------------------------------------------------------------
@@ -6281,6 +6301,7 @@ class Expr__CastExpr PROTOBUF_FINAL :
     kCastToFieldNumber = 1,
     kExprFieldNumber = 2,
     kCastTypeFieldNumber = 3,
+    kCastLineNoFieldNumber = 4,
   };
   // required .Frontend_ir.Type_expr cast_to = 1;
   bool has_cast_to() const;
@@ -6336,6 +6357,19 @@ class Expr__CastExpr PROTOBUF_FINAL :
       ::Frontend_ir::Expr__Cast* cast_type);
   ::Frontend_ir::Expr__Cast* unsafe_arena_release_cast_type();
 
+  // required int32 cast_line_no = 4;
+  bool has_cast_line_no() const;
+  private:
+  bool _internal_has_cast_line_no() const;
+  public:
+  void clear_cast_line_no();
+  ::PROTOBUF_NAMESPACE_ID::int32 cast_line_no() const;
+  void set_cast_line_no(::PROTOBUF_NAMESPACE_ID::int32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::int32 _internal_cast_line_no() const;
+  void _internal_set_cast_line_no(::PROTOBUF_NAMESPACE_ID::int32 value);
+  public:
+
   // @@protoc_insertion_point(class_scope:Frontend_ir.Expr._CastExpr)
  private:
   class _Internal;
@@ -6351,6 +6385,7 @@ class Expr__CastExpr PROTOBUF_FINAL :
   ::Frontend_ir::Type_expr* cast_to_;
   ::Frontend_ir::Expr* expr_;
   ::Frontend_ir::Expr__Cast* cast_type_;
+  ::PROTOBUF_NAMESPACE_ID::int32 cast_line_no_;
   friend struct ::TableStruct_frontend_2eproto;
 };
 // -------------------------------------------------------------------
@@ -12512,85 +12547,124 @@ inline void Expr__ArrayCreation::set_make_line_no(::PROTOBUF_NAMESPACE_ID::int32
 
 // Expr__ClassCreation
 
-// required .Frontend_ir.Type_expr texpr = 1;
-inline bool Expr__ClassCreation::_internal_has_texpr() const {
+// required .Frontend_ir.Type_expr con_texpr = 1;
+inline bool Expr__ClassCreation::_internal_has_con_texpr() const {
   bool value = (_has_bits_[0] & 0x00000001u) != 0;
-  PROTOBUF_ASSUME(!value || texpr_ != nullptr);
+  PROTOBUF_ASSUME(!value || con_texpr_ != nullptr);
   return value;
 }
-inline bool Expr__ClassCreation::has_texpr() const {
-  return _internal_has_texpr();
+inline bool Expr__ClassCreation::has_con_texpr() const {
+  return _internal_has_con_texpr();
 }
-inline void Expr__ClassCreation::clear_texpr() {
-  if (texpr_ != nullptr) texpr_->Clear();
+inline void Expr__ClassCreation::clear_con_texpr() {
+  if (con_texpr_ != nullptr) con_texpr_->Clear();
   _has_bits_[0] &= ~0x00000001u;
 }
-inline const ::Frontend_ir::Type_expr& Expr__ClassCreation::_internal_texpr() const {
-  const ::Frontend_ir::Type_expr* p = texpr_;
+inline const ::Frontend_ir::Type_expr& Expr__ClassCreation::_internal_con_texpr() const {
+  const ::Frontend_ir::Type_expr* p = con_texpr_;
   return p != nullptr ? *p : *reinterpret_cast<const ::Frontend_ir::Type_expr*>(
       &::Frontend_ir::_Type_expr_default_instance_);
 }
-inline const ::Frontend_ir::Type_expr& Expr__ClassCreation::texpr() const {
-  // @@protoc_insertion_point(field_get:Frontend_ir.Expr._ClassCreation.texpr)
-  return _internal_texpr();
+inline const ::Frontend_ir::Type_expr& Expr__ClassCreation::con_texpr() const {
+  // @@protoc_insertion_point(field_get:Frontend_ir.Expr._ClassCreation.con_texpr)
+  return _internal_con_texpr();
 }
-inline void Expr__ClassCreation::unsafe_arena_set_allocated_texpr(
-    ::Frontend_ir::Type_expr* texpr) {
+inline void Expr__ClassCreation::unsafe_arena_set_allocated_con_texpr(
+    ::Frontend_ir::Type_expr* con_texpr) {
   if (GetArena() == nullptr) {
-    delete reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(texpr_);
+    delete reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(con_texpr_);
   }
-  texpr_ = texpr;
-  if (texpr) {
+  con_texpr_ = con_texpr;
+  if (con_texpr) {
     _has_bits_[0] |= 0x00000001u;
   } else {
     _has_bits_[0] &= ~0x00000001u;
   }
-  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:Frontend_ir.Expr._ClassCreation.texpr)
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:Frontend_ir.Expr._ClassCreation.con_texpr)
 }
-inline ::Frontend_ir::Type_expr* Expr__ClassCreation::release_texpr() {
-  auto temp = unsafe_arena_release_texpr();
+inline ::Frontend_ir::Type_expr* Expr__ClassCreation::release_con_texpr() {
+  auto temp = unsafe_arena_release_con_texpr();
   if (GetArena() != nullptr) {
     temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
   }
   return temp;
 }
-inline ::Frontend_ir::Type_expr* Expr__ClassCreation::unsafe_arena_release_texpr() {
-  // @@protoc_insertion_point(field_release:Frontend_ir.Expr._ClassCreation.texpr)
+inline ::Frontend_ir::Type_expr* Expr__ClassCreation::unsafe_arena_release_con_texpr() {
+  // @@protoc_insertion_point(field_release:Frontend_ir.Expr._ClassCreation.con_texpr)
   _has_bits_[0] &= ~0x00000001u;
-  ::Frontend_ir::Type_expr* temp = texpr_;
-  texpr_ = nullptr;
+  ::Frontend_ir::Type_expr* temp = con_texpr_;
+  con_texpr_ = nullptr;
   return temp;
 }
-inline ::Frontend_ir::Type_expr* Expr__ClassCreation::_internal_mutable_texpr() {
+inline ::Frontend_ir::Type_expr* Expr__ClassCreation::_internal_mutable_con_texpr() {
   _has_bits_[0] |= 0x00000001u;
-  if (texpr_ == nullptr) {
+  if (con_texpr_ == nullptr) {
     auto* p = CreateMaybeMessage<::Frontend_ir::Type_expr>(GetArena());
-    texpr_ = p;
+    con_texpr_ = p;
   }
-  return texpr_;
+  return con_texpr_;
 }
-inline ::Frontend_ir::Type_expr* Expr__ClassCreation::mutable_texpr() {
-  // @@protoc_insertion_point(field_mutable:Frontend_ir.Expr._ClassCreation.texpr)
-  return _internal_mutable_texpr();
+inline ::Frontend_ir::Type_expr* Expr__ClassCreation::mutable_con_texpr() {
+  // @@protoc_insertion_point(field_mutable:Frontend_ir.Expr._ClassCreation.con_texpr)
+  return _internal_mutable_con_texpr();
 }
-inline void Expr__ClassCreation::set_allocated_texpr(::Frontend_ir::Type_expr* texpr) {
+inline void Expr__ClassCreation::set_allocated_con_texpr(::Frontend_ir::Type_expr* con_texpr) {
   ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArena();
   if (message_arena == nullptr) {
-    delete texpr_;
+    delete con_texpr_;
   }
-  if (texpr) {
+  if (con_texpr) {
     ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena =
-      ::PROTOBUF_NAMESPACE_ID::Arena::GetArena(texpr);
+      ::PROTOBUF_NAMESPACE_ID::Arena::GetArena(con_texpr);
     if (message_arena != submessage_arena) {
-      texpr = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
-          message_arena, texpr, submessage_arena);
+      con_texpr = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
+          message_arena, con_texpr, submessage_arena);
     }
     _has_bits_[0] |= 0x00000001u;
   } else {
     _has_bits_[0] &= ~0x00000001u;
   }
-  texpr_ = texpr;
-  // @@protoc_insertion_point(field_set_allocated:Frontend_ir.Expr._ClassCreation.texpr)
+  con_texpr_ = con_texpr;
+  // @@protoc_insertion_point(field_set_allocated:Frontend_ir.Expr._ClassCreation.con_texpr)
+}
+
+// repeated .Frontend_ir.Expr con_args = 2;
+inline int Expr__ClassCreation::_internal_con_args_size() const {
+  return con_args_.size();
+}
+inline int Expr__ClassCreation::con_args_size() const {
+  return _internal_con_args_size();
+}
+inline void Expr__ClassCreation::clear_con_args() {
+  con_args_.Clear();
+}
+inline ::Frontend_ir::Expr* Expr__ClassCreation::mutable_con_args(int index) {
+  // @@protoc_insertion_point(field_mutable:Frontend_ir.Expr._ClassCreation.con_args)
+  return con_args_.Mutable(index);
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Frontend_ir::Expr >*
+Expr__ClassCreation::mutable_con_args() {
+  // @@protoc_insertion_point(field_mutable_list:Frontend_ir.Expr._ClassCreation.con_args)
+  return &con_args_;
+}
+inline const ::Frontend_ir::Expr& Expr__ClassCreation::_internal_con_args(int index) const {
+  return con_args_.Get(index);
+}
+inline const ::Frontend_ir::Expr& Expr__ClassCreation::con_args(int index) const {
+  // @@protoc_insertion_point(field_get:Frontend_ir.Expr._ClassCreation.con_args)
+  return _internal_con_args(index);
+}
+inline ::Frontend_ir::Expr* Expr__ClassCreation::_internal_add_con_args() {
+  return con_args_.Add();
+}
+inline ::Frontend_ir::Expr* Expr__ClassCreation::add_con_args() {
+  // @@protoc_insertion_point(field_add:Frontend_ir.Expr._ClassCreation.con_args)
+  return _internal_add_con_args();
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::Frontend_ir::Expr >&
+Expr__ClassCreation::con_args() const {
+  // @@protoc_insertion_point(field_list:Frontend_ir.Expr._ClassCreation.con_args)
+  return con_args_;
 }
 
 // -------------------------------------------------------------------
@@ -13086,6 +13160,34 @@ inline void Expr__CastExpr::set_allocated_cast_type(::Frontend_ir::Expr__Cast* c
   }
   cast_type_ = cast_type;
   // @@protoc_insertion_point(field_set_allocated:Frontend_ir.Expr._CastExpr.cast_type)
+}
+
+// required int32 cast_line_no = 4;
+inline bool Expr__CastExpr::_internal_has_cast_line_no() const {
+  bool value = (_has_bits_[0] & 0x00000008u) != 0;
+  return value;
+}
+inline bool Expr__CastExpr::has_cast_line_no() const {
+  return _internal_has_cast_line_no();
+}
+inline void Expr__CastExpr::clear_cast_line_no() {
+  cast_line_no_ = 0;
+  _has_bits_[0] &= ~0x00000008u;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 Expr__CastExpr::_internal_cast_line_no() const {
+  return cast_line_no_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 Expr__CastExpr::cast_line_no() const {
+  // @@protoc_insertion_point(field_get:Frontend_ir.Expr._CastExpr.cast_line_no)
+  return _internal_cast_line_no();
+}
+inline void Expr__CastExpr::_internal_set_cast_line_no(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  _has_bits_[0] |= 0x00000008u;
+  cast_line_no_ = value;
+}
+inline void Expr__CastExpr::set_cast_line_no(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  _internal_set_cast_line_no(value);
+  // @@protoc_insertion_point(field_set:Frontend_ir.Expr._CastExpr.cast_line_no)
 }
 
 // -------------------------------------------------------------------

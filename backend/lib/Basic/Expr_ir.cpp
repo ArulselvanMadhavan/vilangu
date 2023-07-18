@@ -104,7 +104,10 @@ std::unique_ptr<ExprIR> deserializeExpr(const Frontend_ir::Expr &expr) {
 
 ExprClassMakeIR::ExprClassMakeIR(
     const Frontend_ir::Expr::_ClassCreation &expr) {
-  classType = deserializeType(expr.texpr());
+  classType = deserializeType(expr.con_texpr());
+  for (auto a : expr.con_args()) {
+    conArgs.push_back(deserializeExpr(a));
+  }
 };
 
 CastType deserializeCastType(const Frontend_ir::Expr::_Cast c) {

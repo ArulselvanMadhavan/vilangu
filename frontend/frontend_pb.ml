@@ -14,12 +14,6 @@ let default_type_expr_p_pointer_mutable () : type_expr_p_pointer_mutable =
   { data = Frontend_types.default_type_expr () }
 ;;
 
-type expr_p_class_creation_mutable = { mutable texpr : Frontend_types.type_expr }
-
-let default_expr_p_class_creation_mutable () : expr_p_class_creation_mutable =
-  { texpr = Frontend_types.default_type_expr () }
-;;
-
 type var_p_subscript_mutable =
   { mutable base_var : Frontend_types.var
   ; mutable var_exp : Frontend_types.expr
@@ -116,6 +110,15 @@ let default_expr_p_cast_expr_mutable () : expr_p_cast_expr_mutable =
   ; cast_type = Frontend_types.default_expr_p_cast ()
   ; cast_line_no = 0l
   }
+;;
+
+type expr_p_class_creation_mutable =
+  { mutable con_texpr : Frontend_types.type_expr
+  ; mutable con_args : Frontend_types.expr list
+  }
+
+let default_expr_p_class_creation_mutable () : expr_p_class_creation_mutable =
+  { con_texpr = Frontend_types.default_type_expr (); con_args = [] }
 ;;
 
 type var_p_load_mutable = { mutable var : Frontend_types.var }
@@ -386,26 +389,6 @@ let rec decode_expr_p_cast d =
     ret
   in
   loop ()
-;;
-
-let rec decode_expr_p_class_creation d =
-  let v = default_expr_p_class_creation_mutable () in
-  let continue__ = ref true in
-  let texpr_is_set = ref false in
-  while !continue__ do
-    match Pbrt.Decoder.key d with
-    | None ->
-      ();
-      continue__ := false
-    | Some (1, Pbrt.Bytes) ->
-      v.texpr <- decode_type_expr (Pbrt.Decoder.nested d);
-      texpr_is_set := true
-    | Some (1, pk) ->
-      Pbrt.Decoder.unexpected_payload "Message(expr_p_class_creation), field(1)" pk
-    | Some (_, payload_kind) -> Pbrt.Decoder.skip d payload_kind
-  done;
-  if not !texpr_is_set then Pbrt.Decoder.missing_field "texpr";
-  ({ Frontend_types.texpr = v.texpr } : Frontend_types.expr_p_class_creation)
 ;;
 
 let rec decode_var_p_subscript d =
@@ -774,6 +757,30 @@ and decode_expr_p_cast_expr d =
    ; Frontend_types.cast_line_no = v.cast_line_no
    }
     : Frontend_types.expr_p_cast_expr)
+
+and decode_expr_p_class_creation d =
+  let v = default_expr_p_class_creation_mutable () in
+  let continue__ = ref true in
+  let con_texpr_is_set = ref false in
+  while !continue__ do
+    match Pbrt.Decoder.key d with
+    | None ->
+      v.con_args <- List.rev v.con_args;
+      continue__ := false
+    | Some (1, Pbrt.Bytes) ->
+      v.con_texpr <- decode_type_expr (Pbrt.Decoder.nested d);
+      con_texpr_is_set := true
+    | Some (1, pk) ->
+      Pbrt.Decoder.unexpected_payload "Message(expr_p_class_creation), field(1)" pk
+    | Some (2, Pbrt.Bytes) ->
+      v.con_args <- decode_expr (Pbrt.Decoder.nested d) :: v.con_args
+    | Some (2, pk) ->
+      Pbrt.Decoder.unexpected_payload "Message(expr_p_class_creation), field(2)" pk
+    | Some (_, payload_kind) -> Pbrt.Decoder.skip d payload_kind
+  done;
+  if not !con_texpr_is_set then Pbrt.Decoder.missing_field "con_texpr";
+  ({ Frontend_types.con_texpr = v.con_texpr; Frontend_types.con_args = v.con_args }
+    : Frontend_types.expr_p_class_creation)
 
 and decode_var_p_load d =
   let v = default_var_p_load_mutable () in
@@ -1193,12 +1200,6 @@ let rec encode_expr_p_cast (v : Frontend_types.expr_p_cast) encoder =
     Pbrt.Encoder.empty_nested encoder
 ;;
 
-let rec encode_expr_p_class_creation (v : Frontend_types.expr_p_class_creation) encoder =
-  Pbrt.Encoder.key (1, Pbrt.Bytes) encoder;
-  Pbrt.Encoder.nested (encode_type_expr v.Frontend_types.texpr) encoder;
-  ()
-;;
-
 let rec encode_var_p_subscript (v : Frontend_types.var_p_subscript) encoder =
   Pbrt.Encoder.key (1, Pbrt.Bytes) encoder;
   Pbrt.Encoder.nested (encode_var v.Frontend_types.base_var) encoder;
@@ -1334,6 +1335,16 @@ and encode_expr_p_cast_expr (v : Frontend_types.expr_p_cast_expr) encoder =
   Pbrt.Encoder.nested (encode_expr_p_cast v.Frontend_types.cast_type) encoder;
   Pbrt.Encoder.key (4, Pbrt.Varint) encoder;
   Pbrt.Encoder.int32_as_varint v.Frontend_types.cast_line_no encoder;
+  ()
+
+and encode_expr_p_class_creation (v : Frontend_types.expr_p_class_creation) encoder =
+  Pbrt.Encoder.key (1, Pbrt.Bytes) encoder;
+  Pbrt.Encoder.nested (encode_type_expr v.Frontend_types.con_texpr) encoder;
+  List.iter
+    (fun x ->
+      Pbrt.Encoder.key (2, Pbrt.Bytes) encoder;
+      Pbrt.Encoder.nested (encode_expr x) encoder)
+    v.Frontend_types.con_args;
   ()
 
 and encode_var_p_load (v : Frontend_types.var_p_load) encoder =

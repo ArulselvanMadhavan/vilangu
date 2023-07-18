@@ -61,13 +61,6 @@ let rec pp_expr_p_cast fmt (v : Frontend_types.expr_p_cast) =
   | Frontend_types.Narrow_cast -> Format.fprintf fmt "Narrow_cast"
 ;;
 
-let rec pp_expr_p_class_creation fmt (v : Frontend_types.expr_p_class_creation) =
-  let pp_i fmt () =
-    Pbrt.Pp.pp_record_field ~first:true "texpr" pp_type_expr fmt v.Frontend_types.texpr
-  in
-  Pbrt.Pp.pp_brk pp_i fmt ()
-;;
-
 let rec pp_var_p_subscript fmt (v : Frontend_types.var_p_subscript) =
   let pp_i fmt () =
     Pbrt.Pp.pp_record_field ~first:true "base_var" pp_var fmt v.Frontend_types.base_var;
@@ -217,6 +210,23 @@ and pp_expr_p_cast_expr fmt (v : Frontend_types.expr_p_cast_expr) =
       Pbrt.Pp.pp_int32
       fmt
       v.Frontend_types.cast_line_no
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+
+and pp_expr_p_class_creation fmt (v : Frontend_types.expr_p_class_creation) =
+  let pp_i fmt () =
+    Pbrt.Pp.pp_record_field
+      ~first:true
+      "con_texpr"
+      pp_type_expr
+      fmt
+      v.Frontend_types.con_texpr;
+    Pbrt.Pp.pp_record_field
+      ~first:false
+      "con_args"
+      (Pbrt.Pp.pp_list pp_expr)
+      fmt
+      v.Frontend_types.con_args
   in
   Pbrt.Pp.pp_brk pp_i fmt ()
 
