@@ -167,7 +167,7 @@ let is_constructor = function
 
 let add_default_con name class_body =
   let con =
-    A.Constructor { name; fparams = [ Semant.build_this_param name ]; body = A.Empty }
+    A.Constructor { name; fparams = [ Semant.build_this_param name ]; body = A.Block [] }
   in
   con :: class_body
 ;;
