@@ -83,6 +83,9 @@ val encode_stmt_p_printf : Frontend_types.stmt_p_printf -> Pbrt.Encoder.t -> uni
 (** [encode_stmt_p_expr_stmt v encoder] encodes [v] with the given [encoder] *)
 val encode_stmt_p_expr_stmt : Frontend_types.stmt_p_expr_stmt -> Pbrt.Encoder.t -> unit
 
+(** [encode_stmt_p_delete v encoder] encodes [v] with the given [encoder] *)
+val encode_stmt_p_delete : Frontend_types.stmt_p_delete -> Pbrt.Encoder.t -> unit
+
 (** [encode_stmt_p_while v encoder] encodes [v] with the given [encoder] *)
 val encode_stmt_p_while : Frontend_types.stmt_p_while -> Pbrt.Encoder.t -> unit
 
@@ -177,6 +180,9 @@ val decode_stmt_p_printf : Pbrt.Decoder.t -> Frontend_types.stmt_p_printf
 
 (** [decode_stmt_p_expr_stmt decoder] decodes a [stmt_p_expr_stmt] value from [decoder] *)
 val decode_stmt_p_expr_stmt : Pbrt.Decoder.t -> Frontend_types.stmt_p_expr_stmt
+
+(** [decode_stmt_p_delete decoder] decodes a [stmt_p_delete] value from [decoder] *)
+val decode_stmt_p_delete : Pbrt.Decoder.t -> Frontend_types.stmt_p_delete
 
 (** [decode_stmt_p_while decoder] decodes a [stmt_p_while] value from [decoder] *)
 val decode_stmt_p_while : Pbrt.Decoder.t -> Frontend_types.stmt_p_while

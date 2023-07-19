@@ -185,6 +185,10 @@ message Stmt {
     required Stmt if_stmt = 2;
     required Stmt else_stmt = 3;
   }
+
+  message _Delete {
+    required Expr del_expr = 1;
+  }
   
   oneof value {
     _VarDecl VarDecl = 1;
@@ -195,6 +199,7 @@ message Stmt {
     _Break Break = 6;
     _Continue Continue = 7;
     _If_stmt IfStmt = 8;
+    _Delete Delete = 9;
   }
 }
 

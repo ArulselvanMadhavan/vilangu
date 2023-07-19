@@ -24,6 +24,7 @@ public:
   virtual llvm::Value *codegen(const StmtBlockIR &expr) = 0;
   virtual llvm::Value *codegen(const StmtIfElseIR &expr) = 0;
   virtual llvm::Value *codegen(const StmtWhileIR &expr) = 0;
+  virtual llvm::Value *codegen(const StmtDeleteIR &expr) = 0;
   virtual llvm::Value *codegen(const StmtBreakIR &expr) = 0;
   virtual llvm::Value *codegen(const StmtContinueIR &expr) = 0;
   virtual llvm::Value *codegen(const ExprEmptyIR &expr) = 0;

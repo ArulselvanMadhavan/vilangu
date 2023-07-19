@@ -83,6 +83,9 @@ val pp_stmt_p_printf : Format.formatter -> Frontend_types.stmt_p_printf -> unit
 (** [pp_stmt_p_expr_stmt v] formats v *)
 val pp_stmt_p_expr_stmt : Format.formatter -> Frontend_types.stmt_p_expr_stmt -> unit
 
+(** [pp_stmt_p_delete v] formats v *)
+val pp_stmt_p_delete : Format.formatter -> Frontend_types.stmt_p_delete -> unit
+
 (** [pp_stmt_p_while v] formats v *)
 val pp_stmt_p_while : Format.formatter -> Frontend_types.stmt_p_while -> unit
 

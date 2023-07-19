@@ -151,6 +151,12 @@ let default_stmt_p_expr_stmt_mutable () : stmt_p_expr_stmt_mutable =
   { expr_stmt = Frontend_types.default_expr () }
 ;;
 
+type stmt_p_delete_mutable = { mutable del_expr : Frontend_types.expr }
+
+let default_stmt_p_delete_mutable () : stmt_p_delete_mutable =
+  { del_expr = Frontend_types.default_expr () }
+;;
+
 type stmt_p_while_mutable =
   { mutable while_cond : Frontend_types.expr
   ; mutable while_block : Frontend_types.stmt
@@ -873,6 +879,26 @@ let rec decode_stmt_p_expr_stmt d =
   ({ Frontend_types.expr_stmt = v.expr_stmt } : Frontend_types.stmt_p_expr_stmt)
 ;;
 
+let rec decode_stmt_p_delete d =
+  let v = default_stmt_p_delete_mutable () in
+  let continue__ = ref true in
+  let del_expr_is_set = ref false in
+  while !continue__ do
+    match Pbrt.Decoder.key d with
+    | None ->
+      ();
+      continue__ := false
+    | Some (1, Pbrt.Bytes) ->
+      v.del_expr <- decode_expr (Pbrt.Decoder.nested d);
+      del_expr_is_set := true
+    | Some (1, pk) ->
+      Pbrt.Decoder.unexpected_payload "Message(stmt_p_delete), field(1)" pk
+    | Some (_, payload_kind) -> Pbrt.Decoder.skip d payload_kind
+  done;
+  if not !del_expr_is_set then Pbrt.Decoder.missing_field "del_expr";
+  ({ Frontend_types.del_expr = v.del_expr } : Frontend_types.stmt_p_delete)
+;;
+
 let rec decode_stmt_p_while d =
   let v = default_stmt_p_while_mutable () in
   let continue__ = ref true in
@@ -928,6 +954,9 @@ and decode_stmt d =
         (Frontend_types.Continue : Frontend_types.stmt)
       | Some (8, _) ->
         (Frontend_types.If_stmt (decode_stmt_p_if_stmt (Pbrt.Decoder.nested d))
+          : Frontend_types.stmt)
+      | Some (9, _) ->
+        (Frontend_types.Delete (decode_stmt_p_delete (Pbrt.Decoder.nested d))
           : Frontend_types.stmt)
       | Some (n, payload_kind) ->
         Pbrt.Decoder.skip d payload_kind;
@@ -1378,6 +1407,12 @@ let rec encode_stmt_p_expr_stmt (v : Frontend_types.stmt_p_expr_stmt) encoder =
   ()
 ;;
 
+let rec encode_stmt_p_delete (v : Frontend_types.stmt_p_delete) encoder =
+  Pbrt.Encoder.key (1, Pbrt.Bytes) encoder;
+  Pbrt.Encoder.nested (encode_expr v.Frontend_types.del_expr) encoder;
+  ()
+;;
+
 let rec encode_stmt_p_while (v : Frontend_types.stmt_p_while) encoder =
   Pbrt.Encoder.key (1, Pbrt.Bytes) encoder;
   Pbrt.Encoder.nested (encode_expr v.Frontend_types.while_cond) encoder;
@@ -1411,6 +1446,9 @@ and encode_stmt (v : Frontend_types.stmt) encoder =
   | Frontend_types.If_stmt x ->
     Pbrt.Encoder.key (8, Pbrt.Bytes) encoder;
     Pbrt.Encoder.nested (encode_stmt_p_if_stmt x) encoder
+  | Frontend_types.Delete x ->
+    Pbrt.Encoder.key (9, Pbrt.Bytes) encoder;
+    Pbrt.Encoder.nested (encode_stmt_p_delete x) encoder
 
 and encode_stmt_p_block (v : Frontend_types.stmt_p_block) encoder =
   List.iter

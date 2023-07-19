@@ -172,3 +172,11 @@ llvm::Value *IRCodegenVisitor::codegen(const StmtIfElseIR &expr) {
   phiNode->addIncoming(elseVal, elseBB);
   return phiNode;
 }
+
+llvm::Value *IRCodegenVisitor::codegen(const StmtDeleteIR &stmt) {
+  auto exprVal = stmt.delExpr->codegen(*this);
+  llvm::Type *voidPtrTy = llvm::Type::getInt8Ty(*context)->getPointerTo();
+  auto voidPtr = builder->CreateBitCast(exprVal, voidPtrTy);
+  llvm::Function *freeFunc = module->getFunction("free");
+  return builder->CreateCall(freeFunc, llvm::ArrayRef<llvm::Value *>{voidPtr});
+}

@@ -44,6 +44,8 @@ std::unique_ptr<StmtIR> deserializeStmt(const Frontend_ir::Stmt &stmt) {
     return std::unique_ptr<StmtContinueIR>(new StmtContinueIR());
   case Frontend_ir::Stmt::kIfStmt:
     return std::unique_ptr<StmtIfElseIR>(new StmtIfElseIR(stmt.ifstmt()));
+  case Frontend_ir::Stmt::kDelete:
+    return std::unique_ptr<StmtDeleteIR>(new StmtDeleteIR(stmt.delete_()));
   default:
     // FIXME
     auto expr = Frontend_ir::Stmt::_Printf::default_instance();
@@ -64,6 +66,10 @@ StmtBlockIR::StmtBlockIR(const Frontend_ir::Stmt::_Block &stmt) {
 StmtWhileIR::StmtWhileIR(const Frontend_ir::Stmt::_While &stmt) {
   condExpr = deserializeExpr(stmt.while_cond());
   loopStmt = deserializeStmt(stmt.while_block());
+}
+
+StmtDeleteIR::StmtDeleteIR(const Frontend_ir::Stmt::_Delete &stmt) {
+  delExpr = deserializeExpr(stmt.del_expr());
 }
 
 llvm::Value *StmtPrintfIR::codegen(IRVisitor &visitor) {
@@ -95,5 +101,9 @@ llvm::Value *StmtContinueIR::codegen(IRVisitor &visitor) {
 }
 
 llvm::Value *StmtIfElseIR::codegen(IRVisitor &visitor) {
+  return visitor.codegen(*this);
+}
+
+llvm::Value *StmtDeleteIR::codegen(IRVisitor &visitor) {
   return visitor.codegen(*this);
 }

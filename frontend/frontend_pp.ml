@@ -275,6 +275,13 @@ let rec pp_stmt_p_expr_stmt fmt (v : Frontend_types.stmt_p_expr_stmt) =
   Pbrt.Pp.pp_brk pp_i fmt ()
 ;;
 
+let rec pp_stmt_p_delete fmt (v : Frontend_types.stmt_p_delete) =
+  let pp_i fmt () =
+    Pbrt.Pp.pp_record_field ~first:true "del_expr" pp_expr fmt v.Frontend_types.del_expr
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+;;
+
 let rec pp_stmt_p_while fmt (v : Frontend_types.stmt_p_while) =
   let pp_i fmt () =
     Pbrt.Pp.pp_record_field
@@ -306,6 +313,8 @@ and pp_stmt fmt (v : Frontend_types.stmt) =
   | Frontend_types.Continue -> Format.fprintf fmt "Continue"
   | Frontend_types.If_stmt x ->
     Format.fprintf fmt "@[<hv2>If_stmt(@,%a)@]" pp_stmt_p_if_stmt x
+  | Frontend_types.Delete x ->
+    Format.fprintf fmt "@[<hv2>Delete(@,%a)@]" pp_stmt_p_delete x
 
 and pp_stmt_p_block fmt (v : Frontend_types.stmt_p_block) =
   let pp_i fmt () =

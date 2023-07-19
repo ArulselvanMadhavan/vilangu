@@ -84,7 +84,7 @@ and stmt =
   | Break of pos
   | Continue of pos
   | ExprStmt of exp
-  | Delete of exp
+  | Delete of exp * pos
   | IfElse of
       { exp : exp
       ; istmt : stmt

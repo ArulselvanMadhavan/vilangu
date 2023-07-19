@@ -181,7 +181,7 @@ let return_stmt :=
   | RETURN; ~=exp; SEMICOLON; {ReturnStmt (Some exp)}
 
 let delete_stmt :=
-  | DELETE; ~=exp; SEMICOLON; { Delete exp }
+  | DELETE; ~=exp; SEMICOLON; { Delete (exp, lp($loc)) }
 
 let out_stmt :=                
   | OUT; ~=exp; SEMICOLON; { Output (exp, lp($loc)) }

@@ -121,6 +121,7 @@ type stmt_p_printf =
   }
 
 type stmt_p_expr_stmt = { expr_stmt : expr }
+type stmt_p_delete = { del_expr : expr }
 
 type stmt_p_while =
   { while_cond : expr
@@ -136,6 +137,7 @@ and stmt =
   | Break
   | Continue
   | If_stmt of stmt_p_if_stmt
+  | Delete of stmt_p_delete
 
 and stmt_p_block = { stmt_list : stmt list }
 
@@ -279,6 +281,9 @@ val default_stmt_p_printf : ?format:string -> ?f_args:expr list -> unit -> stmt_
 
 (** [default_stmt_p_expr_stmt ()] is the default value for type [stmt_p_expr_stmt] *)
 val default_stmt_p_expr_stmt : ?expr_stmt:expr -> unit -> stmt_p_expr_stmt
+
+(** [default_stmt_p_delete ()] is the default value for type [stmt_p_delete] *)
+val default_stmt_p_delete : ?del_expr:expr -> unit -> stmt_p_delete
 
 (** [default_stmt_p_while ()] is the default value for type [stmt_p_while] *)
 val default_stmt_p_while : ?while_cond:expr -> ?while_block:stmt -> unit -> stmt_p_while

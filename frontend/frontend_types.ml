@@ -119,6 +119,7 @@ type stmt_p_printf =
   }
 
 type stmt_p_expr_stmt = { expr_stmt : expr }
+type stmt_p_delete = { del_expr : expr }
 
 type stmt_p_while =
   { while_cond : expr
@@ -134,6 +135,7 @@ and stmt =
   | Break
   | Continue
   | If_stmt of stmt_p_if_stmt
+  | Delete of stmt_p_delete
 
 and stmt_p_block = { stmt_list : stmt list }
 
@@ -283,6 +285,10 @@ let rec default_stmt_p_expr_stmt ?(expr_stmt : expr = default_expr ()) ()
   : stmt_p_expr_stmt
   =
   { expr_stmt }
+;;
+
+let rec default_stmt_p_delete ?(del_expr : expr = default_expr ()) () : stmt_p_delete =
+  { del_expr }
 ;;
 
 let rec default_stmt_p_while

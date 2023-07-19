@@ -322,6 +322,16 @@ let rec trans_stmt (venv, tenv, stmt) =
     if T.type_match ires.ty eres.ty
     then venv, { stmt = A.IfElse { exp = tr_exp; istmt; estmt; pos }; ty = ires.ty }
     else venv, error pos "If and else branch types don't match" (err_stmty stmt)
+  | A.Delete (exp, pos) as orig ->
+    let venv, { stmt; ty } = trans_exp (venv, tenv, exp) in
+    if T.is_ref ty
+    then venv, { stmt = A.Delete (stmt, pos); ty }
+    else
+      ( venv
+      , error
+          pos
+          ("delete applied to a value with non-ref type " ^ T.type2str ty)
+          (err_stmty orig) )
   | _ -> venv, err_stmty stmt
 
 and trans_blk (venv, tenv) xs =

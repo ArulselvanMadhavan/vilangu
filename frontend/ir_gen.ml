@@ -122,6 +122,7 @@ let gen_stmt tenv s =
       FT.While { while_cond = gen_expr tenv exp; while_block = gstmt block }
     | A.Break _ -> FT.Break
     | A.Continue _ -> FT.Continue
+    | A.Delete (e, _) -> FT.Delete { del_expr = gen_expr tenv e }
     (* | A.Empty -> FT.Empty *)
     (* | _ -> FT.Integer (Int32.of_int (-1)) *)
     | _ -> FT.Printf { format = "%d"; f_args = [ FT.Integer (Int32.of_int (-1)) ] }
@@ -336,7 +337,7 @@ let filter_arr_creation_exp tenv main_decl =
     | A.Output (exp, _) -> h_exp exp
     | A.ReturnStmt (Some exp) -> h_exp exp
     | A.ExprStmt exp -> h_exp exp
-    | A.Delete exp -> h_exp exp
+    | A.Delete (exp, _) -> h_exp exp
     | A.IfElse { exp; istmt; estmt; _ } ->
       h_exp exp;
       h_stmt istmt;

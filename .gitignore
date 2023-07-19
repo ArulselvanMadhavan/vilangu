@@ -9,3 +9,4 @@ examples/out/*
 examples/exec/*
 examples/ast/*
 out/*
+**/frontend.pb.h
