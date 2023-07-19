@@ -133,6 +133,13 @@ ifcont13:                                         ; preds = %else12, %loopend
   ret i1 %iftmp
 }
 
+define void @Object_Constructor(%Object* %0) {
+entry:
+  %this = alloca %Object*, align 8
+  store %Object* %0, %Object** %this, align 8
+  ret void
+}
+
 define void @Langarr_Constructor(%Langarr* %0, %Langarr_Vtable_type* %1, %Lang** %2, i32 %3) {
 entry:
   %this = alloca %Langarr*, align 8

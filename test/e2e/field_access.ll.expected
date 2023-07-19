@@ -121,6 +121,13 @@ ifcont13:                                         ; preds = %else12, %loopend
   ret i1 %iftmp
 }
 
+define void @Object_Constructor(%Object* %0) {
+entry:
+  %this = alloca %Object*, align 8
+  store %Object* %0, %Object** %this, align 8
+  ret void
+}
+
 define void @A_Constructor(%A* %0) {
 entry:
   %this = alloca %A*, align 8
