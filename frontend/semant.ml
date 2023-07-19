@@ -510,7 +510,6 @@ let trans_class (tenv, class_decs) =
     let ctype = Types.NAME (name, fields, base) in
     let update_fn = Option.map ~f:(fun _ -> ctype) in
     let tenv = S.update name update_fn tenv in
-    let class_body = List.map ~f:(trans_constructor tenv) class_body in
     tenv, { stmt = A.ClassDec { name; base; pos; class_body }; ty = ctype }
   in
   let class_depth = find_depth h class_decs in
@@ -532,6 +531,12 @@ let trans_class (tenv, class_decs) =
   (* All type defns are complete. *)
   (* Now update placeholder definitions. For typedef with a T.NAME name, use tenv *)
   let tenv = replace_namerefs tenv in
+  (* typedefs are complete. Now add methods *)
+  let tr_class_body tenv (A.ClassDec { name; base; class_body; pos }) =
+    let class_body = List.map ~f:(trans_constructor tenv) class_body in
+    A.ClassDec { name; base; class_body; pos }
+  in
+  let class_decs = List.map ~f:(tr_class_body tenv) class_decs in
   tenv, class_decs (* sorted by depth *)
 ;;
 
