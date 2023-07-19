@@ -408,7 +408,11 @@ let arr_class_defns venv tenv main_decl =
 
 let obj_class_defn =
   let name, _ = E.obj_symbol in
-  FT.{ name; fields = []; base_class_name = name }
+  let obj_methods =
+    let obj_cons = add_default_con E.obj_symbol [] in
+    List.filter_map (mk_constr E.base_tenv) obj_cons
+  in
+  FT.{ name; fields = []; base_class_name = name }, obj_methods
 ;;
 
 let ir_gen_function_defns tenv class_defns =
@@ -539,10 +543,13 @@ let gen_prog (venv, tenv, A.{ main_decl; class_decs }) =
   let arr_classdefs, arr_funcdefs = arr_class_defns venv tenv main_decl in
   let classdefs, method_defs = ir_gen_class_defns tenv class_decs |> Base.List.unzip in
   let method_defs = List.concat method_defs in
-  let obj_and_arr_classdefs = List.cons obj_class_defn arr_classdefs in
+  let obj_class_def, obj_method_defs = obj_class_defn in
+  let obj_and_arr_classdefs = List.cons obj_class_def arr_classdefs in
   let classdefs = List.append obj_and_arr_classdefs classdefs in
   (* let funcdefs = ir_gen_function_defns tenv class_decs in *)
-  let function_defs = List.append (obj_is_a_fun :: arr_funcdefs) method_defs in
+  let obj_funcs = obj_is_a_fun :: obj_method_defs in
+  let obj_and_arr_funcs = List.append obj_funcs arr_funcdefs in
+  let function_defs = List.append obj_and_arr_funcs method_defs in
   FT.{ main = gen_main main_decl; classdefs; function_defs }
 ;;
 
