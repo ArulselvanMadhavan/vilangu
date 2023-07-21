@@ -54,7 +54,7 @@ let adjust_lty cast_ty lty =
 let rec is_subclass tenv lhs_ty rhs_ty =
   match rhs_ty with
   | T.NAME _ when T.type_match lhs_ty rhs_ty -> true
-  | T.NAME (_, _, Some base) ->
+  | T.NAME (_, _, Some base, _) ->
     Base.Option.fold
       ~init:false
       ~f:(fun _ -> is_subclass tenv lhs_ty)
@@ -72,16 +72,17 @@ let rec compare_and_cast tenv pos lhs_ty rhs_ty =
     in
     let cast_ty, lty = compare_and_cast tenv pos (get_ty lrank lty) (get_ty rrank rty) in
     adjust_lty cast_ty lty
-  | T.NAME (sym, _, _), T.ARRAY _ when sym = Env.obj_symbol ->
+  | T.NAME (sym, _, _, _), T.ARRAY _ when sym = Env.obj_symbol ->
     Some A.Wide, Some (A.Reference (A.ClassType (sym, pos)))
   | T.NAME _, T.ARRAY _ ->
     None, None (* No cast when rhs is Array and lhs is not object *)
-  | T.ARRAY _, T.NAME (sym, _, _) when sym = Env.obj_symbol -> Some A.Narrow, None
-  | T.NAME (sym1, _, _), T.NAME (sym2, _, _) when sym1 = sym2 -> Some A.Identity, None
-  | T.NAME (lhs_name, _, _), T.NAME _ when is_subclass tenv lhs_ty rhs_ty ->
+  | T.ARRAY _, T.NAME (sym, _, _, _) when sym = Env.obj_symbol -> Some A.Narrow, None
+  | T.NAME (sym1, _, _, _), T.NAME (sym2, _, _, _) when sym1 = sym2 ->
+    Some A.Identity, None
+  | T.NAME (lhs_name, _, _, _), T.NAME _ when is_subclass tenv lhs_ty rhs_ty ->
     Some A.Wide, Some (A.Reference (A.ClassType (lhs_name, pos)))
   | T.NAME _, T.NAME _ when is_subclass tenv rhs_ty lhs_ty -> Some A.Narrow, None
-  | T.NAME (lhs_name, _, _), T.NULL ->
+  | T.NAME (lhs_name, _, _, _), T.NULL ->
     Some A.Wide, Some (A.Reference (A.ClassType (lhs_name, pos)))
   | T.INT, T.INT ->
     (* Possible via recursive element type checks *)
@@ -195,7 +196,7 @@ let rec trans_var ?(lhs = false) ?(is_init = false) (venv, tenv, var) =
        if not (String.equal sym_name "length")
        then venv, error pos ("unknown field " ^ sym_name) (err_stmty var)
        else venv, { ty = T.INT; stmt = A.FieldVar (exp, (sym_name, sym_id), 2, pos) }
-     | T.NAME ((class_name, _), fields, _) -> check_field class_name fields
+     | T.NAME ((class_name, _), fields, _, _) -> check_field class_name fields
      | _ ->
        ( venv
        , error
@@ -277,9 +278,24 @@ and trans_exp (venv, tenv, exp) =
       | None, _ -> error pos "cast not possible" cexp
     in
     venv, { stmt; ty = cast_ty }
-  | A.ClassCreationExp { type_; _ } as exp ->
+  | A.ClassCreationExp { type_; args; pos; _ } ->
     let ty = trans_type tenv type_ in
-    venv, { ty; stmt = exp }
+    let _, args_stmty =
+      Base.List.fold
+        ~init:(venv, [])
+        ~f:(fun (venv, acc) e ->
+          let venv, res = trans_exp (venv, tenv, e) in
+          venv, res :: acc)
+        args
+    in
+    let args = List.map (fun { stmt; _ } -> stmt) args_stmty in
+    let args_ty = List.map (fun { ty; _ } -> T.type2str ty) args_stmty in
+    let args_ty = T.type2str ty :: args_ty in (* add this as first arg *)
+    let method_name =
+      Ir_gen_env.vtable_method_name (T.type2str ty) args_ty
+    in
+    let vtbl_idx = Ir_gen_env.find_vtable_index ty method_name in
+    venv, { ty; stmt = A.ClassCreationExp { type_; args; pos; vtbl_idx = Some vtbl_idx } }
   | A.This pos ->
     let venv, { ty; stmt } = trans_var (venv, tenv, A.SimpleVar (E.this_symbol, pos)) in
     venv, { ty; stmt = A.VarExp (stmt, pos) }
@@ -378,6 +394,70 @@ let trans_main (venv, tenv, main_stmts) =
   venv, tenv, List.map (fun { stmt; _ } -> stmt) stmtys
 ;;
 
+exception NameRefToNameException
+
+let replace_namerefs tenv =
+  let result = ref tenv in
+  let nameref_to_name id =
+    match S.look (!result, id) with
+    | Some (T.NAME (id, fields, base, vtable)) -> T.NAME (id, fields, base, vtable)
+    | _ -> raise NameRefToNameException
+  in
+  let map_ref (field_name, field_ty) =
+    match field_ty with
+    | T.NAMEREF id -> field_name, nameref_to_name id
+    | x -> field_name, x
+  in
+  let update_type = function
+    | Some (T.NAMEREF id) -> Some (nameref_to_name id)
+    | Some (T.NAME (id, fields, base, vtable)) ->
+      let fields = List.map map_ref fields in
+      Some (T.NAME (id, fields, base, vtable))
+    | x -> x
+  in
+  let iter_type sym _ty = result := S.update sym update_type !result in
+  S.iter iter_type tenv;
+  !result
+;;
+
+let build_this_param name =
+  let loc = -1, -1 in
+  let pos = loc, loc in
+  A.Param { name = E.this_symbol; type_ = A.Reference (A.ClassType (name, pos)) }
+;;
+
+let handle_method tenv name fparams body =
+  let fparams = build_this_param name :: fparams in
+  let init_scope venv (A.Param { type_; name }) =
+    let var = A.{ type_; id = name } in
+    let venv, _, _ = trans_dec (venv, tenv, var) in
+    venv
+  in
+  let ty =
+    match S.look (tenv, name) with
+    | Some ty -> ty
+    | _ -> raise ThisTypeNotFound
+  in
+  let init_this = function
+    | Some (E.VarEntry _) -> Some (E.VarEntry { ty; is_null = false })
+    | _ -> None
+  in
+  let venv = Base.List.fold fparams ~init:E.base_venv ~f:init_scope in
+  let venv = S.update E.this_symbol init_this venv in
+  let _, { stmt = body; _ } = trans_stmt (venv, tenv, body) in
+  fparams, body
+;;
+
+let trans_method class_name tenv = function
+  | A.Constructor { name; fparams; body } ->
+    let fparams, body = handle_method tenv name fparams body in
+    A.Constructor { name; fparams; body }
+  | A.Method { name; fparams; body; return_t } ->
+    let fparams, body = handle_method tenv class_name fparams body in
+    A.Method { name; fparams; body; return_t }
+  | x -> x
+;;
+
 let class_fields tenv = function
   | A.FieldDec xs ->
     List.map (fun (A.Field { name; type_; pos }) -> name, trans_type tenv type_, pos) xs
@@ -430,84 +510,69 @@ let dedup_class_fields tenv class_body class_name =
   List.filter_map ~f:remove_duplicate_fields fields
 ;;
 
-let rec dedup_classdec_fields h tenv (A.ClassDec { name; class_body; base; _ }) =
+let rec dedup_classdec_fields h tenv class_name =
   let open Base in
-  let name, _ = name in
-  let handle_base =
-    let open Base.Option.Let_syntax in
-    let%bind base = base in
+  let open Base.Option.Let_syntax in
+  let handle_base base =
+    let%map base = base in
     let base, _ = base in
-    let%map base = Hashtbl.find h base in
     dedup_classdec_fields h tenv base
   in
-  let base_fields = Option.value handle_base ~default:[] in
-  let mem_fields = dedup_class_fields tenv class_body name in
-  List.append base_fields mem_fields
+  let handle_class =
+    let class_dec = Hashtbl.find h class_name in
+    let%map (A.ClassDec { base; class_body; _ }) = class_dec in
+    let base_fields = Option.value (handle_base base) ~default:[] in
+    let mem_fields = dedup_class_fields tenv class_body class_name in
+    List.append base_fields mem_fields
+  in
+  Option.value handle_class ~default:[]
 ;;
 
-exception NameRefToNameException
+let param_to_type tenv (A.Param { type_; _ }) = trans_type tenv type_ |> Types.type2str
 
-let replace_namerefs tenv =
+let rec get_annot_methods h tenv class_name =
+  let open Base in
+  let is_method = function
+    | A.Method { name; fparams; _ } | A.Constructor { name; fparams; _ } ->
+      let name, _ = name in
+      let fparams = List.map fparams ~f:(param_to_type tenv) in
+      Some (Ir_gen_env.vtable_method_name name fparams)
+    | _ -> None
+  in
+  let get_methods (A.ClassDec { class_body; base; _ }) =
+    let super_methods =
+      Option.fold base ~init:[] ~f:(fun _ (base, _) -> get_annot_methods h tenv base)
+    in
+    let methods = List.filter_map class_body ~f:is_method in
+    List.append super_methods methods
+  in
+  let class_def = Hashtbl.find h class_name in
+  Option.fold ~init:[] ~f:(fun _ cd -> get_methods cd) class_def
+;;
+
+let attach_vtable h tenv =
   let result = ref tenv in
-  let nameref_to_name id =
-    match S.look (!result, id) with
-    | Some (T.NAME (id, fields, base)) -> T.NAME (id, fields, base)
-    | _ -> raise NameRefToNameException
-  in
-  let map_ref (field_name, field_ty) =
-    match field_ty with
-    | T.NAMEREF id -> field_name, nameref_to_name id
-    | x -> field_name, x
-  in
   let update_type = function
-    | Some (T.NAMEREF id) -> Some (nameref_to_name id)
-    | Some (T.NAME (id, fields, base)) ->
-      let fields = List.map map_ref fields in
-      Some (T.NAME (id, fields, base))
+    | Some (T.NAME (id, fields, base, _)) ->
+      let class_name, _ = id in
+      let vtable = get_annot_methods h tenv class_name in
+      List.iter print_string vtable;
+      Some (T.NAME (id, fields, base, vtable))
     | x -> x
   in
   let iter_type sym _ty = result := S.update sym update_type !result in
   S.iter iter_type tenv;
   !result
-;;
-
-let build_this_param name =
-  let loc = -1, -1 in
-  let pos = loc, loc in
-  A.Param { name = E.this_symbol; type_ = A.Reference (A.ClassType (name, pos)) }
-;;
-
-let trans_constructor tenv = function
-  | A.Constructor { name; fparams; body } ->
-    let fparams = build_this_param name :: fparams in
-    let init_scope venv (A.Param { type_; name }) =
-      let var = A.{ type_; id = name } in
-      let venv, _, _ = trans_dec (venv, tenv, var) in
-      venv
-    in
-    let ty =
-      match S.look (tenv, name) with
-      | Some ty -> ty
-      | _ -> raise ThisTypeNotFound
-    in
-    let init_this = function
-      | Some (E.VarEntry _) -> Some (E.VarEntry { ty; is_null = false })
-      | _ -> None
-    in
-    let venv = Base.List.fold fparams ~init:E.base_venv ~f:init_scope in
-    let venv = S.update E.this_symbol init_this venv in
-    let _, { stmt = body; _ } = trans_stmt (venv, tenv, body) in
-    A.Constructor { name; fparams; body }
-  | x -> x
-;;
-
+  
 let trans_class (tenv, class_decs) =
   let open Base in
+  (* Add this param to methods and constructors *)
   let h = class_decs_tbl class_decs in
   let tr_class (tenv, class_dec) =
-    let fields = dedup_classdec_fields h tenv class_dec in
     let (A.ClassDec { name; base; class_body; pos }) = class_dec in
-    let ctype = Types.NAME (name, fields, base) in
+    let class_name, _ = name in
+    let fields = dedup_classdec_fields h tenv class_name in
+    let ctype = Types.NAME (name, fields, base, []) in
     let update_fn = Option.map ~f:(fun _ -> ctype) in
     let tenv = S.update name update_fn tenv in
     tenv, { stmt = A.ClassDec { name; base; pos; class_body }; ty = ctype }
@@ -533,10 +598,16 @@ let trans_class (tenv, class_decs) =
   let tenv = replace_namerefs tenv in
   (* typedefs are complete. Now add methods *)
   let tr_class_body tenv (A.ClassDec { name; base; class_body; pos }) =
-    let class_body = List.map ~f:(trans_constructor tenv) class_body in
-    A.ClassDec { name; base; class_body; pos }
+    let class_body = List.map ~f:(trans_method name tenv) class_body in
+    let cdec = A.ClassDec { name; base; class_body; pos } in
+    let name, _ = name in
+    Hashtbl.update h name ~f:(fun _ -> cdec);
+    cdec
   in
   let class_decs = List.map ~f:(tr_class_body tenv) class_decs in
+  Stdlib.Printf.printf "After:%d\n" (Hashtbl.length h);
+  (* methods will have this inserted in scope. Now generate vtable *)
+  let tenv = attach_vtable h tenv in  
   tenv, class_decs (* sorted by depth *)
 ;;
 

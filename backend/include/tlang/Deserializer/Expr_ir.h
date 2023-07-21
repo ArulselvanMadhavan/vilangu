@@ -122,6 +122,7 @@ struct ExprArrayMakeIR : public ExprIR {
 struct ExprClassMakeIR : public ExprIR {
   std::unique_ptr<TypeIR> classType;
   std::vector<std::unique_ptr<ExprIR>> conArgs;
+  int vtableIdx;
   ExprClassMakeIR(const Frontend_ir::Expr::_ClassCreation &expr);
   virtual llvm::Value *codegen(IRVisitor &visitor) override;
 };

@@ -105,6 +105,7 @@ and exp =
       { type_ : type_
       ; args : exp list
       ; pos : pos
+      ; vtbl_idx : int option
       }
   | VarExp of var * pos
   | NullLit of pos

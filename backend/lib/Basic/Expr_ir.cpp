@@ -105,6 +105,7 @@ std::unique_ptr<ExprIR> deserializeExpr(const Frontend_ir::Expr &expr) {
 ExprClassMakeIR::ExprClassMakeIR(
     const Frontend_ir::Expr::_ClassCreation &expr) {
   classType = deserializeType(expr.con_texpr());
+  vtableIdx = expr.vtable_index();
   for (auto a : expr.con_args()) {
     conArgs.push_back(deserializeExpr(a));
   }

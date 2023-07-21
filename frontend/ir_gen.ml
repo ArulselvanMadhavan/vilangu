@@ -17,6 +17,7 @@ let gen_binop = function
 exception NoMatchingTypeExpr
 exception SubscriptAccessException
 exception NonArrayTypeException
+exception ClassNotFoundException
 
 let gen_texpr tenv type_ =
   let ty = Semant.trans_type tenv type_ in
@@ -62,9 +63,10 @@ let gen_expr tenv e =
         ; cast_type
         ; cast_line_no = A.line_no pos
         }
-    | A.ClassCreationExp { type_; args; _ } ->
+    | A.ClassCreationExp { type_; args; vtbl_idx; _ } ->
       let con_args = List.map gexpr args in
-      FT.Class_creation { con_texpr = gen_texpr tenv type_; con_args }
+      let vtable_index = Option.value vtbl_idx ~default:(-1) |> Int32.of_int in
+      FT.Class_creation { con_texpr = gen_texpr tenv type_; con_args; vtable_index }
     | _ -> FT.Integer (Int32.of_int (-1))
   and gen_var = function
     | A.SimpleVar ((sym_name, _), _) -> FT.Simple { var_name = sym_name }
@@ -150,21 +152,22 @@ let gen_params tenv fparams =
   List.map gparam fparams
 ;;
 
-let mk_constr tenv = function
+let gen_fun_def tenv = function
   | A.Constructor { name; fparams; body } ->
     let name, _ = name in
-    (* Assume support for one constructor *)
-    let name = name ^ "_Constructor" in
+    let args = List.map (Semant.param_to_type tenv) fparams in
+    let name = Ir_gen_env.vtable_method_name name args in
+    List.length fparams |> Printf.printf "len:%s|%d\n" name;
     let params = gen_params tenv fparams in
     let body = gen_stmt tenv body in
     FT.{ name; return_t = FT.Void; params; body } |> Option.some
   | _ -> None
 ;;
 
-let is_constructor = function
-  | A.Constructor _ -> true
-  | _ -> false
-;;
+(* let is_constructor = function *)
+(*   | A.Constructor _ -> true *)
+(*   | _ -> false *)
+(* ;; *)
 
 let add_default_con name class_body =
   let con =
@@ -173,27 +176,30 @@ let add_default_con name class_body =
   con :: class_body
 ;;
 
-let add_default_const name class_body =
-  let has_con = Base.List.exists class_body ~f:is_constructor in
-  if has_con then class_body else add_default_con name class_body
-;;
+(* let add_default_const name class_body = *)
+(*   let has_con = Base.List.exists class_body ~f:is_constructor in *)
+(*   if has_con then class_body else add_default_con name class_body *)
+(* ;; *)
 
-let ir_gen_class_defn tenv class_defns (A.ClassDec { name; base; class_body; _ }) =
+let ir_gen_class_defn tenv (A.ClassDec { name; base; class_body; _ }) =
   let class_defn =
-    List.map (ir_gen_field_defn tenv) (Ir_gen_env.get_class_fields name class_defns)
-    |> fun ir_fields ->
-    let name, _ = name in
-    let base_class_name, _ = Option.value base ~default:Env.obj_symbol in
-    FT.{ name; fields = ir_fields; base_class_name }
+    match S.look (tenv, name) with
+    | Some (T.NAME (_, fields, _, vtable)) ->
+      let ir_fields = List.map (fun (_, ty) -> T.gen_type_expr ty) fields in
+      let name, _ = name in
+      let base_class_name, _ = Option.value base ~default:Env.obj_symbol in
+      FT.{ name; fields = ir_fields; base_class_name; vtable }
+    | _ -> raise ClassNotFoundException
   in
-  let class_body = add_default_const name class_body in
-  let fun_defs = List.filter_map (mk_constr tenv) class_body in
+  (* gen fun_def for const *)
+  (* use tenv to get vtable *)
+  (* for all constructor defs in class_body find an entry in the vtable *)
+  (* don’t worry about default const for now. *)
+  let fun_defs = List.filter_map (gen_fun_def tenv) class_body in
   class_defn, fun_defs
 ;;
 
-let ir_gen_class_defns tenv class_defns =
-  List.map (ir_gen_class_defn tenv class_defns) class_defns
-;;
+let ir_gen_class_defns tenv class_defns = List.map (ir_gen_class_defn tenv) class_defns
 
 let mk_arr_inner_type lower_rank type_ =
   if lower_rank > 0
@@ -205,7 +211,8 @@ let make_array_class name rank type_ =
   let lower_rank = rank - 1 in
   let lower_type = mk_arr_inner_type lower_rank type_ in
   let base_class_name, _ = Env.obj_symbol in
-  FT.{ name; fields = [ lower_type; FT.Int32 ]; base_class_name }
+  (* vtable - empty list *)
+  FT.{ name; fields = [ lower_type; FT.Int32 ]; base_class_name; vtable = [] }
 ;;
 
 let mk_arr_constr name rank type_ =
@@ -395,7 +402,7 @@ let arr_class_defns venv tenv main_decl =
     | _ -> ()
   in
   let rec handle_tentry _sym = function
-    | T.NAME (_ty_name, fields, _) ->
+    | T.NAME (_ty_name, fields, _, _) ->
       List.iter (fun (sym, ty) -> handle_tentry sym ty) fields
     | T.ARRAY _ as arr -> handle_arr_type arr
     | _ -> ()
@@ -410,9 +417,10 @@ let obj_class_defn =
   let name, _ = E.obj_symbol in
   let obj_methods =
     let obj_cons = add_default_con E.obj_symbol [] in
-    List.filter_map (mk_constr E.base_tenv) obj_cons
+    List.filter_map (gen_fun_def E.base_tenv) obj_cons
   in
-  FT.{ name; fields = []; base_class_name = name }, obj_methods
+  (* FIXME: Check vtable *)
+  FT.{ name; fields = []; base_class_name = name; vtable = [] }, obj_methods
 ;;
 
 let ir_gen_function_defns tenv class_defns =

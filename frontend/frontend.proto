@@ -115,6 +115,7 @@ message Expr {
   message _ClassCreation{
     required Type_expr con_texpr = 1;
     repeated Expr con_args = 2;
+    required int32 vtable_index = 3;
   }
 
   message _NullLit {
@@ -207,6 +208,7 @@ message ClassDef {
   required string name = 1;
   repeated Type_expr fields = 2;
   required string baseClassName = 3;
+  repeated string vtable = 4;
 }
 
 message Param {

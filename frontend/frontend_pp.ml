@@ -226,7 +226,13 @@ and pp_expr_p_class_creation fmt (v : Frontend_types.expr_p_class_creation) =
       "con_args"
       (Pbrt.Pp.pp_list pp_expr)
       fmt
-      v.Frontend_types.con_args
+      v.Frontend_types.con_args;
+    Pbrt.Pp.pp_record_field
+      ~first:false
+      "vtable_index"
+      Pbrt.Pp.pp_int32
+      fmt
+      v.Frontend_types.vtable_index
   in
   Pbrt.Pp.pp_brk pp_i fmt ()
 
@@ -355,7 +361,13 @@ let rec pp_class_def fmt (v : Frontend_types.class_def) =
       "base_class_name"
       Pbrt.Pp.pp_string
       fmt
-      v.Frontend_types.base_class_name
+      v.Frontend_types.base_class_name;
+    Pbrt.Pp.pp_record_field
+      ~first:false
+      "vtable"
+      (Pbrt.Pp.pp_list Pbrt.Pp.pp_string)
+      fmt
+      v.Frontend_types.vtable
   in
   Pbrt.Pp.pp_brk pp_i fmt ()
 ;;

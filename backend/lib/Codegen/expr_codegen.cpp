@@ -295,15 +295,15 @@ llvm::Value *IRCodegenVisitor::codegen(const ExprClassMakeIR &expr) {
       builder->CreateStructGEP(resultType, callocHead, 0);
   builder->CreateStore(classVtable, vTableField);
 
-  llvm::Twine constructorName = resultType->getStructName() + "_Constructor";
-  llvm::Function *constFunc = module->getFunction(constructorName.str());
-  std::vector<llvm::Value *> constArgs;
-  constArgs.push_back(callocHead); // Pass this as first arg
-  for (auto &e : expr.conArgs) {
-    llvm::Value *e_val = e->codegen(*this);
-    constArgs.push_back(e_val);
-  }
-  builder->CreateCall(constFunc, constArgs);
+  // llvm::Twine constructorName = resultType->getStructName() + "_Constructor";
+  // llvm::Function *constFunc = module->getFunction(constructorName.str());
+  // std::vector<llvm::Value *> constArgs;
+  // constArgs.push_back(callocHead); // Pass this as first arg
+  // for (auto &e : expr.conArgs) {
+  //   llvm::Value *e_val = e->codegen(*this);
+  //   constArgs.push_back(e_val);
+  // }
+  // builder->CreateCall(constFunc, constArgs);
   return callocHead;
 }
 

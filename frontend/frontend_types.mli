@@ -106,6 +106,7 @@ and expr_p_cast_expr =
 and expr_p_class_creation =
   { con_texpr : type_expr
   ; con_args : expr list
+  ; vtable_index : int32
   }
 
 and var_p_load = { var : var }
@@ -151,6 +152,7 @@ type class_def =
   { name : string
   ; fields : type_expr list
   ; base_class_name : string
+  ; vtable : string list
   }
 
 type param =
@@ -263,6 +265,7 @@ val default_expr_p_cast_expr
 val default_expr_p_class_creation
   :  ?con_texpr:type_expr
   -> ?con_args:expr list
+  -> ?vtable_index:int32
   -> unit
   -> expr_p_class_creation
 
@@ -307,6 +310,7 @@ val default_class_def
   :  ?name:string
   -> ?fields:type_expr list
   -> ?base_class_name:string
+  -> ?vtable:string list
   -> unit
   -> class_def
 

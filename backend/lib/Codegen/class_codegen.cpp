@@ -53,20 +53,12 @@ void IRCodegenVisitor::codegenVTables(
       inits.push_back(baseClassVtable);
     }
 
-    // class name is kept as global var; It’s a string. Reuse addGlobalVarStr
     llvm::StringRef classNameVal = currClass->className;
-    // auto classNameVal =
-    //     llvm::ConstantDataArray::getString(*context, currClass->className);
     std::string classNameGlobalVarName = currClass->className + "_class_name";
     addGlobalVarStr(classNameGlobalVarName, classNameVal);
-    // module->getOrInsertGlobal(classNameGlobalVarName,
-    // classNameVal->getType());
+
     llvm::GlobalVariable *classNameVar =
         module->getNamedGlobal(classNameGlobalVarName);
-    // classNameVar->setLinkage(llvm::GlobalValue::PrivateLinkage);
-    // classNameVar->setConstant(true);
-    // classNameVar->setAlignment(llvm::Align());
-    // classNameVar->setInitializer(classNameVal);
     llvm::Value *zeroIdx =
         llvm::ConstantInt::getSigned(llvm::Type::getInt32Ty(*context), 0);
     llvm::Value *classNameBegin = builder->CreateInBoundsGEP(

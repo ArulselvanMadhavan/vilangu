@@ -104,6 +104,7 @@ and expr_p_cast_expr =
 and expr_p_class_creation =
   { con_texpr : type_expr
   ; con_args : expr list
+  ; vtable_index : int32
   }
 
 and var_p_load = { var : var }
@@ -149,6 +150,7 @@ type class_def =
   { name : string
   ; fields : type_expr list
   ; base_class_name : string
+  ; vtable : string list
   }
 
 type param =
@@ -259,10 +261,11 @@ and default_expr_p_cast_expr
 and default_expr_p_class_creation
   ?(con_texpr : type_expr = default_type_expr ())
   ?(con_args : expr list = [])
+  ?(vtable_index : int32 = 0l)
   ()
   : expr_p_class_creation
   =
-  { con_texpr; con_args }
+  { con_texpr; con_args; vtable_index }
 
 and default_var_p_load ?(var : var = default_var ()) () : var_p_load = { var }
 
@@ -316,10 +319,11 @@ let rec default_class_def
   ?(name : string = "")
   ?(fields : type_expr list = [])
   ?(base_class_name : string = "")
+  ?(vtable : string list = [])
   ()
   : class_def
   =
-  { name; fields; base_class_name }
+  { name; fields; base_class_name; vtable }
 ;;
 
 let rec default_param

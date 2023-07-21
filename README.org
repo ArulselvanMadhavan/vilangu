@@ -26,9 +26,19 @@ any desired architecture.
 - [X] translate methods after class_decs are fully inserted into tenv;
   Because the body of the constructor may use fields from classes that
   aren’t fully constructed yet.
+- [ ] Generate fun def for constructor
+- [ ] Add default const
+- [ ] Generate class_name_meth_name_param_type name
+- [ ] Apply overloading
+- [ ] Apply overrides
+- [ ] Vtable - add methods
+- [ ] Object should have a default constructor.
+- [ ] Object should not have a super call in constructor body.
 - [ ] ArrayCreation - no stack alloc. Use calloc for the object instantiation.
 - [ ] Add a default destructor for all classes
 - [ ] Add a default destructor for arrays
+- [ ] frontend.proto needs "methodCall"; methodName as string;
+  arguments - are expressions. Arg expressions might need bitcast.
 - [X] Classes - Add names with empty list of fields first. Then, update fields here
 - [X] Ref types init to null at variable declaration time. Handle the case when they are used
   without proper initialization.

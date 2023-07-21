@@ -257,7 +257,7 @@ let primlit :=
   | ~=class_inst_creation; { class_inst_creation }
 
 let class_inst_creation :=
-  | NEW; type_=class_type; ~=arguments; { ClassCreationExp {type_ = Reference type_; args=arguments; pos = (lp($loc))} }
+  | NEW; type_=class_type; ~=arguments; { ClassCreationExp {type_ = Reference type_; args=arguments; pos = (lp($loc)); vtbl_idx = None} }
 
 let arrayexpr :=
   | NEW; ~=prim_type; ~=dimexprs; empty_dims=dimensions; {
