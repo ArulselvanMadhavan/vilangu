@@ -86,6 +86,7 @@ public:
   virtual llvm::Value *codegen(const ExprEmptyIR &expr) override;
   virtual llvm::Value *codegen(const StmtExprIR &expr) override;
   virtual llvm::Value *codegen(const StmtDeleteIR &expr) override;
+  virtual llvm::Value *codegen(const StmtFreeIR &expr) override;
   virtual llvm::Value *codegen(const ExprArrayMakeIR &expr) override;
   virtual llvm::Value *codegen(const ExprClassMakeIR &expr) override;
   virtual llvm::Type *codegen(const TypeIntIR &texpr) override;

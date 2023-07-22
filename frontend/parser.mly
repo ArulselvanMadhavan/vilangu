@@ -115,7 +115,7 @@ let dest_decl :=
   | ~=dest_desc; ~=dest_body; { Destructor {name = dest_desc; body = dest_body } }
 
 let dest_desc :=
-  | TILDE; ~=id; LPAREN; RPAREN; { id }
+  | TILDE; ~=id; LPAREN; RPAREN; { let name, i = id in ("~" ^ name, i)}
 
 let dest_body :=
   | ~=block; { block }

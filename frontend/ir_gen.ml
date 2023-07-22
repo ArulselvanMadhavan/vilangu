@@ -160,11 +160,11 @@ let gen_fun_def tenv = function
     let params = gen_params tenv fparams in
     let body = gen_stmt tenv body in
     FT.{ name; return_t = FT.Void; params; body } |> Option.some
-  | A.Destructor {name; body} ->
-     let name, _ = name in
-     let name = Ir_gen_env.vtable_method_name name [] in
-     let body = gen_stmt tenv body in
-     Some (FT.{name; return_t = FT.Void; params = []; body})
+  | A.Destructor { name; body } ->
+    let name, _ = name in
+    let name = Ir_gen_env.vtable_method_name name [] in
+    let body = gen_stmt tenv body in
+    Some FT.{ name; return_t = FT.Void; params = []; body }
   | _ -> None
 ;;
 
@@ -199,6 +199,21 @@ let make_array_class name rank type_ =
   let lower_type = mk_arr_inner_type lower_rank type_ in
   let base_class_name, _ = Env.obj_symbol in
   FT.{ name; fields = [ lower_type; FT.Int32 ]; base_class_name; vtable = [] }
+;;
+
+let mk_arr_destr name rank type_ =
+  let cur_type = T.gen_type_expr (ARRAY (rank, type_)) in
+  let this_field field_index =
+    FT.Field
+      { base_expr = FT.Var_exp (FT.Simple { var_name = "this" })
+      ; field_index
+      ; field_line_no = Int32.zero
+      }
+  in
+  let del_stmt = FT.Free { free_expr = FT.Var_exp (this_field Int32.one) } in
+  let body = FT.Block { stmt_list = [ del_stmt ] } in
+  let params = [ FT.{ param_name = "this"; param_type = cur_type } ] in
+  FT.{ name; params; body ; return_t = FT.Void}
 ;;
 
 let mk_arr_constr name rank type_ =
@@ -365,22 +380,26 @@ let arr_class_defns venv tenv main_decl =
       let array_class = make_array_class name rank type_ in
       class_results := array_class :: !class_results)
   in
-  let add_constructor type_ rank =
-    let name = T.type2str (ARRAY (rank, type_)) ^ "_Constructor" in
+  let add_cons_dest type_ rank ~name_f ~fun_gen =
+    let ty_name = T.type2str (ARRAY (rank, type_)) in
+    let name =  name_f ty_name in
     let is_present = Base.Hash_set.exists h ~f:(String.equal name) in
     if is_present
     then ()
     else (
       Base.Hash_set.add h name;
-      let const_func = mk_arr_constr name rank type_ in
+      let const_func = fun_gen name rank type_ in
       func_results := const_func :: !func_results)
   in
   let arr_types = filter_arr_creation_exp tenv main_decl in
+  let cons_name arr_name = arr_name ^ "_Constructor" in
+  let dest_name arr_name = "~" ^ arr_name in
   let handle_arr_type = function
     | T.ARRAY (rank, type_) ->
       let ranks = List.init rank (fun rank -> rank + 1) in
       List.iter (add_class type_) ranks;
-      List.iter (add_constructor type_) ranks
+      List.iter (add_cons_dest type_ ~name_f:cons_name ~fun_gen:mk_arr_constr) ranks;
+      List.iter (add_cons_dest type_ ~name_f:dest_name ~fun_gen:mk_arr_destr) ranks;
     | _ -> ()
   in
   let handle_ventry _symbol = function

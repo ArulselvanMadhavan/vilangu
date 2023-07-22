@@ -64,5 +64,11 @@ struct StmtDeleteIR : public StmtIR {
   StmtDeleteIR(const Frontend_ir::Stmt::_Delete &stmt);
   virtual llvm::Value *codegen(IRVisitor &visitor) override;
 };
+
+struct StmtFreeIR : public StmtIR {
+  std::unique_ptr<ExprIR> freeExpr;
+  StmtFreeIR(const Frontend_ir::Stmt::_Free &stmt);
+  virtual llvm::Value *codegen(IRVisitor &visitor) override;
+};
 std::unique_ptr<StmtIR> deserializeStmt(const Frontend_ir::Stmt &stmt);
 #endif

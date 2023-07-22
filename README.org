@@ -26,44 +26,24 @@ any desired architecture.
 - [X] translate methods after class_decs are fully inserted into tenv;
   Because the body of the constructor may use fields from classes that
   aren’t fully constructed yet.
-- [ ] Debug the failing protobuf
-- [ ] Generate fun def for constructor
-- [ ] Add default const
-- [ ] Generate class_name_meth_name_param_type name
-- [ ] Apply overloading
+- [X] Add default const
+- [X] Generate class_name_meth_name_param_type name
+- [ ] delete statement -> transform to destructor call. Pass this as
+  default arg.
+- [ ] Arrays should also use vtbl constructor
+- [X] ArrayCreation - no stack alloc. Use calloc for the object instantiation.
+- [X] Apply overloading
 - [ ] Apply overrides
-- [ ] Vtable - add methods
+- [X] Vtable - add methods
 - [ ] Object should have a default constructor.
 - [ ] Object should not have a super call in constructor body.
-- [ ] ArrayCreation - no stack alloc. Use calloc for the object instantiation.
 - [ ] Add a default destructor for all classes
 - [ ] Add a default destructor for arrays
 - [ ] frontend.proto needs "methodCall"; methodName as string;
   arguments - are expressions. Arg expressions might need bitcast.
-- [X] Classes - Add names with empty list of fields first. Then, update fields here
-- [X] Ref types init to null at variable declaration time. Handle the case when they are used
-  without proper initialization.
-- [X] Pass line number with all subscript accesses
-- [X] Uninit Arrays. Null check
-- [X] object.length should not be allowed.
-- [X] Handle the case when arrays aren’t declared by used.
-- [X] Divide by zero check
-- [X] Array type should be int*.
-- [X] Respect multiple ranks
-- [X] Generate loop blocks to init array based on rank
-- [X] Return type of subscript var should be pointer
-- [X] Type should also keep track of length and ptr
-- [X] Add support for length field
 - [ ] Warn users of unreachable code blocks after break; continue statements
-- [X] Add support for narrow cast without Object_IsA
-- [X] Narrow cast line no
-- [X] Subscript exprs should eval to int type of rank 0
 - [ ] Warn Unused variables
-- [X] Dockerize things
-  - [X] Install ocaml libs
-  - [X] Install protocol buffer
 - [ ] nounwind attribute to main, malloc, free, printf
-- [X] phase 3 tests should pass
     
 ** Useful links
   - https://github.com/ksrky/tiger/tree/master

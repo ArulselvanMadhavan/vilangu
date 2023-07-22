@@ -22,4 +22,8 @@ int main() {
   out a.a;
   out aa.a;
   out b.b;
+  c = new int[5];
+  c[0] = 45;
+  out c[0];
+  // delete c; // method call to the one and only destructor
 }

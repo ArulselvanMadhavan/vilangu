@@ -535,11 +535,15 @@ let param_to_type tenv (A.Param { type_; _ }) = trans_type tenv type_ |> Types.t
 
 let rec get_annot_methods h tenv class_name =
   let open Base in
+  let gen_method_name name fparams =
+    let name, _ = name in
+    let fparams = List.map fparams ~f:(param_to_type tenv) in
+    Some (Ir_gen_env.vtable_method_name name fparams)
+  in
   let is_method = function
     | A.Method { name; fparams; _ } | A.Constructor { name; fparams; _ } ->
-      let name, _ = name in
-      let fparams = List.map fparams ~f:(param_to_type tenv) in
-      Some (Ir_gen_env.vtable_method_name name fparams)
+      gen_method_name name fparams
+    | A.Destructor { name; _ } -> gen_method_name name []
     | _ -> None
   in
   let get_methods (A.ClassDec { class_body; base; _ }) =

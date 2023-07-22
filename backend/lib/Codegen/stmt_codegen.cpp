@@ -174,7 +174,17 @@ llvm::Value *IRCodegenVisitor::codegen(const StmtIfElseIR &expr) {
 }
 
 llvm::Value *IRCodegenVisitor::codegen(const StmtDeleteIR &stmt) {
-  auto exprVal = stmt.delExpr->codegen(*this);
+  // auto exprVal = stmt.delExpr->codegen(*this);
+  // llvm::Type *voidPtrTy = llvm::Type::getInt8Ty(*context)->getPointerTo();
+  // auto voidPtr = builder->CreateBitCast(exprVal, voidPtrTy);
+  // llvm::Function *freeFunc = module->getFunction("free");
+  // return builder->CreateCall(freeFunc, llvm::ArrayRef<llvm::Value
+  // *>{voidPtr});
+  return llvm::ConstantInt::getSigned(llvm::Type::getInt32Ty(*context), -1);
+}
+
+llvm::Value *IRCodegenVisitor::codegen(const StmtFreeIR &stmt) {
+  auto exprVal = stmt.freeExpr->codegen(*this);
   llvm::Type *voidPtrTy = llvm::Type::getInt8Ty(*context)->getPointerTo();
   auto voidPtr = builder->CreateBitCast(exprVal, voidPtrTy);
   llvm::Function *freeFunc = module->getFunction("free");
