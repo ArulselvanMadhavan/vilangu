@@ -30,6 +30,9 @@ any desired architecture.
 - [X] Generate class_name_meth_name_param_type name
 - [ ] delete statement -> transform to destructor call. Pass this as
   default arg.
+  - [ ] MethodCall - When field is None, use base as the method name.
+  - [ ] Translate delete to MethodCall (base = ~refty, fields = None,
+    args = None)
 - [ ] Arrays should also use vtbl constructor
 - [X] ArrayCreation - no stack alloc. Use calloc for the object instantiation.
 - [X] Apply overloading

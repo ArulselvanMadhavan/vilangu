@@ -498,3 +498,45 @@ llvm::Value *IRCodegenVisitor::codegen(const ExprCastIR &expr) {
     return expr.expr->codegen(*this);
   }
 }
+
+llvm::Value *IRCodegenVisitor::codegen(const ExprMethodCallIR &expr) {
+  llvm::Value *thisObj = expr.objExpr->codegen(*this);
+  if (thisObj == nullptr) {
+    llvm::outs() << "methodcall: this object is null";
+    return nullptr;
+  }
+  // thisObj has to be ref type
+  llvm::Type *thisType = thisObj->getType()->getContainedType(0);
+  llvm::Value *vTableFieldPtr = builder->CreateStructGEP(thisType, thisObj, 0);
+  llvm::Value *vTablePtr =
+      builder->CreateLoad(vTableFieldPtr->getType()->getContainedType(0),
+                          vTableFieldPtr, "vTableLoad");
+  llvm::Value *calleeMethodPtr = builder->CreateStructGEP(
+      vTablePtr->getType()->getPointerElementType(), vTablePtr, expr.methodIdx);
+  llvm::Value *calleeMethodVal =
+      builder->CreateLoad(calleeMethodPtr->getType()->getContainedType(0),
+                          calleeMethodPtr, "methodLoad");
+  if (auto calleeMethTy = llvm::dyn_cast<llvm::FunctionType>(
+          calleeMethodVal->getType()->getContainedType(0))) {
+    llvm::Value *thisArg =
+        builder->CreateBitCast(thisObj, calleeMethTy->getParamType(0));
+    std::vector<llvm::Value *> argVals{thisArg};
+    int i = 0;
+    for (auto &arg : expr.methodArgs) {
+      llvm ::Value *argVal = arg->codegen(*this);
+      if (argVal == nullptr) {
+        llvm::outs() << "methodcall: null arg value at " << i;
+        return nullptr;
+      }
+      llvm::Type *paramTy = calleeMethTy->getParamType(
+          i + 1); // note shift by one since "this" is first arg
+      llvm::Value *bitCastArgVal = builder->CreateBitCast(argVal, paramTy);
+      argVals.push_back(bitCastArgVal);
+      i = i + 1;
+    }
+    return builder->CreateCall(calleeMethTy, calleeMethodVal, argVals);
+  } else {
+    llvm::outs() << "Method function type conversion failed";
+    return nullptr;
+  }
+}

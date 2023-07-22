@@ -71,6 +71,14 @@ ExprArrayMakeIR::ExprArrayMakeIR(
   }
 };
 
+ExprMethodCallIR::ExprMethodCallIR(const Frontend_ir::Expr::_MethodCall &expr) {
+  objExpr = deserializeExpr(expr.obj_expr());
+  for (auto a : expr.method_args()) {
+    methodArgs.push_back(deserializeExpr(a));
+  }
+  methodIdx = expr.method_idx();
+};
+
 std::unique_ptr<ExprIR> deserializeExpr(const Frontend_ir::Expr &expr) {
   switch (expr.value_case()) {
   case Frontend_ir::Expr::kInteger:
@@ -97,6 +105,8 @@ std::unique_ptr<ExprIR> deserializeExpr(const Frontend_ir::Expr &expr) {
     return std::unique_ptr<ExprIR>(new ExprCastIR(expr.castexpr()));
   case Frontend_ir::Expr::kClassCreation:
     return std::unique_ptr<ExprIR>(new ExprClassMakeIR(expr.classcreation()));
+  case Frontend_ir::Expr::kMethodCall:
+    return std::unique_ptr<ExprIR>(new ExprMethodCallIR(expr.methodcall()));
   default:
     // FIXME
     return std::unique_ptr<ExprIR>(new ExprIntegerIR(-1));
@@ -233,5 +243,8 @@ llvm::Value *ExprCastIR::codegen(IRVisitor &visitor) {
   return visitor.codegen(*this);
 }
 llvm::Value *ExprClassMakeIR::codegen(IRVisitor &visitor) {
+  return visitor.codegen(*this);
+}
+llvm::Value *ExprMethodCallIR::codegen(IRVisitor &visitor) {
   return visitor.codegen(*this);
 }

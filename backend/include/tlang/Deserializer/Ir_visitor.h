@@ -18,6 +18,7 @@ public:
   virtual llvm::Value *codegen(const ExprIdentifierIR &expr) = 0;
   virtual llvm::Value *codegen(const ExprAssignIR &expr) = 0;
   virtual llvm::Value *codegen(const ExprCastIR &expr) = 0;
+  virtual llvm::Value *codegen(const ExprMethodCallIR &expr) = 0;
   virtual llvm::Value *codegen(const SimpleVarIR &expr) = 0;
   virtual llvm::Value *codegen(const SubscriptVarIR &expr) = 0;
   virtual llvm::Value *codegen(const FieldVarIR &expr) = 0;
