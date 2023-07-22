@@ -110,6 +110,7 @@ message Expr {
     repeated Expr creation_exprs = 1;
     required Type_expr texpr = 2;
     required int32 make_line_no = 3;
+    // required int32 arr_cons_idx = 4;
   }
 
   message _ClassCreation{

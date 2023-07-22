@@ -275,20 +275,8 @@ llvm::Value *IRCodegenVisitor::codegen(const ExprEmptyIR &expr) {
 llvm::Value *IRCodegenVisitor::codegen(const ExprClassMakeIR &expr) {
   llvm::Type *resultTypePtr = expr.classType->codegen(*this); // i32arr*
   llvm::Type *resultType = resultTypePtr->getContainedType(0);
-  // llvm::AllocaInst *newClassPtr =
-  //     builder->CreateAlloca(resultType, nullptr,
-  //     llvm::Twine("newClassResult"));
-  llvm::Type *int32Type = llvm::Type::getInt32Ty(*context);
-  llvm::Value *intOne = llvm::ConstantInt::getSigned(int32Type, 1);
-  llvm::Value *sizeOfPtr = builder->CreateGEP(
-      resultType,
-      llvm::ConstantPointerNull::get(llvm::PointerType::get(resultType, 0)),
-      intOne, llvm::Twine("sizeOf"));
-  llvm::Value *sizeOf = builder->CreatePtrToInt(sizeOfPtr, int32Type);
-  llvm::Function *calloc = module->getFunction("calloc");
-  auto callocParams = llvm::ArrayRef<llvm::Value *>{intOne, sizeOf};
-  llvm::CallInst *callocRes = builder->CreateCall(calloc, callocParams);
-  llvm::Value *callocHead = builder->CreateBitCast(callocRes, resultTypePtr);
+  llvm::Value *callocHead =
+      builder->CreateBitCast(heapAlloc(resultType), resultTypePtr);
   llvm::Twine classVTableName = resultType->getStructName() + "_Vtable";
   llvm::GlobalVariable *classVtable =
       module->getNamedGlobal(classVTableName.str());
@@ -297,7 +285,7 @@ llvm::Value *IRCodegenVisitor::codegen(const ExprClassMakeIR &expr) {
   builder->CreateStore(classVtable, vTableField);
 
   llvm::Value *constFuncPtr = builder->CreateStructGEP(
-      classVtable->getType()->getContainedType(0), classVtable, 2);
+      classVtable->getType()->getContainedType(0), classVtable, expr.vtableIdx);
   llvm::Value *constFuncVal =
       builder->CreateLoad(constFuncPtr->getType()->getContainedType(0),
                           constFuncPtr, "constructorLoad");
@@ -355,8 +343,9 @@ llvm::Value *IRCodegenVisitor::codegen(const ExprArrayMakeIR &expr) {
     return nullptr;
   }
   // stack allocated
-  llvm::AllocaInst *newArrayResultPtr =
-      builder->CreateAlloca(resultType, nullptr, llvm::Twine("newArrayResult"));
+  llvm::Value *newArrayResultPtr =
+      builder->CreateBitCast(heapAlloc(resultType), resultTypePtr);
+
   llvm::Value *elemPtrPtr =
       builder->CreateStructGEP(resultType, newArrayResultPtr, 1); // elem**
   llvm::Type *elemPtrType = elemPtrPtr->getType()->getContainedType(0);

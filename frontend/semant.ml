@@ -290,12 +290,15 @@ and trans_exp (venv, tenv, exp) =
     in
     let args = List.map (fun { stmt; _ } -> stmt) args_stmty in
     let args_ty = List.map (fun { ty; _ } -> T.type2str ty) args_stmty in
-    let args_ty = T.type2str ty :: args_ty in (* add this as first arg *)
-    let method_name =
-      Ir_gen_env.vtable_method_name (T.type2str ty) args_ty
-    in
+    let args_ty = T.type2str ty :: args_ty in
+    (* add this as first arg *)
+    let method_name = Ir_gen_env.vtable_method_name (T.type2str ty) args_ty in
     let vtbl_idx = Ir_gen_env.find_vtable_index ty method_name in
-    venv, { ty; stmt = A.ClassCreationExp { type_; args; pos; vtbl_idx = Some vtbl_idx } }
+    (* offset vtbl idx by 2 to account for RTTI *)
+    ( venv
+    , { ty
+      ; stmt = A.ClassCreationExp { type_; args; pos; vtbl_idx = Some (vtbl_idx + 2) }
+      } )
   | A.This pos ->
     let venv, { ty; stmt } = trans_var (venv, tenv, A.SimpleVar (E.this_symbol, pos)) in
     venv, { ty; stmt = A.VarExp (stmt, pos) }
@@ -562,7 +565,40 @@ let attach_vtable h tenv =
   let iter_type sym _ty = result := S.update sym update_type !result in
   S.iter iter_type tenv;
   !result
-  
+;;
+
+let add_default_con name class_body =
+  let con = A.Constructor { name; fparams = []; body = A.Block [] } in
+  con :: class_body
+;;
+
+let add_default_des name class_body =
+  let des = A.Destructor { name; body = A.Block [] } in
+  des :: class_body
+;;
+
+let is_constructor = function
+  | A.Constructor _ -> true
+  | _ -> false
+;;
+
+let is_destructor = function
+  | A.Destructor _ -> true
+  | _ -> false
+;;
+
+let add_default_method class_decs ~exists_f ~default_gen =
+  let update_body name class_body =
+    let has_con = Base.List.exists class_body ~f:exists_f in
+    if has_con then class_body else default_gen name class_body
+  in
+  let handle_class (A.ClassDec { name; class_body; base; pos }) =
+    let class_body = update_body name class_body in
+    A.ClassDec { name; class_body; base; pos }
+  in
+  List.map handle_class class_decs
+;;
+
 let trans_class (tenv, class_decs) =
   let open Base in
   (* Add this param to methods and constructors *)
@@ -596,6 +632,13 @@ let trans_class (tenv, class_decs) =
   (* Now update placeholder definitions. For typedef with a T.NAME name, use tenv *)
   let tenv = replace_namerefs tenv in
   (* typedefs are complete. Now add methods *)
+  (* check and add default constructors *)
+  let class_decs =
+    add_default_method class_decs ~exists_f:is_constructor ~default_gen:add_default_con
+  in
+  let class_decs =
+    add_default_method class_decs ~exists_f:is_destructor ~default_gen:add_default_des
+  in
   let tr_class_body tenv (A.ClassDec { name; base; class_body; pos }) =
     let class_body = List.map ~f:(trans_method name tenv) class_body in
     let cdec = A.ClassDec { name; base; class_body; pos } in
@@ -605,7 +648,7 @@ let trans_class (tenv, class_decs) =
   in
   let class_decs = List.map ~f:(tr_class_body tenv) class_decs in
   (* methods will have this inserted in scope. Now generate vtable *)
-  let tenv = attach_vtable h tenv in  
+  let tenv = attach_vtable h tenv in
   tenv, class_decs (* sorted by depth *)
 ;;
 

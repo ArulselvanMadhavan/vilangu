@@ -160,25 +160,13 @@ let gen_fun_def tenv = function
     let params = gen_params tenv fparams in
     let body = gen_stmt tenv body in
     FT.{ name; return_t = FT.Void; params; body } |> Option.some
+  | A.Destructor {name; body} ->
+     let name, _ = name in
+     let name = Ir_gen_env.vtable_method_name name [] in
+     let body = gen_stmt tenv body in
+     Some (FT.{name; return_t = FT.Void; params = []; body})
   | _ -> None
 ;;
-
-(* let is_constructor = function *)
-(*   | A.Constructor _ -> true *)
-(*   | _ -> false *)
-(* ;; *)
-
-let add_default_con name class_body =
-  let con =
-    A.Constructor { name; fparams = [ Semant.build_this_param name ]; body = A.Block [] }
-  in
-  con :: class_body
-;;
-
-(* let add_default_const name class_body = *)
-(*   let has_con = Base.List.exists class_body ~f:is_constructor in *)
-(*   if has_con then class_body else add_default_con name class_body *)
-(* ;; *)
 
 let ir_gen_class_defn tenv (A.ClassDec { name; base; class_body; _ }) =
   let class_defn =
@@ -210,7 +198,6 @@ let make_array_class name rank type_ =
   let lower_rank = rank - 1 in
   let lower_type = mk_arr_inner_type lower_rank type_ in
   let base_class_name, _ = Env.obj_symbol in
-  (* vtable - empty list *)
   FT.{ name; fields = [ lower_type; FT.Int32 ]; base_class_name; vtable = [] }
 ;;
 
@@ -415,7 +402,7 @@ let arr_class_defns venv tenv main_decl =
 let obj_class_defn =
   let name, _ = E.obj_symbol in
   let obj_methods =
-    let obj_cons = add_default_con E.obj_symbol [] in
+    let obj_cons = Semant.add_default_con E.obj_symbol [] in
     List.filter_map (gen_fun_def E.base_tenv) obj_cons
   in
   (* FIXME: Check vtable *)
