@@ -556,7 +556,6 @@ let attach_vtable h tenv =
     | Some (T.NAME (id, fields, base, _)) ->
       let class_name, _ = id in
       let vtable = get_annot_methods h tenv class_name in
-      List.iter print_string vtable;
       Some (T.NAME (id, fields, base, vtable))
     | x -> x
   in
@@ -605,7 +604,6 @@ let trans_class (tenv, class_decs) =
     cdec
   in
   let class_decs = List.map ~f:(tr_class_body tenv) class_decs in
-  Stdlib.Printf.printf "After:%d\n" (Hashtbl.length h);
   (* methods will have this inserted in scope. Now generate vtable *)
   let tenv = attach_vtable h tenv in  
   tenv, class_decs (* sorted by depth *)

@@ -26,6 +26,7 @@ any desired architecture.
 - [X] translate methods after class_decs are fully inserted into tenv;
   Because the body of the constructor may use fields from classes that
   aren’t fully constructed yet.
+- [ ] Debug the failing protobuf
 - [ ] Generate fun def for constructor
 - [ ] Add default const
 - [ ] Generate class_name_meth_name_param_type name

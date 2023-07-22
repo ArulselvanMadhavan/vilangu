@@ -6,6 +6,7 @@
 #include "llvm/IR/Constants.h"
 #include "llvm/IR/Type.h"
 #include "llvm/IR/Value.h"
+#include <llvm-14/llvm/Support/Casting.h>
 #include <llvm/ADT/ArrayRef.h>
 #include <llvm/ADT/StringRef.h>
 #include <llvm/IR/DataLayout.h>
@@ -295,15 +296,23 @@ llvm::Value *IRCodegenVisitor::codegen(const ExprClassMakeIR &expr) {
       builder->CreateStructGEP(resultType, callocHead, 0);
   builder->CreateStore(classVtable, vTableField);
 
-  // llvm::Twine constructorName = resultType->getStructName() + "_Constructor";
-  // llvm::Function *constFunc = module->getFunction(constructorName.str());
-  // std::vector<llvm::Value *> constArgs;
-  // constArgs.push_back(callocHead); // Pass this as first arg
-  // for (auto &e : expr.conArgs) {
-  //   llvm::Value *e_val = e->codegen(*this);
-  //   constArgs.push_back(e_val);
-  // }
-  // builder->CreateCall(constFunc, constArgs);
+  llvm::Value *constFuncPtr = builder->CreateStructGEP(
+      classVtable->getType()->getContainedType(0), classVtable, 2);
+  llvm::Value *constFuncVal =
+      builder->CreateLoad(constFuncPtr->getType()->getContainedType(0),
+                          constFuncPtr, "constructorLoad");
+  std::vector<llvm::Value *> constArgs;
+  constArgs.push_back(callocHead); // Pass this as first arg
+  for (auto &e : expr.conArgs) {
+    llvm::Value *e_val = e->codegen(*this);
+    constArgs.push_back(e_val);
+  }
+  if (auto fnType = llvm::dyn_cast<llvm::FunctionType>(
+          constFuncVal->getType()->getContainedType(0))) {
+    builder->CreateCall(fnType, constFuncVal, constArgs);
+  } else {
+    llvm::outs() << "vtable lookup returned a non-function type";
+  }
   return callocHead;
 }
 

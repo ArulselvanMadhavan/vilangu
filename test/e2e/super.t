@@ -1,7 +1,6 @@
 class A {
   int a;
   A(int i){
-    super();
     this.a = i;
   }
 }

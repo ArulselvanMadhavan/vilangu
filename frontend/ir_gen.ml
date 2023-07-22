@@ -157,7 +157,6 @@ let gen_fun_def tenv = function
     let name, _ = name in
     let args = List.map (Semant.param_to_type tenv) fparams in
     let name = Ir_gen_env.vtable_method_name name args in
-    List.length fparams |> Printf.printf "len:%s|%d\n" name;
     let params = gen_params tenv fparams in
     let body = gen_stmt tenv body in
     FT.{ name; return_t = FT.Void; params; body } |> Option.some

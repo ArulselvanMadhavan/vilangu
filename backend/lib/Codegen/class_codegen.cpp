@@ -69,6 +69,12 @@ void IRCodegenVisitor::codegenVTables(
       inits.push_back(temp);
     }
 
+    for (auto &methodName : currClass->vtable) {
+      llvm::Function *method = module->getFunction(llvm::StringRef(methodName));
+      inits.push_back(method);
+      bodyTypes.push_back(method->getType());
+    }
+
     // Complete vtable type defs
     vTableTy->setBody(llvm::ArrayRef<llvm::Type *>(bodyTypes));
     std::string vTableName = getVtableName(currClass->className);
