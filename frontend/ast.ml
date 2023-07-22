@@ -92,14 +92,16 @@ and stmt =
       ; pos : pos
       }
 
+and identifier = Identifier of Symbol.symbol * pos
+
 and exp =
-  | Identifier of symbol * pos
   | IntLit of int32 * pos
   | OpExp of operator * pos
   | ArrayCreationExp of
       { type_ : type_
       ; exprs : exp list
       ; pos : pos
+      ; vtbl_idx : int option
       }
   | ClassCreationExp of
       { type_ : type_
@@ -113,9 +115,10 @@ and exp =
   | Super of pos
   | MethodCall of
       { base : exp
-      ; field : exp option
+      ; field : identifier option
       ; args : exp list
       ; pos : pos
+      ; vtbl_idx : int option
       }
   | CastEvalExp of
       { to_ : exp

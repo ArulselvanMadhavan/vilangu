@@ -221,9 +221,9 @@ and trans_exp (venv, tenv, exp) =
     let venv, { ty = exp_ty; stmt = rhs_exp } = trans_exp (venv, tenv, exp) in
     let rhs_exp = assignment_cast tenv (var_ty, exp_ty, pos, rhs_exp) in
     venv, { stmt = A.Assignment { lhs = lhs_var; exp = rhs_exp; pos }; ty = T.VOID }
-  | A.Identifier (id, pos) as exp ->
-    let venv, { ty; _ } = trans_var (venv, tenv, A.SimpleVar (id, pos)) in
-    venv, { stmt = exp; ty }
+  (* | A.Identifier (id, pos) as exp -> *)
+  (*   let venv, { ty; _ } = trans_var (venv, tenv, A.SimpleVar (id, pos)) in *)
+  (*   venv, { stmt = exp; ty } *)
   | A.OpExp (A.BinaryOp { left; oper; right }, pos) ->
     let venv, { stmt = lexp; ty = lty } = trans_exp (venv, tenv, left) in
     let venv, { stmt = rexp; ty = rty } = trans_exp (venv, tenv, right) in
@@ -247,7 +247,7 @@ and trans_exp (venv, tenv, exp) =
           (oper_str ^ " is applied on incompatible type: " ^ T.type2str ty)
           (err_stmty exp) ))
   | A.IntLit _ as exp -> venv, { ty = T.INT; stmt = exp }
-  | A.ArrayCreationExp { type_; exprs; pos } as exp ->
+  | A.ArrayCreationExp { type_; exprs; pos; _ } as acexp ->
     (* let expr_rank = List.length exprs in *)
     let is_int acc exp =
       let _venv, { ty = res_ty; _ } = trans_exp (venv, tenv, exp) in
@@ -256,10 +256,9 @@ and trans_exp (venv, tenv, exp) =
     let is_int_exprs = List.fold_left is_int true exprs in
     if is_int_exprs
     then (
-      (* let type_ = A.append_rank_to_type expr_rank type_ in *)
       let ty = trans_type tenv type_ in
-      venv, { stmt = exp; ty })
-    else venv, (error pos "Array Creation Expr has non int dim") (err_stmty exp)
+      venv, { stmt = A.ArrayCreationExp { type_; exprs; pos; vtbl_idx = Some 2 }; ty })
+    else venv, (error pos "Array Creation Expr has non int dim") (err_stmty acexp)
   | A.VarExp (v, pos) ->
     let venv, { ty; stmt } = trans_var (venv, tenv, v) in
     venv, { stmt = A.VarExp (stmt, pos); ty }
@@ -342,9 +341,16 @@ let rec trans_stmt (venv, tenv, stmt) =
     then venv, { stmt = A.IfElse { exp = tr_exp; istmt; estmt; pos }; ty = ires.ty }
     else venv, error pos "If and else branch types don't match" (err_stmty stmt)
   | A.Delete (exp, pos) as orig ->
-    let venv, { stmt; ty } = trans_exp (venv, tenv, exp) in
+    let venv, { ty; stmt } = trans_exp (venv, tenv, exp) in
     if T.is_ref ty
-    then venv, { stmt = A.Delete (stmt, pos); ty }
+    then (
+      let method_name = "~" ^ T.type2str ty in
+      (* Printf.printf "%s\n" method_name; *)
+      let method_name = Symbol.symbol method_name in
+      let field = Some (A.Identifier (method_name, pos)) in
+      let stmt = A.MethodCall { base = stmt; field; args = []; pos; vtbl_idx = Some 3 } in
+      let stmt = A.ExprStmt stmt in
+      venv, { stmt; ty })
     else
       ( venv
       , error

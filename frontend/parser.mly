@@ -108,8 +108,8 @@ let const_body :=
   | ~=block; { block }
 
 let const_invoc :=
-  | THIS; ~=arguments; SEMICOLON; { MethodCall { base = (This (lp($loc))); field = None; args = arguments; pos = lp($loc) } }
-  | SUPER; ~=arguments; SEMICOLON; { MethodCall { base = (Super (lp($loc))); field = None; args = arguments; pos = lp($loc) } }
+  | THIS; ~=arguments; SEMICOLON; { MethodCall { base = (This (lp($loc))); field = None; args = arguments; pos = lp($loc) ; vtbl_idx = None } }
+  | SUPER; ~=arguments; SEMICOLON; { MethodCall { base = (Super (lp($loc))); field = None; args = arguments; pos = lp($loc) ; vtbl_idx = None} }
 
 let dest_decl :=
   | ~=dest_desc; ~=dest_body; { Destructor {name = dest_desc; body = dest_body } }
@@ -261,10 +261,10 @@ let class_inst_creation :=
 
 let arrayexpr :=
   | NEW; ~=prim_type; ~=dimexprs; empty_dims=dimensions; {
-     ArrayCreationExp {type_=append_rank_to_type (empty_dims + (List.length dimexprs)) prim_type; exprs=dimexprs; pos = lp($loc)}}
-  | NEW; ~=prim_type; ~=dimexprs; { ArrayCreationExp {type_ = append_rank_to_type (List.length dimexprs) prim_type; exprs=dimexprs; pos= lp($loc)} }
-  | NEW; type_=class_type; ~=dimexprs; empty_dims=dimensions; { ArrayCreationExp {type_ = append_rank_to_type (empty_dims + (List.length dimexprs)) (Reference type_); exprs=dimexprs; pos = lp($loc)}}
-  | NEW; type_=class_type; ~=dimexprs; { ArrayCreationExp {type_ = append_rank_to_type (List.length dimexprs) (Reference type_); exprs=dimexprs; pos = lp($loc)}}
+     ArrayCreationExp {type_=append_rank_to_type (empty_dims + (List.length dimexprs)) prim_type; exprs=dimexprs; pos = lp($loc); vtbl_idx = None}}
+  | NEW; ~=prim_type; ~=dimexprs; { ArrayCreationExp {type_ = append_rank_to_type (List.length dimexprs) prim_type; exprs=dimexprs; pos= lp($loc); vtbl_idx = None} }
+  | NEW; type_=class_type; ~=dimexprs; empty_dims=dimensions; { ArrayCreationExp {type_ = append_rank_to_type (empty_dims + (List.length dimexprs)) (Reference type_); exprs=dimexprs; pos = lp($loc); vtbl_idx = None}}
+  | NEW; type_=class_type; ~=dimexprs; { ArrayCreationExp {type_ = append_rank_to_type (List.length dimexprs) (Reference type_); exprs=dimexprs; pos = lp($loc); vtbl_idx = None}}
 
 let dimexprs :=
   | ~=dimexprs; ~=dimexpr; { dimexpr :: dimexprs }
@@ -285,9 +285,9 @@ let field_access :=
   | SUPER; DOT; ~=id; { FieldVar ((Super (lp($loc))), id, (-1), lp($loc)) }
 
 let mth_invoc :=
-  | ~=id; ~=arguments; { MethodCall {base = Identifier (id, lp($loc)); field = None; args = arguments; pos = lp($loc)} }
-  | ~=primary;  DOT; ~=id; ~=arguments; { MethodCall {base = primary; field = Some (Identifier (id, lp($loc))); args = arguments; pos = lp($loc)} }
-  | SUPER; DOT; ~=id; ~=arguments; { MethodCall {base=(Super (lp($loc))); field=Some (Identifier (id, lp($loc))); args=arguments; pos = lp($loc)} }
+  | ~=id; ~=arguments; { MethodCall {base = VarExp (SimpleVar (id, lp($loc)), lp($loc)); field = None; args = arguments; pos = lp($loc); vtbl_idx = None} }
+  | ~=primary;  DOT; ~=id; ~=arguments; { MethodCall {base = primary; field = Some (Identifier (id, lp($loc))); args = arguments; pos = lp($loc); vtbl_idx = None} }
+  | SUPER; DOT; ~=id; ~=arguments; { MethodCall {base=(Super (lp($loc))); field=Some (Identifier (id, lp($loc))); args=arguments; pos = lp($loc); vtbl_idx = None} }
 
 let primary_no_new_array :=
   | ~=array_access; { array_access }

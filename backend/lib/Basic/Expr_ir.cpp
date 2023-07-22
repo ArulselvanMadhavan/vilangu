@@ -65,6 +65,7 @@ ExprArrayMakeIR::ExprArrayMakeIR(
     const Frontend_ir::Expr::_ArrayCreation &expr) {
   varType = deserializeType(expr.texpr());
   lineNo = expr.make_line_no();
+  arrConsIdx = expr.arr_cons_idx();
   for (auto e : expr.creation_exprs()) {
     creationExprs.push_back(deserializeExpr(e));
   }

@@ -114,6 +114,7 @@ struct ExprEmptyIR : public ExprIR {
 struct ExprArrayMakeIR : public ExprIR {
   std::vector<std::unique_ptr<ExprIR>> creationExprs;
   std::unique_ptr<TypeIR> varType;
+  int arrConsIdx;
   int lineNo;
   ExprArrayMakeIR(const Frontend_ir::Expr::_ArrayCreation &expr);
   virtual llvm::Value *codegen(IRVisitor &visitor) override;
@@ -139,6 +140,14 @@ struct ExprCastIR : public ExprIR {
   enum CastType castType;
   int castLineNo;
   ExprCastIR(const Frontend_ir::Expr::_CastExpr);
+  virtual llvm::Value *codegen(IRVisitor &visitor) override;
+};
+
+struct ExprMethodCallIR : public ExprIR {
+  std::unique_ptr<ExprIR> objExpr;
+  std::vector<std::unique_ptr<ExprIR>> methodArgs;
+  int methodIdx;
+  ExprMethodCallIR(const Frontend_ir::Expr::_MethodCall &expr);
   virtual llvm::Value *codegen(IRVisitor &visitor) override;
 };
 

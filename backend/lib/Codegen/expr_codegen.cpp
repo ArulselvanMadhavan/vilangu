@@ -364,13 +364,24 @@ llvm::Value *IRCodegenVisitor::codegen(const ExprArrayMakeIR &expr) {
   llvm::Value *callocHead = builder->CreateBitCast(callocRes, elemPtrType);
 
   // constructor
-  llvm::Twine resultTypeStr = resultType->getStructName() + "_Constructor";
-  llvm::Function *constructorFunc = module->getFunction(resultTypeStr.str());
+  // llvm::Twine resultTypeStr = resultType->getStructName() + "_Constructor";
+  // llvm::Function *constructorFunc = module->getFunction(resultTypeStr.str());
   llvm::Twine arrVTableName = resultType->getStructName() + "_Vtable";
   llvm::GlobalVariable *arrVtable = module->getNamedGlobal(arrVTableName.str());
-  builder->CreateCall(constructorFunc,
-                      llvm::ArrayRef<llvm::Value *>{
-                          newArrayResultPtr, arrVtable, callocHead, size});
+  llvm::Value *constFuncPtr = builder->CreateStructGEP(
+      arrVtable->getType()->getContainedType(0), arrVtable, expr.arrConsIdx);
+  llvm::Value *constFuncVal =
+      builder->CreateLoad(constFuncPtr->getType()->getContainedType(0),
+                          constFuncPtr, "constructorLoad");
+  llvm::ArrayRef<llvm::Value *> constArgs = {newArrayResultPtr, arrVtable,
+                                             callocHead, size};
+  if (auto fnType = llvm::dyn_cast<llvm::FunctionType>(
+          constFuncVal->getType()->getContainedType(0))) {
+    builder->CreateCall(fnType, constFuncVal, constArgs);
+  } else {
+    llvm::outs() << "vtable lookup returned a non-function type";
+  }
+  // builder->CreateCall(constructorFunc, constArgs);
   return newArrayResultPtr; // i32arr*
 }
 
