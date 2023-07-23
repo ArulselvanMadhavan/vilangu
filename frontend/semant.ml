@@ -301,6 +301,24 @@ and trans_exp (venv, tenv, exp) =
   | A.This pos ->
     let venv, { ty; stmt } = trans_var (venv, tenv, A.SimpleVar (E.this_symbol, pos)) in
     venv, { ty; stmt = A.VarExp (stmt, pos) }
+  | A.MethodCall { base; field; args; pos; _ } as exp ->
+    let venv, { stmt = base; ty } = trans_exp (venv, tenv, base) in
+    (match ty with
+     | T.NAME (_, _, _, _vtable) ->
+       let method_name = Option.fold ~none:"" ~some:(fun (A.Identifier ((name, _), _)) -> name) field in
+       let venv, args = Base.List.fold ~init:(venv, []) ~f:(fun (venv, acc) e ->
+         let venv, stm_ty = trans_exp (venv, tenv, e) in
+         venv, stm_ty :: acc
+         ) args in
+       let this_ty = T.type2str ty in                       
+       let args_ty = List.map (fun {ty; _} -> T.type2str ty) args in
+       let args = List.map (fun {stmt; _} -> stmt) args in
+       let args_ty = this_ty :: args_ty in
+       let vname = Ir_gen_env.vtable_method_name method_name args_ty in
+       let vtbl_idx = Ir_gen_env.find_vtable_index ty vname in
+       let stmt = A.MethodCall { base; field; args; pos; vtbl_idx = Some vtbl_idx } in
+       venv, { stmt; ty = T.NULL }
+     | _ -> venv, error pos ("method not avail on type:" ^ T.type2str ty) (err_stmty exp))
   | _ as exp -> venv, err_stmty exp
 ;;
 
@@ -544,12 +562,21 @@ let rec get_annot_methods h tenv class_name =
   let gen_method_name name fparams =
     let name, _ = name in
     let fparams = List.map fparams ~f:(param_to_type tenv) in
-    Some (Ir_gen_env.vtable_method_name name fparams)
+    (Ir_gen_env.vtable_method_name name fparams)
+  in
+  let get_return_type (A.Return {type_}) =
+    trans_type tenv type_
   in
   let is_method = function
-    | A.Method { name; fparams; _ } | A.Constructor { name; fparams; _ } ->
-      gen_method_name name fparams
-    | A.Destructor { name; _ } -> gen_method_name name []
+    | A.Method { name; fparams; return_t; _ } ->
+      let ret_ty = get_return_type return_t in
+      Some (gen_method_name name fparams, ret_ty)
+    | A.Constructor {name; fparams; _} ->
+      let pos = (-1, -1) in
+      let pos = pos, pos in
+      let type_ = A.Reference (A.ClassType (name, pos)) in
+      Some (gen_method_name name fparams, trans_type tenv type_)
+    | A.Destructor { name; _ } -> Some (gen_method_name name [], Types.VOID)
     | _ -> None
   in
   let get_methods (A.ClassDec { class_body; base; _ }) =
@@ -609,6 +636,17 @@ let add_default_method class_decs ~exists_f ~default_gen =
   List.map handle_class class_decs
 ;;
 
+let object_class_dec =
+  let name = E.obj_symbol in
+  let des_name, _ = name in
+  let des_name = Symbol.symbol ("~" ^ des_name) in
+  let class_body = add_default_con name [] in
+  let class_body = add_default_des des_name class_body in
+  let pos = -1, -1 in
+  let pos = pos, pos in
+  A.ClassDec { name; class_body; base = None; pos }
+;;
+
 let trans_class (tenv, class_decs) =
   let open Base in
   (* Add this param to methods and constructors *)
@@ -641,7 +679,9 @@ let trans_class (tenv, class_decs) =
   (* All type defns are complete. *)
   (* Now update placeholder definitions. For typedef with a T.NAME name, use tenv *)
   let tenv = replace_namerefs tenv in
-  (* typedefs are complete. Now add methods *)
+  (* typedefs are complete.*)
+  (* add object class *)
+  let class_decs = object_class_dec :: class_decs in
   (* check and add default constructors *)
   let class_decs =
     add_default_method class_decs ~exists_f:is_constructor ~default_gen:add_default_con

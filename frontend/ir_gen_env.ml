@@ -35,7 +35,7 @@ let vtable_method_name method_name arg_types =
 let find_vtable_index ty method_name =
   match ty with
   | T.NAME (_, _, _, vtable) ->
-    let vtbl_idx = Base.List.findi vtable ~f:(fun _i e -> String.equal e method_name) in
+    let vtbl_idx = Base.List.findi vtable ~f:(fun _i (vname, _) -> String.equal vname method_name) in
     let vtbl_idx, _ =
       Base.Option.value_exn ~message:("vtbl entry not found " ^ method_name) vtbl_idx
     in
