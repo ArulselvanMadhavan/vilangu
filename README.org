@@ -37,9 +37,10 @@ any desired architecture.
 - [X] Destructor for other classes
   - [X] Object should have a destructor method. It should do nothing.
 - [X] Test user provided destructor
-- [ ] Constructor invocation
-  - [ ] Check if first line is an explicit const invocation
-  - [ ] Serious bug. post super call. changes are not visible.
+- [-] Constructor invocation
+  - [ ] Check if first line is an explicit const invocation. Restrict
+    to this/super
+  - [X] Serious bug. post super call. changes are not visible.
 - [ ] Overload testing
 - [-] support for super
   - [X] in destructor

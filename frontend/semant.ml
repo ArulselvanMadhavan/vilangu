@@ -310,12 +310,18 @@ and trans_exp (venv, tenv, exp) =
   | A.This pos ->
     let venv, { ty; stmt } = trans_var (venv, tenv, A.SimpleVar (E.this_symbol, pos)) in
     venv, { ty; stmt = A.VarExp (stmt, pos) }
+  | A.Super pos ->
+    let venv, { ty; stmt } = trans_var (venv, tenv, A.SimpleVar (E.super_symbol, pos)) in
+    venv, { ty; stmt = A.VarExp (stmt, pos) }
   | A.MethodCall { base; field; args; pos; _ } as exp ->
     let venv, { stmt = base; ty } = trans_exp (venv, tenv, base) in
     (match ty with
      | T.NAME (_, _, _, _vtable) ->
        let method_name =
-         Option.fold ~none:"" ~some:(fun (A.Identifier ((name, _), _)) -> name) field
+         Option.fold
+           ~none:(T.type2str ty)
+           ~some:(fun (A.Identifier ((name, _), _)) -> name)
+           field
        in
        let venv, args =
          Base.List.fold
@@ -579,9 +585,7 @@ let handle_const_body base stmt =
     | A.Block stmts ->
       let stmt1 = Base.List.hd stmts in
       let super_opt = check_and_append stmt1 in
-      let stmts = Base.Option.fold super_opt ~init:stmts ~f:(fun acc s ->
-          s :: acc
-        ) in
+      let stmts = Base.Option.fold super_opt ~init:stmts ~f:(fun acc s -> s :: acc) in
       A.Block stmts
     | x -> x
   in
@@ -590,7 +594,7 @@ let handle_const_body base stmt =
 
 let trans_method base class_name tenv = function
   | A.Constructor { name; fparams; body; pos } ->
-        let body = handle_const_body base body in
+    let body = handle_const_body base body in
     let fparams, body = handle_method tenv name fparams body in
     A.Constructor { name; fparams; body; pos }
   | A.Method { name; fparams; body; return_t } ->

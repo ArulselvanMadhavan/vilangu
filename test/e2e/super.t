@@ -4,6 +4,7 @@ class A {
     this.a = 10;
   }
   A(int i){
+    this();
     this.a = i;
   }
   A(int i, int j){
