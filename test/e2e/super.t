@@ -4,7 +4,6 @@ class A {
     this.a = 10;
   }
   A(int i){
-    out this.a; // we are not seeing the changes here.
     this.a = i;
   }
   A(int i, int j){
@@ -38,6 +37,7 @@ int main() {
   iarr = new int[5];
   iarr[0] = 45;
   out iarr[0];
+  out c.a;
   delete iarr; // method call to the one and only destructor
   delete a;
   delete c;
