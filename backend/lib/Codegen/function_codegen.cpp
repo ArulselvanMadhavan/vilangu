@@ -40,9 +40,12 @@ void IRCodegenVisitor::codegenFunctionDefn(const FunctionIR &function) {
     llvm::Type *paramType = llvmFun->getFunctionType()->getParamType(paramNo);
     varEnv[paramName] =
         builder->CreateAlloca(paramType, nullptr, llvm::Twine(paramName));
+    if(paramName == "this"){
+      varEnv["super"] = builder->CreateAlloca(paramType, nullptr, llvm::Twine("super"));
+      builder->CreateStore(&param, varEnv["super"]);
+    }
     builder->CreateStore(&param, varEnv[paramName]);
   }
-
   // gen code for body of function
   llvm::Value *returnValue; // this is the value of the last expr in the body
   returnValue = function.body->codegen(*this);

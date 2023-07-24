@@ -171,11 +171,13 @@ let gen_fun_def tenv = function
     let params = gen_params tenv fparams in
     let body = gen_stmt tenv body in
     FT.{ name; return_t = FT.Void; params; body } |> Option.some
-  | A.Destructor { name; body } ->
+  | A.Destructor { name; body; fparams } ->
     let name, _ = name in
-    let name = Ir_gen_env.vtable_method_name name [] in
+    let args = List.map (Semant.param_to_type tenv) fparams in
+    let name = Ir_gen_env.vtable_method_name name args in
+    let params = gen_params tenv fparams in
     let body = gen_stmt tenv body in
-    Some FT.{ name; return_t = FT.Void; params = []; body }
+    Some FT.{ name; return_t = FT.Void; params; body }
   | _ -> None
 ;;
 
@@ -206,20 +208,23 @@ let mk_arr_inner_type lower_rank type_ =
   else FT.Pointer { data = T.gen_type_expr type_ }
 ;;
 
-let make_array_class name rank type_ =
+let make_array_class tenv name rank type_ =
   let lower_rank = rank - 1 in
   let lower_type = mk_arr_inner_type lower_rank type_ in
   let base_class_name, _ = Env.obj_symbol in
   (* cons + dest *)
   let arr_ty = T.type2str (T.ARRAY (rank, type_)) in
   let cons_method = arr_ty ^ "_Constructor" in
-  let dest_method = "~" ^ arr_ty in
-  FT.
-    { name
-    ; fields = [ lower_type; FT.Int32 ]
-    ; base_class_name
-    ; vtable = [ cons_method; dest_method ]
-    }
+  let dest_method = Ir_gen_env.vtable_method_name ("~" ^ arr_ty) [ arr_ty ] in
+  let arr_vtable = [ dest_method; cons_method ] in
+  let vtable =
+    match S.look (tenv, E.obj_symbol) with
+    | Some (T.NAME (_, _, _, vtable)) ->
+      let vtable = List.map (fun (v, _) -> v) vtable in
+      List.append vtable arr_vtable
+    | _ -> arr_vtable
+  in
+  FT.{ name; fields = [ lower_type; FT.Int32 ]; base_class_name; vtable }
 ;;
 
 let mk_arr_destr rank type_ =
@@ -231,11 +236,13 @@ let mk_arr_destr rank type_ =
       ; field_line_no = Int32.zero
       }
   in
+  (* let super_call = FT.Method_call {obj_expr = FT.Var_exp} in *)
   let del_stmt = FT.Free { free_expr = FT.Var_exp (this_field Int32.one) } in
   let body = FT.Block { stmt_list = [ del_stmt ] } in
   let params = [ FT.{ param_name = "this"; param_type = cur_type } ] in
   let arr_ty = T.ARRAY (rank, type_) in
   let name = "~" ^ T.type2str arr_ty in
+  let name = Ir_gen_env.vtable_method_name name [ T.type2str arr_ty ] in
   FT.{ name; params; body; return_t = FT.Void }
 ;;
 
@@ -397,7 +404,7 @@ let arr_class_defns venv tenv main_decl =
     then ()
     else (
       Base.Hash_set.add h name;
-      let array_class = make_array_class name rank type_ in
+      let array_class = make_array_class tenv name rank type_ in
       class_results := array_class :: !class_results)
   in
   let add_cons_dest type_ rank ~fun_gen =

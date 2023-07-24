@@ -11,6 +11,11 @@ let line_no pos =
   Int32.of_int sl |> Option.value ~default:(Int32.neg Int32.one)
 ;;
 
+let default_pos =
+  let loc = -1, -1 in
+  loc, loc
+;;
+
 type comp_unit =
   { main_decl : main list
   ; class_decs : classdec list
@@ -49,6 +54,7 @@ and class_body =
   | Destructor of
       { name : symbol
       ; body : stmt
+      ; fparams : param list
       }
 
 and param =

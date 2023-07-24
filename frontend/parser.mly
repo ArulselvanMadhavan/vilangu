@@ -112,7 +112,7 @@ let const_invoc :=
   | SUPER; ~=arguments; SEMICOLON; { MethodCall { base = (Super (lp($loc))); field = None; args = arguments; pos = lp($loc) ; vtbl_idx = None} }
 
 let dest_decl :=
-  | ~=dest_desc; ~=dest_body; { Destructor {name = dest_desc; body = dest_body } }
+  | ~=dest_desc; ~=dest_body; { Destructor {name = dest_desc; body = dest_body ; fparams = []} }
 
 let dest_desc :=
   | TILDE; ~=id; LPAREN; RPAREN; { let name, i = id in ("~" ^ name, i)}

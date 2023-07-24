@@ -30,6 +30,9 @@ let err_stmty_unit = { stmt = (); ty = T.NULL }
 
 exception AstTypeNotFound
 exception ThisTypeNotFound
+exception SuperTypeNotFound
+exception NameRefToNameException
+exception ExpectedClassType
 
 let get_ast_type pos = function
   | T.INT -> A.Primitive (Env.int_symbol, pos)
@@ -257,7 +260,8 @@ and trans_exp (venv, tenv, exp) =
     if is_int_exprs
     then (
       let ty = trans_type tenv type_ in
-      venv, { stmt = A.ArrayCreationExp { type_; exprs; pos; vtbl_idx = Some 2 }; ty })
+      (* Constructor is at vtable index 5 *)
+      venv, { stmt = A.ArrayCreationExp { type_; exprs; pos; vtbl_idx = Some 5 }; ty })
     else venv, (error pos "Array Creation Expr has non int dim") (err_stmty acexp)
   | A.VarExp (v, pos) ->
     let venv, { ty; stmt } = trans_var (venv, tenv, v) in
@@ -266,9 +270,8 @@ and trans_exp (venv, tenv, exp) =
     let venv, { stmt; ty = exp_ty } = trans_exp (venv, tenv, exp) in
     let cast_ty = trans_type tenv type_ in
     (* obj | i32arr *)
-    let dummy_pos = (-1, -1), (-1, -1) in
     let stmt =
-      match compare_and_cast tenv dummy_pos cast_ty exp_ty with
+      match compare_and_cast tenv A.default_pos cast_ty exp_ty with
       | Some A.Wide, _ -> A.CastType { type_; exp = stmt; cast_type = Some A.Wide; pos }
       | Some A.Narrow, _ ->
         A.CastType { type_; exp = stmt; cast_type = Some A.Narrow; pos }
@@ -294,10 +297,7 @@ and trans_exp (venv, tenv, exp) =
     let method_name = Ir_gen_env.vtable_method_name (T.type2str ty) args_ty in
     let vtbl_idx = Ir_gen_env.find_vtable_index ty method_name in
     (* offset vtbl idx by 2 to account for RTTI *)
-    ( venv
-    , { ty
-      ; stmt = A.ClassCreationExp { type_; args; pos; vtbl_idx = Some (vtbl_idx + 2) }
-      } )
+    venv, { ty; stmt = A.ClassCreationExp { type_; args; pos; vtbl_idx = Some vtbl_idx } }
   | A.This pos ->
     let venv, { ty; stmt } = trans_var (venv, tenv, A.SimpleVar (E.this_symbol, pos)) in
     venv, { ty; stmt = A.VarExp (stmt, pos) }
@@ -305,14 +305,20 @@ and trans_exp (venv, tenv, exp) =
     let venv, { stmt = base; ty } = trans_exp (venv, tenv, base) in
     (match ty with
      | T.NAME (_, _, _, _vtable) ->
-       let method_name = Option.fold ~none:"" ~some:(fun (A.Identifier ((name, _), _)) -> name) field in
-       let venv, args = Base.List.fold ~init:(venv, []) ~f:(fun (venv, acc) e ->
-         let venv, stm_ty = trans_exp (venv, tenv, e) in
-         venv, stm_ty :: acc
-         ) args in
-       let this_ty = T.type2str ty in                       
-       let args_ty = List.map (fun {ty; _} -> T.type2str ty) args in
-       let args = List.map (fun {stmt; _} -> stmt) args in
+       let method_name =
+         Option.fold ~none:"" ~some:(fun (A.Identifier ((name, _), _)) -> name) field
+       in
+       let venv, args =
+         Base.List.fold
+           ~init:(venv, [])
+           ~f:(fun (venv, acc) e ->
+             let venv, stm_ty = trans_exp (venv, tenv, e) in
+             venv, stm_ty :: acc)
+           args
+       in
+       let this_ty = T.type2str ty in
+       let args_ty = List.map (fun { ty; _ } -> T.type2str ty) args in
+       let args = List.map (fun { stmt; _ } -> stmt) args in
        let args_ty = this_ty :: args_ty in
        let vname = Ir_gen_env.vtable_method_name method_name args_ty in
        let vtbl_idx = Ir_gen_env.find_vtable_index ty vname in
@@ -360,21 +366,30 @@ let rec trans_stmt (venv, tenv, stmt) =
     else venv, error pos "If and else branch types don't match" (err_stmty stmt)
   | A.Delete (exp, pos) as orig ->
     let venv, { ty; stmt } = trans_exp (venv, tenv, exp) in
-    if T.is_ref ty
-    then (
-      let method_name = "~" ^ T.type2str ty in
-      (* Printf.printf "%s\n" method_name; *)
-      let method_name = Symbol.symbol method_name in
-      let field = Some (A.Identifier (method_name, pos)) in
-      let stmt = A.MethodCall { base = stmt; field; args = []; pos; vtbl_idx = Some 3 } in
-      let stmt = A.ExprStmt stmt in
-      venv, { stmt; ty })
-    else
-      ( venv
-      , error
-          pos
-          ("delete applied to a value with non-ref type " ^ T.type2str ty)
-          (err_stmty orig) )
+    let method_name = "~" ^ T.type2str ty in
+    let args = [ T.type2str ty ] in
+    let method_name = Ir_gen_env.vtable_method_name method_name args in
+    let field = Some (A.Identifier (S.symbol method_name, pos)) in
+    (match ty with
+     | T.ARRAY _ ->
+       let stmt =
+         A.ExprStmt
+           (A.MethodCall { base = stmt; field; args = []; pos; vtbl_idx = Some 4 })
+       in
+       venv, { stmt; ty = T.VOID }
+     | T.NAME _ ->
+       let vtbl_idx = Ir_gen_env.find_vtable_index ty method_name in
+       let stmt =
+         A.ExprStmt
+           (A.MethodCall { base = stmt; field; args = []; pos; vtbl_idx = Some vtbl_idx })
+       in
+       venv, { stmt; ty = T.VOID }
+     | _ ->
+       ( venv
+       , error
+           pos
+           ("delete applied to a value with non-ref type " ^ T.type2str ty)
+           (err_stmty orig) ))
   | _ -> venv, err_stmty stmt
 
 and trans_blk (venv, tenv) xs =
@@ -421,8 +436,6 @@ let trans_main (venv, tenv, main_stmts) =
   venv, tenv, List.map (fun { stmt; _ } -> stmt) stmtys
 ;;
 
-exception NameRefToNameException
-
 let replace_namerefs tenv =
   let result = ref tenv in
   let nameref_to_name id =
@@ -453,6 +466,20 @@ let build_this_param name =
   A.Param { name = E.this_symbol; type_ = A.Reference (A.ClassType (name, pos)) }
 ;;
 
+let find_super_ty tenv ty =
+  (* let handle_super = function *)
+  (*   | Some sty -> sty *)
+  (*   | None -> raise SuperTypeNotFound *)
+  (* in *)
+  let handle_base = function
+    | Some basety -> S.look (tenv, basety)
+    | None -> None
+  in
+  match ty with
+  | T.NAME (_, _, basety, _) -> handle_base basety
+  | _ -> raise ExpectedClassType
+;;
+
 let handle_method tenv name fparams body =
   let fparams = build_this_param name :: fparams in
   let init_scope venv (A.Param { type_; name }) =
@@ -469,8 +496,14 @@ let handle_method tenv name fparams body =
     | Some (E.VarEntry _) -> Some (E.VarEntry { ty; is_null = false })
     | _ -> None
   in
+  let super_ty = find_super_ty tenv ty in
+  let init_super _ =
+    Base.Option.map super_ty ~f:(fun super_ty ->
+      E.VarEntry { ty = super_ty; is_null = false })
+  in
   let venv = Base.List.fold fparams ~init:E.base_venv ~f:init_scope in
   let venv = S.update E.this_symbol init_this venv in
+  let venv = S.update E.super_symbol init_super venv in
   let _, { stmt = body; _ } = trans_stmt (venv, tenv, body) in
   fparams, body
 ;;
@@ -482,6 +515,9 @@ let trans_method class_name tenv = function
   | A.Method { name; fparams; body; return_t } ->
     let fparams, body = handle_method tenv class_name fparams body in
     A.Method { name; fparams; body; return_t }
+  | A.Destructor { name; fparams; body } ->
+    let fparams, body = handle_method tenv class_name fparams body in
+    A.Destructor { name; fparams; body }
   | x -> x
 ;;
 
@@ -562,19 +598,17 @@ let rec get_annot_methods h tenv class_name =
   let gen_method_name name fparams =
     let name, _ = name in
     let fparams = List.map fparams ~f:(param_to_type tenv) in
-    (Ir_gen_env.vtable_method_name name fparams)
+    let fparams = class_name :: fparams in
+    (* Add this to fparams *)
+    Ir_gen_env.vtable_method_name name fparams
   in
-  let get_return_type (A.Return {type_}) =
-    trans_type tenv type_
-  in
+  let get_return_type (A.Return { type_ }) = trans_type tenv type_ in
   let is_method = function
     | A.Method { name; fparams; return_t; _ } ->
       let ret_ty = get_return_type return_t in
       Some (gen_method_name name fparams, ret_ty)
-    | A.Constructor {name; fparams; _} ->
-      let pos = (-1, -1) in
-      let pos = pos, pos in
-      let type_ = A.Reference (A.ClassType (name, pos)) in
+    | A.Constructor { name; fparams; _ } ->
+      let type_ = A.Reference (A.ClassType (name, A.default_pos)) in
       Some (gen_method_name name fparams, trans_type tenv type_)
     | A.Destructor { name; _ } -> Some (gen_method_name name [], Types.VOID)
     | _ -> None
@@ -604,13 +638,30 @@ let attach_vtable h tenv =
   !result
 ;;
 
-let add_default_con name class_body =
+let add_default_con _base name class_body =
   let con = A.Constructor { name; fparams = []; body = A.Block [] } in
   con :: class_body
 ;;
 
-let add_default_des name class_body =
-  let des = A.Destructor { name; body = A.Block [] } in
+let add_default_des base name class_body =
+  let body = [] in
+  let dest_name name =
+    let des_name, _ = name in
+    Symbol.symbol ("~" ^ des_name)
+  in
+  let super_call acc base =
+    let field = Some (A.Identifier (dest_name base, A.default_pos)) in
+    let base = A.VarExp (A.SimpleVar (E.super_symbol, A.default_pos), A.default_pos) in
+    let super_call =
+      A.MethodCall { base; field; args = []; pos = A.default_pos; vtbl_idx = None }
+    in
+    A.ExprStmt super_call :: acc
+    (* acc *)
+  in
+  let body = Base.Option.fold ~init:body ~f:super_call base in
+  let body = A.Block body in
+  let name = dest_name name in
+  let des = A.Destructor { name; body; fparams = [] } in
   des :: class_body
 ;;
 
@@ -625,12 +676,12 @@ let is_destructor = function
 ;;
 
 let add_default_method class_decs ~exists_f ~default_gen =
-  let update_body name class_body =
+  let update_body base name class_body =
     let has_con = Base.List.exists class_body ~f:exists_f in
-    if has_con then class_body else default_gen name class_body
+    if has_con then class_body else default_gen base name class_body
   in
   let handle_class (A.ClassDec { name; class_body; base; pos }) =
-    let class_body = update_body name class_body in
+    let class_body = update_body base name class_body in
     A.ClassDec { name; class_body; base; pos }
   in
   List.map handle_class class_decs
@@ -638,13 +689,15 @@ let add_default_method class_decs ~exists_f ~default_gen =
 
 let object_class_dec =
   let name = E.obj_symbol in
-  let des_name, _ = name in
-  let des_name = Symbol.symbol ("~" ^ des_name) in
-  let class_body = add_default_con name [] in
-  let class_body = add_default_des des_name class_body in
-  let pos = -1, -1 in
-  let pos = pos, pos in
-  A.ClassDec { name; class_body; base = None; pos }
+  let class_body = add_default_con None name [] in
+  let class_body = add_default_des None name class_body in
+  A.ClassDec { name; class_body; base = None; pos = A.default_pos }
+;;
+
+let add_extend name base =
+  if E.obj_symbol = name
+  then base
+  else Option.value base ~default:E.obj_symbol |> Option.some
 ;;
 
 let trans_class (tenv, class_decs) =
@@ -655,6 +708,7 @@ let trans_class (tenv, class_decs) =
     let (A.ClassDec { name; base; class_body; pos }) = class_dec in
     let class_name, _ = name in
     let fields = dedup_classdec_fields h tenv class_name in
+    let base = add_extend name base in
     let ctype = Types.NAME (name, fields, base, []) in
     let update_fn = Option.map ~f:(fun _ -> ctype) in
     let tenv = S.update name update_fn tenv in
@@ -671,7 +725,7 @@ let trans_class (tenv, class_decs) =
       S.enter (tenv, name, Types.NAMEREF name))
   in
   let tenv, class_decs =
-    Base.List.fold class_decs ~init:(tenv, []) ~f:(fun (tenv, xs) cdec ->
+    List.fold class_decs ~init:(tenv, []) ~f:(fun (tenv, xs) cdec ->
       let tenv, { stmt; _ } = tr_class (tenv, cdec) in
       (* This should update fields *)
       tenv, stmt :: xs)
@@ -689,6 +743,12 @@ let trans_class (tenv, class_decs) =
   let class_decs =
     add_default_method class_decs ~exists_f:is_destructor ~default_gen:add_default_des
   in
+  (* No more additional methods need to be added. *)
+  (* methods will have this inserted in scope. Now generate vtable *)
+  List.iter class_decs ~f:(fun (A.ClassDec { name; _ } as cdec) ->
+    let name, _ = name in
+    Hashtbl.update h name ~f:(fun _ -> cdec));
+  let tenv = attach_vtable h tenv in
   let tr_class_body tenv (A.ClassDec { name; base; class_body; pos }) =
     let class_body = List.map ~f:(trans_method name tenv) class_body in
     let cdec = A.ClassDec { name; base; class_body; pos } in
@@ -697,8 +757,6 @@ let trans_class (tenv, class_decs) =
     cdec
   in
   let class_decs = List.map ~f:(tr_class_body tenv) class_decs in
-  (* methods will have this inserted in scope. Now generate vtable *)
-  let tenv = attach_vtable h tenv in
   tenv, class_decs (* sorted by depth *)
 ;;
 

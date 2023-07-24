@@ -5,7 +5,11 @@ type ty =
   | INT
   | VOID
   | NULL
-  | NAME of Symbol.symbol * (Symbol.symbol * ty) list * Symbol.symbol option * (string * ty) list
+  | NAME of
+      Symbol.symbol
+      * (Symbol.symbol * ty) list
+      * Symbol.symbol option
+      * (string * ty) list
   | NAMEREF of Symbol.symbol
   | ARRAY of int * ty
 [@@deriving sexp]

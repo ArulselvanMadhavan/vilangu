@@ -10,7 +10,11 @@ type ty =
   (* Find index based on field name -> We can use List.find - not efficient *)
   (* Hashtbl of name -> ty and index *)
   (* Sort hashtbl *)
-  | NAME of Symbol.symbol * (Symbol.symbol * ty) list * Symbol.symbol option * (string * ty) list
+  | NAME of
+      Symbol.symbol
+      * (Symbol.symbol * ty) list
+      * Symbol.symbol option
+      * (string * ty) list
   (* class_name, field_names list, base_class *)
   | NAMEREF of Symbol.symbol
   | ARRAY of int * ty
