@@ -36,11 +36,14 @@ any desired architecture.
   - [X] default destructor should free this?
 - [X] Destructor for other classes
   - [X] Object should have a destructor method. It should do nothing.
+- [X] Test user provided destructor
+- [ ] Constructor invocation
+  - [ ] Check if first line is an explicit const invocation
+  - [ ] Serious bug. post super call. changes are not visible.
 - [ ] Overload testing
 - [-] support for super
   - [X] in destructor
   - [ ] In constructor
-- [ ] Test user provided destructor
 - [ ] support for null
 - [ ] equals method
 - [ ] Apply overrides

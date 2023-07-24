@@ -164,7 +164,7 @@ let gen_params tenv fparams =
 ;;
 
 let gen_fun_def tenv = function
-  | A.Constructor { name; fparams; body } ->
+  | A.Constructor { name; fparams; body; _ } ->
     let name, _ = name in
     let args = List.map (Semant.param_to_type tenv) fparams in
     let name = Ir_gen_env.vtable_method_name name args in

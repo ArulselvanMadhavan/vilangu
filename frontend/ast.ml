@@ -43,6 +43,7 @@ and class_body =
       { name : symbol
       ; fparams : param list
       ; body : stmt
+      ; pos : pos
       }
   | FieldDec of class_field list
   | Method of

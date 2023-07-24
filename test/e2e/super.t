@@ -1,6 +1,10 @@
 class A {
   int a;
+  A() {
+    this.a = 10;
+  }
   A(int i){
+    out this.a; // we are not seeing the changes here.
     this.a = i;
   }
   A(int i, int j){
@@ -14,6 +18,9 @@ class B {
 
 class C extends A {
   int c;
+  ~C(){
+  
+  }
 }
 
 int main() {

@@ -97,7 +97,7 @@ let mth_body :=
   | ~=block; { block }
 
 let const_decl :=
-  | (id, fparams)=const_desc; ~=const_body; { Constructor { name=id; fparams; body=const_body } }
+  | (id, fparams)=const_desc; ~=const_body; { Constructor { name=id; fparams; body=const_body; pos=lp($loc) } }
 
 let const_desc :=
   | ~=id; ~=formal_params; { (id,formal_params) }

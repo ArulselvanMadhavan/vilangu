@@ -280,7 +280,7 @@ and trans_exp (venv, tenv, exp) =
       | None, _ -> error pos "cast not possible" cexp
     in
     venv, { stmt; ty = cast_ty }
-  | A.ClassCreationExp { type_; args; pos; _ } ->
+  | A.ClassCreationExp { type_; args; pos; _ } as orig ->
     let ty = trans_type tenv type_ in
     let _, args_stmty =
       Base.List.fold
@@ -296,8 +296,17 @@ and trans_exp (venv, tenv, exp) =
     (* add this as first arg *)
     let method_name = Ir_gen_env.vtable_method_name (T.type2str ty) args_ty in
     let vtbl_idx = Ir_gen_env.find_vtable_index ty method_name in
+    let on_success v =
+      { ty; stmt = A.ClassCreationExp { type_; args; pos; vtbl_idx = Some v } }
+    in
+    let on_error m () = error pos (m ^ "method not found in vtbl.") (err_stmty orig) in
     (* offset vtbl idx by 2 to account for RTTI *)
-    venv, { ty; stmt = A.ClassCreationExp { type_; args; pos; vtbl_idx = Some vtbl_idx } }
+    ( venv
+    , Base.Option.fold
+        vtbl_idx
+        ~init:(on_error method_name)
+        ~f:(fun _ v () -> on_success v)
+        () )
   | A.This pos ->
     let venv, { ty; stmt } = trans_var (venv, tenv, A.SimpleVar (E.this_symbol, pos)) in
     venv, { ty; stmt = A.VarExp (stmt, pos) }
@@ -322,8 +331,19 @@ and trans_exp (venv, tenv, exp) =
        let args_ty = this_ty :: args_ty in
        let vname = Ir_gen_env.vtable_method_name method_name args_ty in
        let vtbl_idx = Ir_gen_env.find_vtable_index ty vname in
-       let stmt = A.MethodCall { base; field; args; pos; vtbl_idx = Some vtbl_idx } in
-       venv, { stmt; ty = T.NULL }
+       let on_success v =
+         let stmt = A.MethodCall { base; field; args; pos; vtbl_idx = Some v } in
+         { ty; stmt }
+       in
+       let on_error m () = error pos (m ^ " method not found in vtbl of ty:" ^ this_ty) (err_stmty exp) in
+       (* offset vtbl idx by 2 to account for RTTI *)
+       ( venv
+       , Base.Option.fold
+           vtbl_idx
+           ~init:(on_error method_name)
+           ~f:(fun _ v () -> on_success v)
+           () )
+       (* venv, { stmt; ty = T.NULL } *)
      | _ -> venv, error pos ("method not avail on type:" ^ T.type2str ty) (err_stmty exp))
   | _ as exp -> venv, err_stmty exp
 ;;
@@ -379,11 +399,21 @@ let rec trans_stmt (venv, tenv, stmt) =
        venv, { stmt; ty = T.VOID }
      | T.NAME _ ->
        let vtbl_idx = Ir_gen_env.find_vtable_index ty method_name in
-       let stmt =
-         A.ExprStmt
-           (A.MethodCall { base = stmt; field; args = []; pos; vtbl_idx = Some vtbl_idx })
+       let on_success v =
+         let stmt =
+           A.ExprStmt
+             (A.MethodCall { base = stmt; field; args = []; pos; vtbl_idx = Some v })
+         in
+         { ty = T.VOID; stmt }
        in
-       venv, { stmt; ty = T.VOID }
+       let on_error m () = error pos (m ^ " method not found in vtbl.") (err_stmty orig) in
+       (* offset vtbl idx by 2 to account for RTTI *)
+       ( venv
+       , Base.Option.fold
+           vtbl_idx
+           ~init:(on_error method_name)
+           ~f:(fun _ v () -> on_success v)
+           () )
      | _ ->
        ( venv
        , error
@@ -509,9 +539,9 @@ let handle_method tenv name fparams body =
 ;;
 
 let trans_method class_name tenv = function
-  | A.Constructor { name; fparams; body } ->
+  | A.Constructor { name; fparams; body; pos } ->
     let fparams, body = handle_method tenv name fparams body in
-    A.Constructor { name; fparams; body }
+    A.Constructor { name; fparams; body; pos }
   | A.Method { name; fparams; body; return_t } ->
     let fparams, body = handle_method tenv class_name fparams body in
     A.Method { name; fparams; body; return_t }
@@ -638,8 +668,22 @@ let attach_vtable h tenv =
   !result
 ;;
 
-let add_default_con _base name class_body =
-  let con = A.Constructor { name; fparams = []; body = A.Block [] } in
+let super_call acc base =
+  let field = Some (A.Identifier (base, A.default_pos)) in
+  let base = A.VarExp (A.SimpleVar (E.super_symbol, A.default_pos), A.default_pos) in
+  let super_call =
+    A.MethodCall { base; field; args = []; pos = A.default_pos; vtbl_idx = None }
+  in
+  A.ExprStmt super_call :: acc
+;;
+
+(* acc *)
+
+let add_default_con base name class_body =
+  let body = [] in
+  let body = Base.Option.fold ~init:body ~f:super_call base in
+  let body = A.Block body in
+  let con = A.Constructor { name; fparams = []; body; pos = A.default_pos } in
   con :: class_body
 ;;
 
@@ -649,16 +693,9 @@ let add_default_des base name class_body =
     let des_name, _ = name in
     Symbol.symbol ("~" ^ des_name)
   in
-  let super_call acc base =
-    let field = Some (A.Identifier (dest_name base, A.default_pos)) in
-    let base = A.VarExp (A.SimpleVar (E.super_symbol, A.default_pos), A.default_pos) in
-    let super_call =
-      A.MethodCall { base; field; args = []; pos = A.default_pos; vtbl_idx = None }
-    in
-    A.ExprStmt super_call :: acc
-    (* acc *)
+  let body =
+    Base.Option.fold ~init:body ~f:(fun acc b -> dest_name b |> super_call acc) base
   in
-  let body = Base.Option.fold ~init:body ~f:super_call base in
   let body = A.Block body in
   let name = dest_name name in
   let des = A.Destructor { name; body; fparams = [] } in
@@ -698,6 +735,34 @@ let add_extend name base =
   if E.obj_symbol = name
   then base
   else Option.value base ~default:E.obj_symbol |> Option.some
+;;
+
+let check_constr_invoc (A.ClassDec { class_body; _ }) =
+  let on_error pos () =
+    error pos "explicit constructor invocation not found as the first statement." ()
+  in
+  let handle_exp pos = function
+    | A.MethodCall _ -> ()
+    | _ -> on_error pos ()
+  in
+  let rec handle_blk pos = function
+    | A.Block stmts ->
+      let stmt1 = Base.List.hd stmts in
+      Base.Option.fold
+        stmt1
+        ~init:(on_error pos)
+        ~f:(fun _ stmt () -> handle_blk pos stmt)
+        ()
+    | A.ReturnStmt exp ->
+      Base.Option.fold exp ~init:(on_error pos) ~f:(fun _ e () -> handle_exp pos e) ()
+    | A.ExprStmt exp -> handle_exp pos exp
+    | _ -> on_error pos ()
+  in
+  let check_constr = function
+    | A.Constructor { body; pos; _ } -> handle_blk pos body
+    | _ -> ()
+  in
+  List.iter check_constr class_body
 ;;
 
 let trans_class (tenv, class_decs) =
@@ -749,6 +814,8 @@ let trans_class (tenv, class_decs) =
     let name, _ = name in
     Hashtbl.update h name ~f:(fun _ -> cdec));
   let tenv = attach_vtable h tenv in
+  (* Post vtable creation checks. *)
+  (* 1. check if all constructor have a valid super init. *)
   let tr_class_body tenv (A.ClassDec { name; base; class_body; pos }) =
     let class_body = List.map ~f:(trans_method name tenv) class_body in
     let cdec = A.ClassDec { name; base; class_body; pos } in
@@ -757,6 +824,8 @@ let trans_class (tenv, class_decs) =
     cdec
   in
   let class_decs = List.map ~f:(tr_class_body tenv) class_decs in
+  (* check explicit constr invoc *)
+  (* List.iter class_decs ~f:check_constr_invoc; *)
   tenv, class_decs (* sorted by depth *)
 ;;
 
