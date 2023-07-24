@@ -28,21 +28,28 @@ any desired architecture.
   aren’t fully constructed yet.
 - [X] Add default const
 - [X] Generate class_name_meth_name_param_type name
-- [ ] delete statement -> transform to destructor call. Pass this as
+- [X] delete statement -> transform to destructor call. Pass this as
   default arg.
-  - [ ] MethodCall - When field is None, use base as the method name.
-  - [ ] Translate delete to MethodCall (base = ~refty, fields = None,
+  - [X] MethodCall - When field is None, use base as the method name.
+  - [X] Translate delete to MethodCall (base = ~refty, fields = None,
     args = None)
-- [ ] Arrays should also use vtbl constructor
-- [X] ArrayCreation - no stack alloc. Use calloc for the object instantiation.
-- [X] Apply overloading
+  - [X] default destructor should free this?
+- [X] Destructor for other classes
+  - [X] Object should have a destructor method. It should do nothing.
+- [ ] Overload testing
+- [-] support for super
+  - [X] in destructor
+  - [ ] In constructor
+- [ ] Test user provided destructor
+- [ ] support for null
+- [ ] equals method
 - [ ] Apply overrides
-- [X] Vtable - add methods
-- [ ] Object should have a default constructor.
+- [X] Object should have a default constructor.
 - [ ] Object should not have a super call in constructor body.
 - [ ] Add a default destructor for all classes
-- [ ] Add a default destructor for arrays
-- [ ] frontend.proto needs "methodCall"; methodName as string;
+- [ ] Throw an error for more than one destructor
+- [X] Add a default destructor for arrays
+- [X] frontend.proto needs "methodCall"; methodName as string;
   arguments - are expressions. Arg expressions might need bitcast.
 - [ ] Warn users of unreachable code blocks after break; continue statements
 - [ ] Warn Unused variables
