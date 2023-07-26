@@ -1,0 +1,149 @@
+<head>
+<title> AST for phase4.t</title>
+</head>
+<body>
+<pre>
+CompilationUnit
+[classes]
+  ClassDeclaration A (Object)
+    ConstructorDeclaration
+      (f, int)
+      ConstructorInvocationStatement
+        SuperExpression (Object)
+      ExpressionStatement
+        ASSIGN (int)
+        FieldAccess (int) f at position 1
+        ThisExpression (A)
+        DEREF (int)
+        ArgumentExpression (int) f
+    DestructorDeclaration
+      OutputStatement
+        IntegerLiteral (int) 9
+    FieldDeclaration (int) 
+      (f, 0)
+    MethodDeclaration (m1 int) 
+      (i, int)
+      (b, B)
+      ReturnStatement
+        ADD (int)
+        ADD (int)
+        DEREF (int)
+        ArgumentExpression (int) i
+        DEREF (int)
+        FieldAccess (int) f at position 1
+        ThisExpression (A)
+        DEREF (int)
+        FieldAccess (int) f at position 1
+        DEREF (B)
+        ArgumentExpression (B) b
+    MethodDeclaration (m2 int) 
+      OutputStatement
+        IntegerLiteral (int) 17
+  ClassDeclaration B (A)
+    ConstructorDeclaration
+      (k, int)
+      ConstructorInvocationStatement
+        SuperExpression (A)
+        DEREF (int)
+        ArgumentExpression (int) k
+      ExpressionStatement
+        ASSIGN (int)
+        FieldAccess (int) f at position 1
+        ThisExpression (B)
+        ADD (int)
+        DEREF (int)
+        FieldAccess (int) f at position 1
+        ThisExpression (B)
+        IntegerLiteral (int) 3
+    DestructorDeclaration
+      OutputStatement
+        IntegerLiteral (int) 33
+    MethodDeclaration (m2 int) 
+      OutputStatement
+        IntegerLiteral (int) 199
+    MethodDeclaration (m3 int) 
+      ExpressionStatement
+        MethodInvocationExpression m2 int
+          SuperExpression (A)
+  ClassDeclaration C (Object)
+    FieldDeclaration (int) 
+      (f, 0)
+    ConstructorDeclaration
+      (i, int)
+      (j, int)
+      ConstructorInvocationStatement
+        ThisExpression (C)
+        ADD (int)
+        DEREF (int)
+        ArgumentExpression (int) i
+        DEREF (int)
+        ArgumentExpression (int) j
+    ConstructorDeclaration
+      (i, int)
+      ConstructorInvocationStatement
+        SuperExpression (Object)
+      ExpressionStatement
+        ASSIGN (int)
+        FieldAccess (int) f at position 1
+        ThisExpression (C)
+        DEREF (int)
+        ArgumentExpression (int) i
+[main block]
+  MainVariableDeclarationStatement
+    (a, A)
+  MainVariableDeclarationStatement
+    (b, B)
+  ExpressionStatement
+    ASSIGN (A)
+    MainBlockVariable (A) a
+    NewObject A
+      IntegerLiteral (int) 55
+  OutputStatement
+    MethodInvocationExpression m1 int
+      DEREF (A)
+      MainBlockVariable (A) a
+      IntegerLiteral (int) 3
+      ASSIGN (B)
+      MainBlockVariable (B) b
+      NewObject B
+        IntegerLiteral (int) 77
+  ExpressionStatement
+    MethodInvocationExpression m3 int
+      DEREF (B)
+      MainBlockVariable (B) b
+  ExpressionStatement
+    MethodInvocationExpression m2 int
+      DEREF (B)
+      MainBlockVariable (B) b
+  DeleteStatement
+    DEREF (A)
+    MainBlockVariable (A) a
+  ExpressionStatement
+    ASSIGN (A)
+    MainBlockVariable (A) a
+    DEREF (B)
+    MainBlockVariable (B) b
+  ExpressionStatement
+    MethodInvocationExpression m2 int
+      DEREF (A)
+      MainBlockVariable (A) a
+  DeleteStatement
+    DEREF (A)
+    MainBlockVariable (A) a
+  MainVariableDeclarationStatement
+    (c, C)
+  ExpressionStatement
+    ASSIGN (C)
+    MainBlockVariable (C) c
+    NewObject C
+      IntegerLiteral (int) 3
+      IntegerLiteral (int) 8
+  OutputStatement
+    DEREF (int)
+    FieldAccess (int) f at position 1
+    DEREF (C)
+    MainBlockVariable (C) c
+  DeleteStatement
+    DEREF (C)
+    MainBlockVariable (C) c
+</pre>
