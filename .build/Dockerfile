@@ -57,5 +57,5 @@ ARG PROJECT_HOME=${HOME}/${PROJECT_NAME}
 WORKDIR ${PROJECT_HOME}
 RUN eval $(opam env)
 # We can't install deps from .opam file because it's not mounted yet
-RUN opam install -y dune ocaml-protoc ppx_deriving ppx_deriving_protobuf ppx_let ppx_sexp_conv menhir fpath
+RUN opam install -y dune ocaml-protoc ppx_deriving ppx_deriving_protobuf ppx_let ppx_sexp_conv menhir fpath cmdliner
 RUN eval $(opam env)
