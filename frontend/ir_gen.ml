@@ -171,7 +171,7 @@ let gen_fun_def tenv = function
     let params = gen_params tenv fparams in
     let body = gen_stmt tenv body in
     FT.{ name; return_t = FT.Void; params; body } |> Option.some
-  | A.Destructor { name; body; fparams } ->
+  | A.Destructor { name; body; fparams; _ } ->
     let name, _ = name in
     let args = List.map (Semant.param_to_type tenv) fparams in
     let name = Ir_gen_env.vtable_method_name name args in

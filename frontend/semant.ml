@@ -430,6 +430,7 @@ let rec trans_stmt (venv, tenv, stmt) =
            pos
            ("delete applied to a value with non-ref type " ^ T.type2str ty)
            (err_stmty orig) ))
+    (* | A.ReturnStmt e -> *)
   | _ -> venv, err_stmty stmt
 
 and trans_blk (venv, tenv) xs =
@@ -592,17 +593,50 @@ let handle_const_body base stmt =
   handle_blk stmt
 ;;
 
+let def_value = function
+  | A.Primitive _ -> A.IntLit (Int32.zero, A.default_pos)
+  | A.Reference _ -> A.NullLit A.default_pos
+;;
+
+let check_ret_empty pos body =
+  let handle_stmt = function
+    | A.ReturnStmt e when Option.is_none e -> true
+    | _ -> false
+  in
+  let handle_blk = function
+    | A.Block stmts as orig ->
+      let lstmt = Base.List.last stmts in
+      let handle_result res =
+        if res
+        then ()
+        else
+          error
+            pos
+            "constructor/destructor methods should not have a return statement with an \
+             expression"
+            ()
+      in
+      Base.Option.fold lstmt ~init:(A.Block [ A.ReturnStmt None ]) ~f:(fun _ lstmt ->
+        handle_result (handle_stmt lstmt);
+        orig)
+    | x -> error pos "expected the body of the method to be a block" x
+  in
+  handle_blk body
+;;
+
 let trans_method base class_name tenv = function
   | A.Constructor { name; fparams; body; pos } ->
     let body = handle_const_body base body in
     let fparams, body = handle_method tenv name fparams body in
+    let body = check_ret_empty pos body in
     A.Constructor { name; fparams; body; pos }
   | A.Method { name; fparams; body; return_t } ->
     let fparams, body = handle_method tenv class_name fparams body in
     A.Method { name; fparams; body; return_t }
-  | A.Destructor { name; fparams; body } ->
+  | A.Destructor { name; fparams; body; pos } ->
     let fparams, body = handle_method tenv class_name fparams body in
-    A.Destructor { name; fparams; body }
+    let body = check_ret_empty pos body in
+    A.Destructor { name; fparams; body; pos }
   | x -> x
 ;;
 
@@ -742,7 +776,7 @@ let add_default_des base name class_body =
   in
   let body = A.Block body in
   let name = dest_name name in
-  let des = A.Destructor { name; body; fparams = [] } in
+  let des = A.Destructor { name; body; fparams = []; pos = A.default_pos } in
   des :: class_body
 ;;
 

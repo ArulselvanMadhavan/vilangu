@@ -56,6 +56,7 @@ and class_body =
       { name : symbol
       ; body : stmt
       ; fparams : param list
+      ; pos : pos
       }
 
 and param =
