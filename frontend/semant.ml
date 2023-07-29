@@ -316,7 +316,7 @@ and trans_exp (venv, tenv, exp) =
   | A.MethodCall { base; field; args; pos; _ } as exp ->
     let venv, { stmt = base; ty } = trans_exp (venv, tenv, base) in
     (match ty with
-     | T.NAME (_, _, _, _vtable) ->
+     | T.NAME (_, _, _, vtable) ->
        let method_name =
          Option.fold
            ~none:(T.type2str ty)
@@ -338,6 +338,7 @@ and trans_exp (venv, tenv, exp) =
        let vname = Ir_gen_env.vtable_method_name method_name args_ty in
        let vtbl_idx = Ir_gen_env.find_vtable_index ty vname in
        let on_success v =
+         let _, ty = Base.List.nth_exn vtable (v - Ir_gen_env.vtable_offset) in
          let stmt = A.MethodCall { base; field; args; pos; vtbl_idx = Some v } in
          { ty; stmt }
        in

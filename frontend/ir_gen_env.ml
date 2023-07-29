@@ -32,11 +32,13 @@ let vtable_method_name method_name arg_types =
   Base.String.concat ~sep:"_" (method_name :: arg_types)
 ;;
 
+let vtable_offset = 2
+
 let find_vtable_index ty method_name =
   match ty with
   | T.NAME (_, _, _, vtable) ->
     let vtable = List.map (fun (v, _) -> v) vtable in
     let vtbl_idx = Base.List.findi vtable ~f:(fun _ -> String.equal method_name) in
-    Option.map (fun (v, _) -> v + 2) vtbl_idx
+    Option.map (fun (v, _) -> v + vtable_offset) vtbl_idx
   | _ -> raise VtableEntryNotFound
 ;;

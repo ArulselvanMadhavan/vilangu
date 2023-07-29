@@ -19,8 +19,10 @@ exception SubscriptAccessException
 exception NonArrayTypeException
 exception ClassNotFoundException
 
-let obj_null_ptr = FT.Null_lit { null_texpr = FT.Pointer { data = FT.Class {name = "Object"}}}
-    
+let obj_null_ptr =
+  FT.Null_lit { null_texpr = FT.Pointer { data = FT.Class { name = "Object" } } }
+;;
+
 let gen_texpr tenv type_ =
   let ty = Semant.trans_type tenv type_ in
   T.gen_type_expr ty
@@ -78,7 +80,7 @@ let gen_expr tenv e =
       FT.Method_call { method_idx = vtable_index; obj_expr; method_args }
     | A.NullLit (_, type_) ->
       let null_gen = function
-        | Some type_ -> FT.Null_lit { null_texpr = gen_texpr tenv type_}
+        | Some type_ -> FT.Null_lit { null_texpr = gen_texpr tenv type_ }
         | _ -> obj_null_ptr
       in
       null_gen type_
@@ -170,21 +172,23 @@ let gen_params tenv fparams =
   List.map gparam fparams
 ;;
 
+let method_gen tenv name fparams body return_t =
+  let name, _ = name in
+  let args = List.map (Semant.param_to_type tenv) fparams in
+  let name = Ir_gen_env.vtable_method_name name args in
+  let params = gen_params tenv fparams in
+  let body = gen_stmt tenv body in
+  FT.{ name; return_t; params; body }
+;;
+
 let gen_fun_def tenv = function
-  | A.Constructor { name; fparams; body; _ } ->
-    let name, _ = name in
-    let args = List.map (Semant.param_to_type tenv) fparams in
-    let name = Ir_gen_env.vtable_method_name name args in
-    let params = gen_params tenv fparams in
-    let body = gen_stmt tenv body in
-    FT.{ name; return_t = FT.Void; params; body } |> Option.some
-  | A.Destructor { name; body; fparams; _ } ->
-    let name, _ = name in
-    let args = List.map (Semant.param_to_type tenv) fparams in
-    let name = Ir_gen_env.vtable_method_name name args in
-    let params = gen_params tenv fparams in
-    let body = gen_stmt tenv body in
-    Some FT.{ name; return_t = FT.Void; params; body }
+  | A.Constructor { name; fparams; body; _ } | A.Destructor { name; body; fparams; _ } ->
+    let return_t = FT.Void in
+    Some (method_gen tenv name fparams body return_t)
+  | A.Method { name; fparams; body; return_t; _ } ->
+    let (A.Return { type_ = return_t }) = return_t in
+    let return_t = gen_texpr tenv return_t in
+    Some (method_gen tenv name fparams body return_t)
   | _ -> None
 ;;
 
@@ -199,10 +203,6 @@ let ir_gen_class_defn tenv (A.ClassDec { name; base; class_body; _ }) =
       FT.{ name; fields = ir_fields; base_class_name; vtable }
     | _ -> raise ClassNotFoundException
   in
-  (* gen fun_def for const *)
-  (* use tenv to get vtable *)
-  (* for all constructor defs in class_body find an entry in the vtable *)
-  (* don’t worry about default const for now. *)
   let fun_defs = List.filter_map (gen_fun_def tenv) class_body in
   class_defn, fun_defs
 ;;
