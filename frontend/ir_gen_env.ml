@@ -42,3 +42,28 @@ let find_vtable_index ty method_name =
     Option.map (fun (v, _) -> v + vtable_offset) vtbl_idx
   | _ -> raise VtableEntryNotFound
 ;;
+
+let gen_this_variants tenv ty =
+  let open Base.Option.Let_syntax in
+  let rec gen ty =
+    match ty with
+    | T.NAME ((class_name, _), _, base, _) ->
+      let base_xs = Option.value (handle_base base) ~default:[] in
+      class_name :: base_xs
+    | _ -> []
+  and handle_base base =
+    let%bind base = base in
+    let%map ty = Symbol.look (tenv, base) in
+    gen ty
+  in
+  gen ty
+;;
+
+let lookup_method_index ty method_name this_tys args_ty =
+  let f this_ty =
+    let args_ty = this_ty :: args_ty in
+    let vname = vtable_method_name method_name args_ty in
+    find_vtable_index ty vname
+  in
+  Base.List.find_map this_tys ~f
+;;

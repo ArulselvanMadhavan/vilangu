@@ -42,6 +42,12 @@ any desired architecture.
 - [ ] Null of type option
 - [ ] Check return type of methods
 - [ ] Optimization removes main return int to return 0
+- [ ] field decs; automatically declared in the scope of the methods.
+  avail for assignments
+  - [ ] Access the first var this
+- [ ] Generate this variants
+  - [ ] generate method names from bottom to top
+  - [ ] First available method name breaks the lookup
 - [X] Add default const
 - [X] Generate class_name_meth_name_param_type name
 - [X] delete statement -> transform to destructor call. Pass this as

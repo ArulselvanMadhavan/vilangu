@@ -331,28 +331,27 @@ and trans_exp (venv, tenv, exp) =
              venv, stm_ty :: acc)
            args
        in
-       let this_ty = T.type2str ty in
        let args_ty = List.map (fun { ty; _ } -> T.type2str ty) args in
        let args = List.map (fun { stmt; _ } -> stmt) args in
-       let args_ty = this_ty :: args_ty in
-       let vname = Ir_gen_env.vtable_method_name method_name args_ty in
-       let vtbl_idx = Ir_gen_env.find_vtable_index ty vname in
+       let this_tys = Ir_gen_env.gen_this_variants tenv ty in
+       let vtbl_idx = Ir_gen_env.lookup_method_index ty method_name this_tys args_ty in
        let on_success v =
          let _, ty = Base.List.nth_exn vtable (v - Ir_gen_env.vtable_offset) in
          let stmt = A.MethodCall { base; field; args; pos; vtbl_idx = Some v } in
          { ty; stmt }
        in
        let on_error m () =
-         error pos (m ^ " method not found in vtbl of ty:" ^ this_ty) (err_stmty exp)
+         error
+           pos
+           (m ^ " method not found in vtbl of ty:" ^ T.type2str ty)
+           (err_stmty exp)
        in
-       (* offset vtbl idx by 2 to account for RTTI *)
        ( venv
        , Base.Option.fold
            vtbl_idx
            ~init:(on_error method_name)
            ~f:(fun _ v () -> on_success v)
            () )
-       (* venv, { stmt; ty = T.NULL } *)
      | _ -> venv, error pos ("method not avail on type:" ^ T.type2str ty) (err_stmty exp))
   | _ as exp -> venv, err_stmty exp
 ;;
