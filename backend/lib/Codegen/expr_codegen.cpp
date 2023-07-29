@@ -27,8 +27,10 @@ llvm::Value *IRCodegenVisitor::codegen(const ExprIntegerIR &expr) {
 
 llvm::Value *IRCodegenVisitor::codegen(const ExprNullIR &expr) {
   // FIXME: Remove hardcoded object
-  llvm::Type *o = llvm::StructType::getTypeByName(*context, "Object");
-  return llvm::ConstantPointerNull::getNullValue(o->getPointerTo());
+  // llvm::Type *o = llvm::StructType::getTypeByName(*context, "Object");
+  // return llvm::ConstantPointerNull::getNullValue(o->getPointerTo());
+  llvm::Type *nt = expr.nullType->codegen(*this);
+  return llvm::ConstantPointerNull::getNullValue(nt);
 }
 
 llvm::Value *IRCodegenVisitor::codegen(const ExprFunctionAppIR &expr) {

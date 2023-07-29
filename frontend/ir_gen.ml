@@ -19,14 +19,12 @@ exception SubscriptAccessException
 exception NonArrayTypeException
 exception ClassNotFoundException
 
+let obj_null_ptr = FT.Null_lit { null_texpr = FT.Pointer { data = FT.Class {name = "Object"}}}
+    
 let gen_texpr tenv type_ =
   let ty = Semant.trans_type tenv type_ in
   T.gen_type_expr ty
 ;;
-
-(* A.type_ -> T.Ty -> FT.type_expr *)
-(* let ty = gen_texpr rank typ in *)
-(* FT.Ref (FT.Array_type { rank = Int32.of_int rank; typ = ty }) *)
 
 let gen_cast_type = function
   | A.Identity -> FT.No_cast
@@ -78,6 +76,12 @@ let gen_expr tenv e =
       let obj_expr = gexpr base in
       let method_args = List.map gexpr args in
       FT.Method_call { method_idx = vtable_index; obj_expr; method_args }
+    | A.NullLit (_, type_) ->
+      let null_gen = function
+        | Some type_ -> FT.Null_lit { null_texpr = gen_texpr tenv type_}
+        | _ -> obj_null_ptr
+      in
+      null_gen type_
     | _ -> FT.Integer (Int32.of_int (-1))
   and gen_var = function
     | A.SimpleVar ((sym_name, _), _) -> FT.Simple { var_name = sym_name }
@@ -136,6 +140,9 @@ let gen_stmt tenv s =
     | A.Break _ -> FT.Break
     | A.Continue _ -> FT.Continue
     | A.Delete (e, _) -> FT.Delete { del_expr = gen_expr tenv e }
+    | A.ReturnStmt e ->
+      let ret_expr = Option.fold e ~none:FT.Empty ~some:(gen_expr tenv) in
+      FT.Return { ret_expr }
     (* | A.Empty -> FT.Empty *)
     (* | _ -> FT.Integer (Int32.of_int (-1)) *)
     | _ -> FT.Printf { format = "%d"; f_args = [ FT.Integer (Int32.of_int (-1)) ] }
@@ -452,7 +459,8 @@ let ir_gen_function_defns tenv class_defns =
     in
     let filter_method b =
       match b with
-      | A.Method { name; return_t; fparams; body } -> Some (name, return_t, fparams, body)
+      | A.Method { name; return_t; fparams; body; _ } ->
+        Some (name, return_t, fparams, body)
       | _ -> None
     in
     let methods = List.filter_map filter_method class_body in
@@ -486,7 +494,7 @@ let obj_is_a_fun =
   let make_id var_name = FT.Var_exp (FT.Simple { var_name }) in
   let expr_stmt expr = FT.Expr_stmt { expr_stmt = expr } in
   let obj_is_not_null =
-    FT.Unop { op = FT.Not; uexpr = check_equal (make_id obj_param_name) FT.Null_lit }
+    FT.Unop { op = FT.Not; uexpr = check_equal (make_id obj_param_name) obj_null_ptr }
   in
   (* if object is not null
      while(vtbl != null){
@@ -500,7 +508,7 @@ let obj_is_a_fun =
   *)
   let while_vtbl_not_null =
     let vtbl = make_id param2.param_name in
-    let while_cond = FT.Unop { op = FT.Not; uexpr = check_equal vtbl FT.Null_lit } in
+    let while_cond = FT.Unop { op = FT.Not; uexpr = check_equal vtbl obj_null_ptr } in
     let vtbl_base =
       FT.Var_exp
         (FT.Field
@@ -549,7 +557,7 @@ let obj_is_a_fun =
                 ; expr_stmt
                     (FT.Unop
                        { op = FT.Not
-                       ; uexpr = check_equal (make_id param2.param_name) FT.Null_lit
+                       ; uexpr = check_equal (make_id param2.param_name) obj_null_ptr
                        })
                 ]
             }

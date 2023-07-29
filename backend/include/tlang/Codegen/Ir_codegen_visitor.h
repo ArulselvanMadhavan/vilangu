@@ -98,6 +98,7 @@ public:
   virtual llvm::Type *codegen(const TypeInt8IR &texpr) override;
   virtual llvm::Value *codegen(const ExprVarIR &expr) override;
   virtual llvm::Value *codegen(const LoadVarIR &expr) override;
+  virtual llvm::Value *codegen(const StmtRetIR &stmt) override;
   llvm::CallInst *heapAlloc(llvm::Type *t);
   void
   runOptimizingPasses(const std::vector<std::unique_ptr<StmtIR>> &mainExpr);

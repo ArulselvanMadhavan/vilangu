@@ -120,7 +120,7 @@ message Expr {
   }
 
   message _NullLit {
-    
+    required Type_expr null_texpr = 1;
   }
 
   message _Cast {
@@ -202,6 +202,10 @@ message Stmt {
   message _Free {
     required Expr free_expr = 1;
   }
+
+  message _Return {
+    required Expr ret_expr = 1; // make this optional for void return
+  }
   
   oneof value {
     _VarDecl VarDecl = 1;
@@ -214,6 +218,7 @@ message Stmt {
     _If_stmt IfStmt = 8;
     _Delete Delete = 9;
     _Free Free = 10;
+    _Return Return = 11;
   }
 }
 

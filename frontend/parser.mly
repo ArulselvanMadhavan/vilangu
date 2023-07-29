@@ -87,7 +87,7 @@ let decl :=
   | ~=id; { (0, id) }
 
 let mthd_decl :=
-  | type_=typ; (id, fparams)=mthd_desc; ~=mth_body; { Method {return_t = Return { type_ }; name=id; fparams ; body = mth_body} }
+  | type_=typ; (id, fparams)=mthd_desc; ~=mth_body; { Method {return_t = Return { type_ }; name=id; fparams ; body = mth_body; pos = lp($loc)} }
 
 let mthd_desc :=
   | ~=id; ~=formal_params; { (id, formal_params) }
@@ -337,7 +337,7 @@ let arr_type :=
 let literal :=
   | intval=NUM; { IntLit (intval, lp($loc))
                   }
-  | NULL; { NullLit (lp($loc)) }
+  | NULL; { NullLit (lp($loc), None) }
 
 let id :=
   | ~=ID;                                 <Symbol.symbol>                                            

@@ -129,6 +129,8 @@ struct ExprClassMakeIR : public ExprIR {
 };
 
 struct ExprNullIR : public ExprIR {
+  std::unique_ptr<TypeIR> nullType;
+  ExprNullIR(const Frontend_ir::Expr::_NullLit &expr);
   virtual llvm::Value *codegen(IRVisitor &visitor) override;
 };
 

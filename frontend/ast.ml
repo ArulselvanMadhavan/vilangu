@@ -51,6 +51,7 @@ and class_body =
       ; return_t : return_t
       ; fparams : param list
       ; body : stmt
+      ; pos : pos
       }
   | Destructor of
       { name : symbol
@@ -118,7 +119,7 @@ and exp =
       ; vtbl_idx : int option
       }
   | VarExp of var * pos
-  | NullLit of pos
+  | NullLit of pos * type_ option
   | This of pos
   | Super of pos
   | MethodCall of

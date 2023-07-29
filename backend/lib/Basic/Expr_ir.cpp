@@ -100,7 +100,7 @@ std::unique_ptr<ExprIR> deserializeExpr(const Frontend_ir::Expr &expr) {
   case Frontend_ir::Expr::kVarExp:
     return std::unique_ptr<ExprIR>(new ExprVarIR(expr.varexp()));
   case Frontend_ir::Expr::kNullLit:
-    return std::unique_ptr<ExprIR>(new ExprNullIR());
+    return std::unique_ptr<ExprIR>(new ExprNullIR(expr.nulllit()));
   case Frontend_ir::Expr::kCastExpr:
     return std::unique_ptr<ExprIR>(new ExprCastIR(expr.castexpr()));
   case Frontend_ir::Expr::kClassCreation:
@@ -112,6 +112,10 @@ std::unique_ptr<ExprIR> deserializeExpr(const Frontend_ir::Expr &expr) {
     return std::unique_ptr<ExprIR>(new ExprIntegerIR(-1));
   }
 }
+
+ExprNullIR::ExprNullIR(const Frontend_ir::Expr::_NullLit &expr){
+  nullType = deserializeType(expr.null_texpr());
+};
 
 ExprClassMakeIR::ExprClassMakeIR(
     const Frontend_ir::Expr::_ClassCreation &expr) {

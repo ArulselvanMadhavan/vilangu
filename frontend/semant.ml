@@ -430,7 +430,12 @@ let rec trans_stmt (venv, tenv, stmt) =
            pos
            ("delete applied to a value with non-ref type " ^ T.type2str ty)
            (err_stmty orig) ))
-    (* | A.ReturnStmt e -> *)
+  | A.ReturnStmt e as orig ->
+    let on_exp e =
+      let venv, { stmt; ty } = trans_exp (venv, tenv, e) in
+      venv, { stmt = A.ReturnStmt (Some stmt); ty }
+    in
+    Option.fold e ~none:(venv, { stmt = orig; ty = T.VOID }) ~some:on_exp
   | _ -> venv, err_stmty stmt
 
 and trans_blk (venv, tenv) xs =
@@ -559,9 +564,6 @@ let super_call acc base =
 ;;
 
 let handle_const_body base stmt =
-  (* let on_error pos () = *)
-  (*   error pos "explicit constructor invocation not found as the first statement." () *)
-  (* in *)
   let check_and_append stmt =
     let h_exp = function
       | A.MethodCall _ -> true
@@ -593,15 +595,38 @@ let handle_const_body base stmt =
   handle_blk stmt
 ;;
 
-let def_value = function
-  | A.Primitive _ -> A.IntLit (Int32.zero, A.default_pos)
-  | A.Reference _ -> A.NullLit A.default_pos
+(* add_implicit_return
+   1. check if body's last stmt is return stmt
+   2. if not, add one. the return val should be null or 0; based on the ret_type
+   3. all methods should end with return stmt; Either Return Some(exp) or Return None(void)
+   4. Implicitly added ret stmts will have Return Some(0) or Return Some(null)
+   5. null repr - Null of type; llvm::ConstantPointerNull of type
+*)
+let add_implicit_return pos body type_ =
+  let add_default_ret = function
+    | Some (A.Primitive _) -> A.ReturnStmt (Some (A.IntLit (Int32.zero, A.default_pos)))
+    | Some (A.Reference _ as orig) ->
+      A.ReturnStmt (Some (A.NullLit (A.default_pos, Some orig)))
+    | _ -> A.ReturnStmt None
+  in
+  let rec add_implicit = function
+    | [] -> []
+    | A.ReturnStmt (Some x) :: [] -> A.ReturnStmt (Some x) :: []
+    | A.ReturnStmt None :: [] -> add_default_ret type_ :: []
+    | x :: [] -> [ x; add_default_ret type_ ]
+    | x :: xs -> x :: add_implicit xs
+  in
+  let handle_blk = function
+    | A.Block stmts -> A.Block (add_implicit stmts)
+    | x -> error pos "expected the body of the method to be a block" x
+  in
+  handle_blk body
 ;;
 
 let check_ret_empty pos body =
   let handle_stmt = function
-    | A.ReturnStmt e when Option.is_none e -> true
-    | _ -> false
+    | A.ReturnStmt e when Option.is_some e -> false
+    | _ -> true
   in
   let handle_blk = function
     | A.Block stmts as orig ->
@@ -629,13 +654,18 @@ let trans_method base class_name tenv = function
     let body = handle_const_body base body in
     let fparams, body = handle_method tenv name fparams body in
     let body = check_ret_empty pos body in
+    let return_t = A.Reference (A.ClassType (class_name, A.default_pos)) in
+    let body = add_implicit_return pos body (Some return_t) in
     A.Constructor { name; fparams; body; pos }
-  | A.Method { name; fparams; body; return_t } ->
+  | A.Method { name; fparams; body; return_t; pos } ->
     let fparams, body = handle_method tenv class_name fparams body in
-    A.Method { name; fparams; body; return_t }
+    let (A.Return { type_ = ret }) = return_t in
+    let body = add_implicit_return pos body (Some ret) in
+    A.Method { name; fparams; body; return_t; pos }
   | A.Destructor { name; fparams; body; pos } ->
     let fparams, body = handle_method tenv class_name fparams body in
     let body = check_ret_empty pos body in
+    let body = add_implicit_return pos body None in
     A.Destructor { name; fparams; body; pos }
   | x -> x
 ;;

@@ -26,10 +26,10 @@ any desired architecture.
 - [X] translate methods after class_decs are fully inserted into tenv;
   Because the body of the constructor may use fields from classes that
   aren’t fully constructed yet.
-- [ ] At compile time, catch
-  - [ ] Constructor/Dest
-    - [ ] Add implicit return if one doesn’t exist
-    - [ ] return should always be None; but the value returned should
+- [-] At compile time, catch
+  - [-] Constructor/Dest
+    - [X] Add implicit return if one doesn’t exist
+    - [X] return should always be None; but the value returned should
       be ref_type|void
     - [ ] If empty return exists, fill it with default value of the type(ref_type|void)
   - [ ] Method
@@ -38,6 +38,9 @@ any desired architecture.
   - [ ] If return stmt exists, with a different type than expected,
     throw an error
 - [ ] Add value returned from method to venv
+- [ ] More than one return statement
+- [ ] Null of type option
+- [ ] Check return type of methods
 - [X] Add default const
 - [X] Generate class_name_meth_name_param_type name
 - [X] delete statement -> transform to destructor call. Pass this as

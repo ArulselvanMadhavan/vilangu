@@ -190,3 +190,8 @@ llvm::Value *IRCodegenVisitor::codegen(const StmtFreeIR &stmt) {
   llvm::Function *freeFunc = module->getFunction("free");
   return builder->CreateCall(freeFunc, llvm::ArrayRef<llvm::Value *>{voidPtr});
 }
+
+llvm::Value *IRCodegenVisitor::codegen(const StmtRetIR &stmt){
+  auto retExpr = stmt.retExpr->codegen(*this);
+  return retExpr;
+}
