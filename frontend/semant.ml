@@ -331,10 +331,9 @@ and trans_exp (venv, tenv, exp) =
              venv, stm_ty :: acc)
            args
        in
-       let args_ty = List.map (fun { ty; _ } -> T.type2str ty) args in
+       let args_ty = List.map (fun { ty; _ } -> ty) args in
        let args = List.map (fun { stmt; _ } -> stmt) args in
-       let this_tys = Ir_gen_env.gen_this_variants tenv ty in
-       let vtbl_idx = Ir_gen_env.lookup_method_index ty method_name this_tys args_ty in
+       let vtbl_idx = Ir_gen_env.lookup_method_index tenv ty method_name args_ty in
        let on_success v =
          let _, ty = Base.List.nth_exn vtable (v - Ir_gen_env.vtable_offset) in
          let stmt = A.MethodCall { base; field; args; pos; vtbl_idx = Some v } in
