@@ -148,7 +148,8 @@ llvm::Value *IRCodegenVisitor::codegen(const ExprAssignIR &expr) {
   // load a reference type variable from varEnv
 
   // lhs is a var - load the address
-  return builder->CreateStore(rhsVal, lhsVal);
+  builder->CreateStore(rhsVal, lhsVal);
+  return rhsVal;
 }
 
 llvm::Value *IRCodegenVisitor::codegen(const LoadVarIR &var) {

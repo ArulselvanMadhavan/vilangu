@@ -217,7 +217,7 @@ and trans_exp (venv, tenv, exp) =
       trans_var ~lhs:true ~is_init:true (venv, tenv, lhs)
     in
     let rhs_exp = assignment_cast tenv (var_ty, exp_ty, pos, rhs_exp) in
-    venv, { stmt = A.Assignment { lhs = lhs_var; exp = rhs_exp; pos }; ty = T.VOID }
+    venv, { stmt = A.Assignment { lhs = lhs_var; exp = rhs_exp; pos }; ty = exp_ty }
   | A.Assignment { lhs; exp; pos } ->
     let venv, { ty = var_ty; stmt = lhs_var } =
       trans_var ~lhs:true ~is_init:true (venv, tenv, lhs)
@@ -332,6 +332,7 @@ and trans_exp (venv, tenv, exp) =
        let args_ty = List.map (fun { ty; _ } -> ty) args in
        let args = List.map (fun { stmt; _ } -> stmt) args in
        let vtbl_idx = Ir_gen_env.lookup_method_index tenv ty method_name args_ty in
+       
        let on_success v =
          let _, ty = Base.List.nth_exn vtable (v - Ir_gen_env.vtable_offset) in
          let stmt = A.MethodCall { base; field; args; pos; vtbl_idx = Some v } in
