@@ -140,7 +140,8 @@ let rec trans_type tenv = function
 
 let trans_dec (venv, tenv, A.{ type_; id }) =
   let ty = trans_type tenv type_ in
-  let is_null = if T.is_int ty || T.is_array ty then false else true in
+  (* let is_null = if T.is_int ty || T.is_array ty then false else true in *)
+  let is_null = false in
   let venv' = S.enter (venv, id, E.VarEntry { ty; is_null }) in
   venv', tenv, { stmt = (); ty = T.VOID }
 ;;
@@ -223,10 +224,7 @@ and trans_exp (venv, tenv, exp) =
     in
     let venv, { ty = exp_ty; stmt = rhs_exp } = trans_exp (venv, tenv, exp) in
     let rhs_exp = assignment_cast tenv (var_ty, exp_ty, pos, rhs_exp) in
-    venv, { stmt = A.Assignment { lhs = lhs_var; exp = rhs_exp; pos }; ty = T.VOID }
-  (* | A.Identifier (id, pos) as exp -> *)
-  (*   let venv, { ty; _ } = trans_var (venv, tenv, A.SimpleVar (id, pos)) in *)
-  (*   venv, { stmt = exp; ty } *)
+    venv, { stmt = A.Assignment { lhs = lhs_var; exp = rhs_exp; pos }; ty = exp_ty }
   | A.OpExp (A.BinaryOp { left; oper; right }, pos) ->
     let venv, { stmt = lexp; ty = lty } = trans_exp (venv, tenv, left) in
     let venv, { stmt = rexp; ty = rty } = trans_exp (venv, tenv, right) in
@@ -269,7 +267,6 @@ and trans_exp (venv, tenv, exp) =
   | A.CastType { type_; exp; pos; _ } as cexp ->
     let venv, { stmt; ty = exp_ty } = trans_exp (venv, tenv, exp) in
     let cast_ty = trans_type tenv type_ in
-    (* obj | i32arr *)
     let stmt =
       match compare_and_cast tenv A.default_pos cast_ty exp_ty with
       | Some A.Wide, _ -> A.CastType { type_; exp = stmt; cast_type = Some A.Wide; pos }
@@ -293,14 +290,12 @@ and trans_exp (venv, tenv, exp) =
     let args = List.map (fun { stmt; _ } -> stmt) args_stmty in
     let args_ty = List.map (fun { ty; _ } -> T.type2str ty) args_stmty in
     let args_ty = T.type2str ty :: args_ty in
-    (* add this as first arg *)
     let method_name = Ir_gen_env.vtable_method_name (T.type2str ty) args_ty in
     let vtbl_idx = Ir_gen_env.find_vtable_index ty method_name in
     let on_success v =
       { ty; stmt = A.ClassCreationExp { type_; args; pos; vtbl_idx = Some v } }
     in
     let on_error m () = error pos (m ^ "method not found in vtbl.") (err_stmty orig) in
-    (* offset vtbl idx by 2 to account for RTTI *)
     ( venv
     , Base.Option.fold
         vtbl_idx
@@ -324,6 +319,7 @@ and trans_exp (venv, tenv, exp) =
     in
     (match ty with
      | T.NAME (_, _, _, vtable) ->
+       (* let vnames = List.map (fun (x, _) -> x) vtable in *)
        let method_name = Option.fold ~none:(T.type2str ty) ~some:handle_field field in
        let venv, args =
          Base.List.fold
@@ -538,10 +534,16 @@ let super_call acc base =
 
 let handle_const_body base stmt =
   let check_and_append stmt =
+    let check_base = function
+      | A.This _ -> true
+      | A.Super _ -> true
+      | _ -> false
+    in
     let h_exp = function
-      | A.MethodCall { field; _ } ->
+      | A.MethodCall { base; field; _ } ->
         (match field with
          | Some (A.Identifier (field, _)) when field = E.this_symbol -> true
+         | None -> check_base base
          | _ -> false)
       | _ -> false
     in
@@ -622,7 +624,7 @@ let check_ret_empty pos body =
   handle_blk body
 ;;
 
-let trans_simple_var tenv class_name body =
+let trans_simple_var venv tenv class_name body =
   let fields =
     match S.look (tenv, class_name) with
     | Some (T.NAME (_, fields, _, _)) -> fields
@@ -660,10 +662,15 @@ let trans_simple_var tenv class_name body =
       A.CastEvalExp { to_ = handle_exp to_; from_ = handle_exp from_ }
     | A.CastType { type_; exp; cast_type; pos } ->
       A.CastType { type_; exp = handle_exp exp; cast_type; pos }
+    | A.OpExp (A.UnaryOp { exp; oper }, pos) ->
+      A.OpExp (A.UnaryOp { exp = handle_exp exp; oper }, pos)
+    | A.OpExp (A.BinaryOp { oper; left; right }, pos) ->
+      A.OpExp (A.BinaryOp { oper; left = handle_exp left; right = handle_exp right }, pos)
     | x -> x
   and handle_var = function
     | A.SimpleVar (s, pos) as orig ->
-      if Base.Hash_set.mem h (Symbol.name s)
+      let arg = S.look (venv, s) in
+      if Base.Hash_set.mem h (Symbol.name s) && Option.is_none arg
       then A.FieldVar (A.VarExp (A.SimpleVar (E.this_symbol, pos), pos), s, -1, pos)
       else orig
     | A.FieldVar (e, s, i, pos) -> A.FieldVar (handle_exp e, s, i, pos)
@@ -729,6 +736,7 @@ let handle_method ?(is_method = false) pos tenv name fparams body return_t =
   let venv = Base.List.fold fparams ~init:E.base_venv ~f:init_scope in
   let venv = S.update E.this_symbol init_this venv in
   let venv = S.update E.super_symbol init_super venv in
+  let body = trans_simple_var venv tenv name body in
   let venv, { stmt = body; _ } = trans_stmt (venv, tenv, body) in
   let body = if is_method then body else check_ret_empty pos body in
   let body = add_implicit_return pos body return_t in
@@ -740,18 +748,15 @@ let trans_method base class_name tenv = function
   | A.Constructor { name; fparams; body; pos } ->
     let return_t = A.Reference (A.ClassType (class_name, A.default_pos)) in
     let body = handle_const_body base body in
-    let body = trans_simple_var tenv class_name body in
     let fparams, body = handle_method pos tenv name fparams body (Some return_t) in
     A.Constructor { name; fparams; body; pos }
   | A.Method { name; fparams; body; return_t; pos } ->
-    let body = trans_simple_var tenv class_name body in
     let (A.Return { type_ = ret }) = return_t in
     let fparams, body =
       handle_method ~is_method:true pos tenv class_name fparams body (Some ret)
     in
     A.Method { name; fparams; body; return_t; pos }
   | A.Destructor { name; fparams; body; pos } ->
-    let body = trans_simple_var tenv class_name body in
     let fparams, body = handle_method pos tenv class_name fparams body None in
     A.Destructor { name; fparams; body; pos }
   | x -> x
@@ -835,7 +840,6 @@ let rec get_annot_methods h tenv class_name =
     let name, _ = name in
     let fparams = List.map fparams ~f:(param_to_type tenv) in
     let fparams = class_name :: fparams in
-    (* Add this to fparams *)
     Ir_gen_env.vtable_method_name name fparams
   in
   let get_return_type (A.Return { type_ }) = trans_type tenv type_ in

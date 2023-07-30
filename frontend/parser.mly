@@ -121,7 +121,7 @@ let dest_body :=
   | ~=block; { block }
 
 let formal_params ==
-  | LPAREN; ~=fplist; RPAREN; { fplist }
+  | LPAREN; ~=fplist; RPAREN; { List.rev fplist }
   | LPAREN; RPAREN; {[]}
 
 let fplist :=
@@ -206,11 +206,18 @@ let stmt_expr :=
   | ~=mth_invoc; { ExprStmt mth_invoc}
 
 let exp :=
+  | ~=assignment_expr; {assignment_expr}
+
+let assignment_expr :=
+  | ~=assignment; {assignment}
+  | ~=equality_expr; {equality_expr}
+
+let equality_expr :=
   | left=exp; EQUALS; right=relexp; { OpExp (BinaryOp {left; right; oper=EqualsOp}, lp($loc)) }
   | ~=relexp; {relexp}
 
 let assignment :=
-  | lhs=lhs; ASSIGN_OP; ~=exp; { Assignment {lhs; exp; pos=lp($loc)} }
+  | lhs=lhs; ASSIGN_OP; exp=assignment_expr; { Assignment {lhs; exp; pos=lp($loc)} }
 
 let lhs :=
   | ~=id; { (SimpleVar (id, lp($loc))) }
@@ -287,7 +294,7 @@ let field_access :=
 let mth_invoc :=
   | ~=id; ~=arguments; { MethodCall {base = This (lp($loc)); field = Some (Identifier (id, lp($loc))); args = arguments; pos = lp($loc); vtbl_idx = None} }
   | ~=primary;  DOT; ~=id; ~=arguments; { MethodCall {base = primary; field = Some (Identifier (id, lp($loc))); args = arguments; pos = lp($loc); vtbl_idx = None} }
-  | SUPER; DOT; ~=id; ~=arguments; { MethodCall {base=(Super (lp($loc))); field=Some (Identifier (id, lp($loc))); args=arguments; pos = lp($loc); vtbl_idx = None} }
+  | SUPER; DOT; ~=id; ~=arguments; { MethodCall {base=(Super (lp($loc))); field=Some (Identifier (id, lp($loc))); args = arguments; pos = lp($loc); vtbl_idx = None} }
 
 let primary_no_new_array :=
   | ~=array_access; { array_access }
