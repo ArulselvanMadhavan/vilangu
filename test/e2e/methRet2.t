@@ -1,7 +1,11 @@
 class A {
   int i;
   A a;
-  A meth1() { a = new A(); a.i = 42; return a; }
+  A meth1() {
+  a = new A();
+  a.i = 42;
+  return a;
+  }
 }
 
 int main() {

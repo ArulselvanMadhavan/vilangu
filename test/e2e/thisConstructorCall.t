@@ -1,6 +1,6 @@
 class A {
   A(int i) { this(i, i+5); }
-  A(int i, int j) { a2 = i + j; }
+  A(int i, int j) { a2 = i + j;}
   int a2;
 }
 

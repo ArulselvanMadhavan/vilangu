@@ -285,7 +285,7 @@ let field_access :=
   | SUPER; DOT; ~=id; { FieldVar ((Super (lp($loc))), id, (-1), lp($loc)) }
 
 let mth_invoc :=
-  | ~=id; ~=arguments; { MethodCall {base = VarExp (SimpleVar (id, lp($loc)), lp($loc)); field = None; args = arguments; pos = lp($loc); vtbl_idx = None} }
+  | ~=id; ~=arguments; { MethodCall {base = This (lp($loc)); field = Some (Identifier (id, lp($loc))); args = arguments; pos = lp($loc); vtbl_idx = None} }
   | ~=primary;  DOT; ~=id; ~=arguments; { MethodCall {base = primary; field = Some (Identifier (id, lp($loc))); args = arguments; pos = lp($loc); vtbl_idx = None} }
   | SUPER; DOT; ~=id; ~=arguments; { MethodCall {base=(Super (lp($loc))); field=Some (Identifier (id, lp($loc))); args=arguments; pos = lp($loc); vtbl_idx = None} }
 

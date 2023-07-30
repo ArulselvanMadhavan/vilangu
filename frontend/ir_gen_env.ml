@@ -50,7 +50,7 @@ let gen_this_variants tenv ty =
     | T.NAME ((class_name, _), _, base, _) ->
       let base_xs = Option.value (handle_base base) ~default:[] in
       class_name :: base_xs
-    | _ -> []
+    | x -> [ T.type2str x ]
   and handle_base base =
     let%bind base = base in
     let%map ty = Symbol.look (tenv, base) in

@@ -315,14 +315,16 @@ and trans_exp (venv, tenv, exp) =
     venv, { ty; stmt = A.VarExp (stmt, pos) }
   | A.MethodCall { base; field; args; pos; _ } as exp ->
     let venv, { stmt = base; ty } = trans_exp (venv, tenv, base) in
+    let handle_field (A.Identifier (name, _)) =
+      if Symbol.name name = Symbol.name E.this_symbol
+      then T.type2str ty
+      else (
+        let name, _ = name in
+        name)
+    in
     (match ty with
      | T.NAME (_, _, _, vtable) ->
-       let method_name =
-         Option.fold
-           ~none:(T.type2str ty)
-           ~some:(fun (A.Identifier ((name, _), _)) -> name)
-           field
-       in
+       let method_name = Option.fold ~none:(T.type2str ty) ~some:handle_field field in
        let venv, args =
          Base.List.fold
            ~init:(venv, [])
@@ -565,7 +567,10 @@ let super_call acc base =
 let handle_const_body base stmt =
   let check_and_append stmt =
     let h_exp = function
-      | A.MethodCall _ -> true
+      | A.MethodCall { field; _ } ->
+        (match field with
+         | Some (A.Identifier (field, _)) when field = E.this_symbol -> true
+         | _ -> false)
       | _ -> false
     in
     let rec h_stmt = function
@@ -594,13 +599,6 @@ let handle_const_body base stmt =
   handle_blk stmt
 ;;
 
-(* add_implicit_return
-   1. check if body's last stmt is return stmt
-   2. if not, add one. the return val should be null or 0; based on the ret_type
-   3. all methods should end with return stmt; Either Return Some(exp) or Return None(void)
-   4. Implicitly added ret stmts will have Return Some(0) or Return Some(null)
-   5. null repr - Null of type; llvm::ConstantPointerNull of type
-*)
 let add_implicit_return pos body type_ =
   let add_default_ret = function
     | Some (A.Primitive _) -> A.ReturnStmt (Some (A.IntLit (Int32.zero, A.default_pos)))
@@ -648,20 +646,64 @@ let check_ret_empty pos body =
   handle_blk body
 ;;
 
+let trans_simple_var tenv class_name body =
+  let fields =
+    match S.look (tenv, class_name) with
+    | Some (T.NAME (_, fields, _, _)) -> fields
+    | _ -> []
+  in
+  let h = Base.Hash_set.create ~size:(List.length fields) (module Base.String) in
+  List.iter (fun (fl, _) -> Base.Hash_set.add h (Symbol.name fl)) fields;
+  let rec handle_stmt = function
+    | A.Block stmts -> A.Block (List.map handle_stmt stmts)
+    | A.ExprStmt e -> A.ExprStmt (handle_exp e)
+    | A.Output (e, s) -> A.Output (handle_exp e, s)
+    | A.ReturnStmt (Some e) -> A.ReturnStmt (Some (handle_exp e))
+    | A.While {exp; block} -> A.While {exp = handle_exp exp; block = handle_stmt block}
+    | A.Delete (e, s) -> A.Delete (handle_exp e, s)
+    | A.IfElse {exp; istmt; estmt; pos} -> A.IfElse {exp = handle_exp exp; istmt = handle_stmt istmt; estmt = handle_stmt estmt; pos}
+    | x -> x
+
+  and handle_exp = function
+    | A.VarExp (var, pos) -> A.VarExp (handle_var var, pos)
+    | A.Assignment { lhs; exp; pos } ->
+      A.Assignment { lhs = handle_var lhs; exp = handle_exp exp; pos }
+    | A.ArrayCreationExp {type_; exprs; pos; vtbl_idx} -> A.ArrayCreationExp {type_; exprs = List.map (handle_exp) exprs; pos; vtbl_idx}
+    | A.ClassCreationExp {type_; args; pos; vtbl_idx} -> A.ClassCreationExp {type_; args = List.map (handle_exp) args; pos; vtbl_idx}
+    | A.MethodCall {base; field; args; pos; vtbl_idx} -> A.MethodCall {base; field; args = List.map handle_exp args; pos; vtbl_idx}
+    | A.CastEvalExp {to_; from_} -> A.CastEvalExp {to_ = handle_exp to_; from_ = handle_exp from_}
+    | A.CastType {type_; exp; cast_type; pos} ->
+      A.CastType {type_; exp = handle_exp exp; cast_type; pos}
+    | x -> x
+  and handle_var = function
+    | A.SimpleVar (s, pos) as orig ->
+      if Base.Hash_set.mem h (Symbol.name s)
+      then A.FieldVar (A.VarExp (A.SimpleVar (E.this_symbol, pos), pos), s, (-1), pos)
+      else orig
+    | A.FieldVar (e, s, i, pos) -> A.FieldVar (handle_exp e, s, i, pos)
+    | A.SubscriptVar (var, e, pos) -> A.SubscriptVar (handle_var var, handle_exp e, pos)
+    | A.LoadVar v -> A.LoadVar (handle_var v)
+  in
+  handle_stmt body
+;;
+
 let trans_method base class_name tenv = function
   | A.Constructor { name; fparams; body; pos } ->
     let body = handle_const_body base body in
+    let body = trans_simple_var tenv class_name body in
     let fparams, body = handle_method tenv name fparams body in
     let body = check_ret_empty pos body in
     let return_t = A.Reference (A.ClassType (class_name, A.default_pos)) in
     let body = add_implicit_return pos body (Some return_t) in
     A.Constructor { name; fparams; body; pos }
   | A.Method { name; fparams; body; return_t; pos } ->
+        let body = trans_simple_var tenv class_name body in
     let fparams, body = handle_method tenv class_name fparams body in
     let (A.Return { type_ = ret }) = return_t in
     let body = add_implicit_return pos body (Some ret) in
     A.Method { name; fparams; body; return_t; pos }
   | A.Destructor { name; fparams; body; pos } ->
+        let body = trans_simple_var tenv class_name body in
     let fparams, body = handle_method tenv class_name fparams body in
     let body = check_ret_empty pos body in
     let body = add_implicit_return pos body None in
@@ -903,9 +945,7 @@ let trans_class (tenv, class_decs) =
     cdec
   in
   let class_decs = List.map ~f:(tr_class_body tenv) class_decs in
-  (* check explicit constr invoc *)
-  (* List.iter class_decs ~f:check_constr_invoc; *)
-  tenv, class_decs (* sorted by depth *)
+  tenv, class_decs
 ;;
 
 let trans_prog comp_unit =
