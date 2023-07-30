@@ -88,7 +88,7 @@ and stmt =
       ; block : stmt
       }
   | Output of exp * pos
-  | ReturnStmt of exp option
+  | ReturnStmt of exp option * pos
   | Empty
   | Break of pos
   | Continue of pos

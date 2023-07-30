@@ -134,19 +134,15 @@ let gen_stmt tenv s =
   let rec gstmt = function
     | A.Output (o, _) -> FT.Printf { format = "%d"; f_args = [ gen_expr tenv o ] }
     | A.ExprStmt e -> FT.Expr_stmt { expr_stmt = gen_expr tenv e }
-    (* | A.IfElse { exp; istmt; estmt; _ } -> *)
-    (*   FT.If_expr { eval = gen_expr exp; if_expr = gstmt istmt; else_expr = gstmt estmt } *)
     | A.Block xs -> FT.Block { stmt_list = List.map gstmt xs }
     | A.While { exp; block } ->
       FT.While { while_cond = gen_expr tenv exp; while_block = gstmt block }
     | A.Break _ -> FT.Break
     | A.Continue _ -> FT.Continue
     | A.Delete (e, _) -> FT.Delete { del_expr = gen_expr tenv e }
-    | A.ReturnStmt e ->
+    | A.ReturnStmt (e, _) ->
       let ret_expr = Option.fold e ~none:FT.Empty ~some:(gen_expr tenv) in
       FT.Return { ret_expr }
-    (* | A.Empty -> FT.Empty *)
-    (* | _ -> FT.Integer (Int32.of_int (-1)) *)
     | _ -> FT.Printf { format = "%d"; f_args = [ FT.Integer (Int32.of_int (-1)) ] }
   in
   gstmt s
@@ -377,14 +373,14 @@ let filter_arr_creation_exp tenv main_decl =
       h_exp exp;
       h_stmt block
     | A.Output (exp, _) -> h_exp exp
-    | A.ReturnStmt (Some exp) -> h_exp exp
+    | A.ReturnStmt (Some exp, _) -> h_exp exp
     | A.ExprStmt exp -> h_exp exp
     | A.Delete (exp, _) -> h_exp exp
     | A.IfElse { exp; istmt; estmt; _ } ->
       h_exp exp;
       h_stmt istmt;
       h_stmt estmt
-    | Ast.ReturnStmt None -> ()
+    | Ast.ReturnStmt (None, _) -> ()
     | Ast.Empty | Ast.Break _ | Ast.Continue _ -> ()
   in
   let filter_main = function

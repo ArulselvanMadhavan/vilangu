@@ -431,10 +431,10 @@ let rec trans_stmt (venv, tenv, stmt) =
            pos
            ("delete applied to a value with non-ref type " ^ T.type2str ty)
            (err_stmty orig) ))
-  | A.ReturnStmt e as orig ->
+  | A.ReturnStmt (e, pos) as orig ->
     let on_exp e =
       let venv, { stmt; ty } = trans_exp (venv, tenv, e) in
-      venv, { stmt = A.ReturnStmt (Some stmt); ty }
+      venv, { stmt = A.ReturnStmt (Some stmt, pos); ty }
     in
     Option.fold e ~none:(venv, { stmt = orig; ty = T.VOID }) ~some:on_exp
   | _ -> venv, err_stmty stmt
@@ -527,34 +527,6 @@ let find_super_ty tenv ty =
   | _ -> raise ExpectedClassType
 ;;
 
-let handle_method tenv name fparams body =
-  let fparams = build_this_param name :: fparams in
-  let init_scope venv (A.Param { type_; name }) =
-    let var = A.{ type_; id = name } in
-    let venv, _, _ = trans_dec (venv, tenv, var) in
-    venv
-  in
-  let ty =
-    match S.look (tenv, name) with
-    | Some ty -> ty
-    | _ -> raise ThisTypeNotFound
-  in
-  let init_this = function
-    | Some (E.VarEntry _) -> Some (E.VarEntry { ty; is_null = false })
-    | _ -> None
-  in
-  let super_ty = find_super_ty tenv ty in
-  let init_super _ =
-    Base.Option.map super_ty ~f:(fun super_ty ->
-      E.VarEntry { ty = super_ty; is_null = false })
-  in
-  let venv = Base.List.fold fparams ~init:E.base_venv ~f:init_scope in
-  let venv = S.update E.this_symbol init_this venv in
-  let venv = S.update E.super_symbol init_super venv in
-  let _, { stmt = body; _ } = trans_stmt (venv, tenv, body) in
-  fparams, body
-;;
-
 let super_call acc base =
   let field = Some (A.Identifier (base, A.default_pos)) in
   let base = A.VarExp (A.SimpleVar (E.super_symbol, A.default_pos), A.default_pos) in
@@ -575,7 +547,7 @@ let handle_const_body base stmt =
     in
     let rec h_stmt = function
       | A.ExprStmt e -> h_exp e
-      | A.ReturnStmt s -> Base.Option.fold ~init:false ~f:(fun _ -> h_exp) s
+      | A.ReturnStmt (s, _) -> Base.Option.fold ~init:false ~f:(fun _ -> h_exp) s
       | A.Block stmts ->
         Base.Option.fold ~init:false ~f:(fun _ -> h_stmt) (Base.List.hd stmts)
       | _ -> false
@@ -601,15 +573,16 @@ let handle_const_body base stmt =
 
 let add_implicit_return pos body type_ =
   let add_default_ret = function
-    | Some (A.Primitive _) -> A.ReturnStmt (Some (A.IntLit (Int32.zero, A.default_pos)))
+    | Some (A.Primitive _) ->
+      A.ReturnStmt (Some (A.IntLit (Int32.zero, A.default_pos)), A.default_pos)
     | Some (A.Reference _ as orig) ->
-      A.ReturnStmt (Some (A.NullLit (A.default_pos, Some orig)))
-    | _ -> A.ReturnStmt None
+      A.ReturnStmt (Some (A.NullLit (A.default_pos, Some orig)), A.default_pos)
+    | _ -> A.ReturnStmt (None, A.default_pos)
   in
   let rec add_implicit = function
     | [] -> []
-    | A.ReturnStmt (Some x) :: [] -> A.ReturnStmt (Some x) :: []
-    | A.ReturnStmt None :: [] -> add_default_ret type_ :: []
+    | A.ReturnStmt (Some x, pos) :: [] -> A.ReturnStmt (Some x, pos) :: []
+    | A.ReturnStmt (None, _) :: [] -> add_default_ret type_ :: []
     | x :: [] -> [ x; add_default_ret type_ ]
     | x :: xs -> x :: add_implicit xs
   in
@@ -622,7 +595,7 @@ let add_implicit_return pos body type_ =
 
 let check_ret_empty pos body =
   let handle_stmt = function
-    | A.ReturnStmt e when Option.is_some e -> false
+    | A.ReturnStmt (e, _) when Option.is_some e -> false
     | _ -> true
   in
   let handle_blk = function
@@ -638,9 +611,12 @@ let check_ret_empty pos body =
              expression"
             ()
       in
-      Base.Option.fold lstmt ~init:(A.Block [ A.ReturnStmt None ]) ~f:(fun _ lstmt ->
-        handle_result (handle_stmt lstmt);
-        orig)
+      Base.Option.fold
+        lstmt
+        ~init:(A.Block [ A.ReturnStmt (None, A.default_pos) ])
+        ~f:(fun _ lstmt ->
+          handle_result (handle_stmt lstmt);
+          orig)
     | x -> error pos "expected the body of the method to be a block" x
   in
   handle_blk body
@@ -658,27 +634,37 @@ let trans_simple_var tenv class_name body =
     | A.Block stmts -> A.Block (List.map handle_stmt stmts)
     | A.ExprStmt e -> A.ExprStmt (handle_exp e)
     | A.Output (e, s) -> A.Output (handle_exp e, s)
-    | A.ReturnStmt (Some e) -> A.ReturnStmt (Some (handle_exp e))
-    | A.While {exp; block} -> A.While {exp = handle_exp exp; block = handle_stmt block}
+    | A.ReturnStmt (Some e, pos) -> A.ReturnStmt (Some (handle_exp e), pos)
+    | A.While { exp; block } ->
+      A.While { exp = handle_exp exp; block = handle_stmt block }
     | A.Delete (e, s) -> A.Delete (handle_exp e, s)
-    | A.IfElse {exp; istmt; estmt; pos} -> A.IfElse {exp = handle_exp exp; istmt = handle_stmt istmt; estmt = handle_stmt estmt; pos}
+    | A.IfElse { exp; istmt; estmt; pos } ->
+      A.IfElse
+        { exp = handle_exp exp
+        ; istmt = handle_stmt istmt
+        ; estmt = handle_stmt estmt
+        ; pos
+        }
     | x -> x
-
   and handle_exp = function
     | A.VarExp (var, pos) -> A.VarExp (handle_var var, pos)
     | A.Assignment { lhs; exp; pos } ->
       A.Assignment { lhs = handle_var lhs; exp = handle_exp exp; pos }
-    | A.ArrayCreationExp {type_; exprs; pos; vtbl_idx} -> A.ArrayCreationExp {type_; exprs = List.map (handle_exp) exprs; pos; vtbl_idx}
-    | A.ClassCreationExp {type_; args; pos; vtbl_idx} -> A.ClassCreationExp {type_; args = List.map (handle_exp) args; pos; vtbl_idx}
-    | A.MethodCall {base; field; args; pos; vtbl_idx} -> A.MethodCall {base; field; args = List.map handle_exp args; pos; vtbl_idx}
-    | A.CastEvalExp {to_; from_} -> A.CastEvalExp {to_ = handle_exp to_; from_ = handle_exp from_}
-    | A.CastType {type_; exp; cast_type; pos} ->
-      A.CastType {type_; exp = handle_exp exp; cast_type; pos}
+    | A.ArrayCreationExp { type_; exprs; pos; vtbl_idx } ->
+      A.ArrayCreationExp { type_; exprs = List.map handle_exp exprs; pos; vtbl_idx }
+    | A.ClassCreationExp { type_; args; pos; vtbl_idx } ->
+      A.ClassCreationExp { type_; args = List.map handle_exp args; pos; vtbl_idx }
+    | A.MethodCall { base; field; args; pos; vtbl_idx } ->
+      A.MethodCall { base; field; args = List.map handle_exp args; pos; vtbl_idx }
+    | A.CastEvalExp { to_; from_ } ->
+      A.CastEvalExp { to_ = handle_exp to_; from_ = handle_exp from_ }
+    | A.CastType { type_; exp; cast_type; pos } ->
+      A.CastType { type_; exp = handle_exp exp; cast_type; pos }
     | x -> x
   and handle_var = function
     | A.SimpleVar (s, pos) as orig ->
       if Base.Hash_set.mem h (Symbol.name s)
-      then A.FieldVar (A.VarExp (A.SimpleVar (E.this_symbol, pos), pos), s, (-1), pos)
+      then A.FieldVar (A.VarExp (A.SimpleVar (E.this_symbol, pos), pos), s, -1, pos)
       else orig
     | A.FieldVar (e, s, i, pos) -> A.FieldVar (handle_exp e, s, i, pos)
     | A.SubscriptVar (var, e, pos) -> A.SubscriptVar (handle_var var, handle_exp e, pos)
@@ -687,26 +673,86 @@ let trans_simple_var tenv class_name body =
   handle_stmt body
 ;;
 
+let transform_return venv tenv return_t body =
+  let rec handle_stmt = function
+    | A.Block stmts -> A.Block (List.map handle_stmt stmts)
+    | A.While { exp; block } -> A.While { exp; block = handle_stmt block }
+    | A.IfElse { exp; istmt; estmt; pos } ->
+      A.IfElse { exp; istmt = handle_stmt istmt; estmt = handle_stmt estmt; pos }
+    | A.ReturnStmt (e, pos) as orig ->
+      (match e, return_t with
+       | Some e, Some return_t ->
+         let _, { ty = rhs_ty; _ } = trans_exp (venv, tenv, e) in
+         let lhs_ty = trans_type tenv return_t in
+         let rhs_exp = assignment_cast tenv (lhs_ty, rhs_ty, pos, e) in
+         A.ReturnStmt (Some rhs_exp, pos)
+       | Some e, None ->
+         let _, { ty; _ } = trans_exp (venv, tenv, e) in
+         (match ty with
+          | T.VOID -> orig
+          | _ ->
+            error
+              pos
+              ("expected void return type but found return stmt with type:"
+               ^ T.type2str ty)
+              orig)
+       | None, Some t ->
+         let ty = trans_type tenv t in
+         error pos ("void return stmt. Expected " ^ T.type2str ty) orig
+       | None, None -> orig)
+    | x -> x
+  in
+  handle_stmt body
+;;
+
+let handle_method ?(is_method = false) pos tenv name fparams body return_t =
+  let fparams = build_this_param name :: fparams in
+  let init_scope venv (A.Param { type_; name }) =
+    let var = A.{ type_; id = name } in
+    let venv, _, _ = trans_dec (venv, tenv, var) in
+    venv
+  in
+  let ty =
+    match S.look (tenv, name) with
+    | Some ty -> ty
+    | _ -> raise ThisTypeNotFound
+  in
+  let init_this = function
+    | Some (E.VarEntry _) -> Some (E.VarEntry { ty; is_null = false })
+    | _ -> None
+  in
+  let super_ty = find_super_ty tenv ty in
+  let init_super _ =
+    Base.Option.map super_ty ~f:(fun super_ty ->
+      E.VarEntry { ty = super_ty; is_null = false })
+  in
+  let venv = Base.List.fold fparams ~init:E.base_venv ~f:init_scope in
+  let venv = S.update E.this_symbol init_this venv in
+  let venv = S.update E.super_symbol init_super venv in
+  let venv, { stmt = body; _ } = trans_stmt (venv, tenv, body) in
+  let body = if is_method then body else check_ret_empty pos body in
+  let body = add_implicit_return pos body return_t in
+  let body = transform_return venv tenv return_t body in
+  fparams, body
+;;
+
 let trans_method base class_name tenv = function
   | A.Constructor { name; fparams; body; pos } ->
+    let return_t = A.Reference (A.ClassType (class_name, A.default_pos)) in
     let body = handle_const_body base body in
     let body = trans_simple_var tenv class_name body in
-    let fparams, body = handle_method tenv name fparams body in
-    let body = check_ret_empty pos body in
-    let return_t = A.Reference (A.ClassType (class_name, A.default_pos)) in
-    let body = add_implicit_return pos body (Some return_t) in
+    let fparams, body = handle_method pos tenv name fparams body (Some return_t) in
     A.Constructor { name; fparams; body; pos }
   | A.Method { name; fparams; body; return_t; pos } ->
-        let body = trans_simple_var tenv class_name body in
-    let fparams, body = handle_method tenv class_name fparams body in
+    let body = trans_simple_var tenv class_name body in
     let (A.Return { type_ = ret }) = return_t in
-    let body = add_implicit_return pos body (Some ret) in
+    let fparams, body =
+      handle_method ~is_method:true pos tenv class_name fparams body (Some ret)
+    in
     A.Method { name; fparams; body; return_t; pos }
   | A.Destructor { name; fparams; body; pos } ->
-        let body = trans_simple_var tenv class_name body in
-    let fparams, body = handle_method tenv class_name fparams body in
-    let body = check_ret_empty pos body in
-    let body = add_implicit_return pos body None in
+    let body = trans_simple_var tenv class_name body in
+    let fparams, body = handle_method pos tenv class_name fparams body None in
     A.Destructor { name; fparams; body; pos }
   | x -> x
 ;;

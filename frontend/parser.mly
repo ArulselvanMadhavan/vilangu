@@ -177,8 +177,8 @@ let while_stmt :=
   | WHILE; ~=paren_exp; ~=stmt; { While { exp=paren_exp; block=stmt} }
 
 let return_stmt :=                     
-  | RETURN; SEMICOLON; { ReturnStmt None}
-  | RETURN; ~=exp; SEMICOLON; {ReturnStmt (Some exp)}
+  | RETURN; SEMICOLON; { ReturnStmt (None, lp($loc))}
+  | RETURN; ~=exp; SEMICOLON; {ReturnStmt (Some exp, lp($loc))}
 
 let delete_stmt :=
   | DELETE; ~=exp; SEMICOLON; { Delete (exp, lp($loc)) }
