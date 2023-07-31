@@ -1,9 +1,9 @@
 ; ModuleID = 'Module'
 source_filename = "Module"
-target triple = "x86_64-pc-linux-gnu"
+target triple = "aarch64-unknown-linux-gnu"
 
-%Object_Vtable_type = type { %Object_Vtable_type*, i8* }
-%i32arr_Vtable_type = type { %Object_Vtable_type*, i8* }
+%i32arr_Vtable_type = type { %Object_Vtable_type*, i8*, void (%Object*)*, void (%Object*)*, void (%i32arr*)*, void (%i32arr*, %i32arr_Vtable_type*, i32*, i32)* }
+%Object_Vtable_type = type { %Object_Vtable_type*, i8*, void (%Object*)*, void (%Object*)* }
 %Object = type { %Object_Vtable_type* }
 %i32arr = type { %i32arr_Vtable_type*, i32*, i32 }
 
@@ -13,10 +13,10 @@ target triple = "x86_64-pc-linux-gnu"
 @negativeLenFormat = private constant [62 x i8] c"Line: %d | Array len cannot be negative. Length attempted:%d\0A\00", align 1
 @nullDerefFormat = private constant [29 x i8] c"Line: %d | Null dereference\0A\00", align 1
 @divByZeroFormat = private constant [37 x i8] c"Line: %d | Divide by zero exception\0A\00", align 1
-@Object_class_name = private constant [7 x i8] c"Object\00", align 1
-@Object_Vtable = global %Object_Vtable_type { %Object_Vtable_type* null, i8* getelementptr inbounds ([7 x i8], [7 x i8]* @Object_class_name, i32 0, i32 0) }
 @i32arr_class_name = private constant [7 x i8] c"i32arr\00", align 1
-@i32arr_Vtable = global %i32arr_Vtable_type { %Object_Vtable_type* @Object_Vtable, i8* getelementptr inbounds ([7 x i8], [7 x i8]* @i32arr_class_name, i32 0, i32 0) }
+@i32arr_Vtable = global %i32arr_Vtable_type { %Object_Vtable_type* null, i8* getelementptr inbounds ([7 x i8], [7 x i8]* @i32arr_class_name, i32 0, i32 0), void (%Object*)* @"~Object_Object", void (%Object*)* @Object_Object, void (%i32arr*)* @"~i32arr_i32arr", void (%i32arr*, %i32arr_Vtable_type*, i32*, i32)* @i32arr_Constructor }
+@Object_class_name = private constant [7 x i8] c"Object\00", align 1
+@Object_Vtable = global %Object_Vtable_type { %Object_Vtable_type* null, i8* getelementptr inbounds ([7 x i8], [7 x i8]* @Object_class_name, i32 0, i32 0), void (%Object*)* @"~Object_Object", void (%Object*)* @Object_Object }
 
 declare i32 @printf(i8*, ...)
 
@@ -121,16 +121,11 @@ ifcont13:                                         ; preds = %else12, %loopend
   ret i1 %iftmp
 }
 
-define void @Object_Constructor(%Object* %0) {
-entry:
-  %this = alloca %Object*, align 8
-  store %Object* %0, %Object** %this, align 8
-  ret void
-}
-
 define void @i32arr_Constructor(%i32arr* %0, %i32arr_Vtable_type* %1, i32* %2, i32 %3) {
 entry:
   %this = alloca %i32arr*, align 8
+  %super = alloca %i32arr*, align 8
+  store %i32arr* %0, %i32arr** %super, align 8
   store %i32arr* %0, %i32arr** %this, align 8
   %vtable = alloca %i32arr_Vtable_type*, align 8
   store %i32arr_Vtable_type* %1, %i32arr_Vtable_type** %vtable, align 8
@@ -180,6 +175,47 @@ nullDerefElse5:                                   ; preds = %nullDerefThen4, %nu
   ret void
 }
 
+define void @"~i32arr_i32arr"(%i32arr* %0) {
+entry:
+  %this = alloca %i32arr*, align 8
+  %super = alloca %i32arr*, align 8
+  store %i32arr* %0, %i32arr** %super, align 8
+  store %i32arr* %0, %i32arr** %this, align 8
+  %1 = load %i32arr*, %i32arr** %this, align 8
+  %2 = icmp eq %i32arr* %1, null
+  br i1 %2, label %nullDerefThen1, label %nullDerefElse
+
+nullDerefThen1:                                   ; preds = %entry
+  %3 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([29 x i8], [29 x i8]* @nullDerefFormat, i32 0, i32 0), i32 0)
+  call void @exit(i32 -1)
+  br label %nullDerefElse
+
+nullDerefElse:                                    ; preds = %nullDerefThen1, %entry
+  %4 = getelementptr inbounds %i32arr, %i32arr* %1, i32 0, i32 1
+  %5 = load i32*, i32** %4, align 8
+  %6 = bitcast i32* %5 to i8*
+  call void @free(i8* %6)
+  ret void
+}
+
+define void @"~Object_Object"(%Object* %0) {
+entry:
+  %this = alloca %Object*, align 8
+  %super = alloca %Object*, align 8
+  store %Object* %0, %Object** %super, align 8
+  store %Object* %0, %Object** %this, align 8
+  ret void
+}
+
+define void @Object_Object(%Object* %0) {
+entry:
+  %this = alloca %Object*, align 8
+  %super = alloca %Object*, align 8
+  store %Object* %0, %Object** %super, align 8
+  store %Object* %0, %Object** %this, align 8
+  ret void
+}
+
 define i32 @main() {
 entry:
   %x = alloca %i32arr*, align 8
@@ -190,112 +226,119 @@ negativeLenThen1:                                 ; preds = %entry
   br label %negativeLenCont
 
 negativeLenCont:                                  ; preds = %negativeLenThen1, %entry
-  %newArrayResult = alloca %i32arr, align 8
-  %0 = call dereferenceable_or_null(40) i8* @calloc(i32 10, i32 4)
-  %1 = bitcast i8* %0 to i32*
-  call void @i32arr_Constructor(%i32arr* nonnull %newArrayResult, %i32arr_Vtable_type* nonnull @i32arr_Vtable, i32* %1, i32 10)
-  store %i32arr* %newArrayResult, %i32arr** %x, align 8
-  br i1 false, label %nullDerefThen2, label %nullDerefElse
+  %0 = call dereferenceable_or_null(24) i8* @calloc(i32 1, i32 24)
+  %1 = bitcast i8* %0 to %i32arr*
+  %2 = call dereferenceable_or_null(40) i8* @calloc(i32 10, i32 4)
+  %3 = bitcast i8* %2 to i32*
+  %constructorLoad = load void (%i32arr*, %i32arr_Vtable_type*, i32*, i32)*, void (%i32arr*, %i32arr_Vtable_type*, i32*, i32)** getelementptr inbounds (%i32arr_Vtable_type, %i32arr_Vtable_type* @i32arr_Vtable, i64 0, i32 5), align 8
+  call void %constructorLoad(%i32arr* %1, %i32arr_Vtable_type* nonnull @i32arr_Vtable, i32* %3, i32 10)
+  %4 = bitcast %i32arr** %x to i8**
+  store i8* %0, i8** %4, align 8
+  %.cast = bitcast i8* %0 to %i32arr*
+  %5 = icmp eq i8* %0, null
+  br i1 %5, label %nullDerefThen2, label %nullDerefElse
 
 nullDerefThen2:                                   ; preds = %negativeLenCont
+  %6 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([29 x i8], [29 x i8]* @nullDerefFormat, i64 0, i64 0), i32 5)
+  call void @exit(i32 -1)
   br label %nullDerefElse
 
 nullDerefElse:                                    ; preds = %nullDerefThen2, %negativeLenCont
-  %2 = getelementptr inbounds %i32arr, %i32arr* %newArrayResult, i64 0, i32 1
-  %baseArrPtr = load i32*, i32** %2, align 8
-  %3 = load %i32arr*, %i32arr** %x, align 8
-  %4 = icmp eq %i32arr* %3, null
-  br i1 %4, label %nullDerefThen3, label %nullDerefElse4
+  %7 = getelementptr inbounds %i32arr, %i32arr* %.cast, i64 0, i32 1
+  %baseArrPtr = load i32*, i32** %7, align 8
+  %8 = load %i32arr*, %i32arr** %x, align 8
+  %9 = icmp eq %i32arr* %8, null
+  br i1 %9, label %nullDerefThen3, label %nullDerefElse4
 
 nullDerefThen3:                                   ; preds = %nullDerefElse
-  %5 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([29 x i8], [29 x i8]* @nullDerefFormat, i64 0, i64 0), i32 5)
+  %10 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([29 x i8], [29 x i8]* @nullDerefFormat, i64 0, i64 0), i32 5)
   call void @exit(i32 -1)
   br label %nullDerefElse4
 
 nullDerefElse4:                                   ; preds = %nullDerefThen3, %nullDerefElse
-  %6 = getelementptr inbounds %i32arr, %i32arr* %3, i64 0, i32 2
-  %7 = load i32, i32* %6, align 4
-  %8 = icmp slt i32 %7, 6
-  br i1 %8, label %boundsCheckThen5, label %boundsCheckElse
+  %11 = getelementptr inbounds %i32arr, %i32arr* %8, i64 0, i32 2
+  %12 = load i32, i32* %11, align 4
+  %13 = icmp slt i32 %12, 6
+  br i1 %13, label %boundsCheckThen5, label %boundsCheckElse
 
 boundsCheckThen5:                                 ; preds = %nullDerefElse4
-  %9 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([72 x i8], [72 x i8]* @outOfBoundsFormat, i64 0, i64 0), i32 5, i32 5, i32 %7)
+  %14 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([72 x i8], [72 x i8]* @outOfBoundsFormat, i64 0, i64 0), i32 5, i32 5, i32 %12)
   call void @exit(i32 -1)
   br label %boundsCheckElse
 
 boundsCheckElse:                                  ; preds = %boundsCheckThen5, %nullDerefElse4
-  %10 = getelementptr inbounds i32, i32* %baseArrPtr, i64 5
-  store i32 5, i32* %10, align 4
-  %11 = load %i32arr*, %i32arr** %x, align 8
-  %12 = icmp eq %i32arr* %11, null
-  br i1 %12, label %nullDerefThen6, label %nullDerefElse7
+  %15 = getelementptr inbounds i32, i32* %baseArrPtr, i64 5
+  store i32 5, i32* %15, align 4
+  %16 = load %i32arr*, %i32arr** %x, align 8
+  %17 = icmp eq %i32arr* %16, null
+  br i1 %17, label %nullDerefThen6, label %nullDerefElse7
 
 nullDerefThen6:                                   ; preds = %boundsCheckElse
-  %13 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([29 x i8], [29 x i8]* @nullDerefFormat, i64 0, i64 0), i32 6)
+  %18 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([29 x i8], [29 x i8]* @nullDerefFormat, i64 0, i64 0), i32 6)
   call void @exit(i32 -1)
   br label %nullDerefElse7
 
 nullDerefElse7:                                   ; preds = %nullDerefThen6, %boundsCheckElse
-  %14 = getelementptr inbounds %i32arr, %i32arr* %11, i64 0, i32 1
-  %baseArrPtr8 = load i32*, i32** %14, align 8
-  %15 = load %i32arr*, %i32arr** %x, align 8
-  %16 = icmp eq %i32arr* %15, null
-  br i1 %16, label %nullDerefThen9, label %nullDerefElse10
+  %19 = getelementptr inbounds %i32arr, %i32arr* %16, i64 0, i32 1
+  %baseArrPtr8 = load i32*, i32** %19, align 8
+  %20 = load %i32arr*, %i32arr** %x, align 8
+  %21 = icmp eq %i32arr* %20, null
+  br i1 %21, label %nullDerefThen9, label %nullDerefElse10
 
 nullDerefThen9:                                   ; preds = %nullDerefElse7
-  %17 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([29 x i8], [29 x i8]* @nullDerefFormat, i64 0, i64 0), i32 6)
+  %22 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([29 x i8], [29 x i8]* @nullDerefFormat, i64 0, i64 0), i32 6)
   call void @exit(i32 -1)
   br label %nullDerefElse10
 
 nullDerefElse10:                                  ; preds = %nullDerefThen9, %nullDerefElse7
-  %18 = getelementptr inbounds %i32arr, %i32arr* %15, i64 0, i32 2
-  %19 = load i32, i32* %18, align 4
-  %20 = icmp slt i32 %19, 1
-  br i1 %20, label %boundsCheckThen11, label %boundsCheckElse12
+  %23 = getelementptr inbounds %i32arr, %i32arr* %20, i64 0, i32 2
+  %24 = load i32, i32* %23, align 4
+  %25 = icmp slt i32 %24, 1
+  br i1 %25, label %boundsCheckThen11, label %boundsCheckElse12
 
 boundsCheckThen11:                                ; preds = %nullDerefElse10
-  %21 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([72 x i8], [72 x i8]* @outOfBoundsFormat, i64 0, i64 0), i32 6, i32 0, i32 %19)
+  %26 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([72 x i8], [72 x i8]* @outOfBoundsFormat, i64 0, i64 0), i32 6, i32 0, i32 %24)
   call void @exit(i32 -1)
   br label %boundsCheckElse12
 
 boundsCheckElse12:                                ; preds = %boundsCheckThen11, %nullDerefElse10
-  %22 = load i32, i32* %baseArrPtr8, align 4
-  %23 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([4 x i8], [4 x i8]* @printIntFormat, i64 0, i64 0), i32 %22)
-  %24 = load %i32arr*, %i32arr** %x, align 8
-  %25 = icmp eq %i32arr* %24, null
-  br i1 %25, label %nullDerefThen13, label %nullDerefElse14
+  %27 = load i32, i32* %baseArrPtr8, align 4
+  %28 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([4 x i8], [4 x i8]* @printIntFormat, i64 0, i64 0), i32 %27)
+  %29 = load %i32arr*, %i32arr** %x, align 8
+  %30 = icmp eq %i32arr* %29, null
+  br i1 %30, label %nullDerefThen13, label %nullDerefElse14
 
 nullDerefThen13:                                  ; preds = %boundsCheckElse12
-  %26 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([29 x i8], [29 x i8]* @nullDerefFormat, i64 0, i64 0), i32 7)
+  %31 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([29 x i8], [29 x i8]* @nullDerefFormat, i64 0, i64 0), i32 7)
   call void @exit(i32 -1)
   br label %nullDerefElse14
 
 nullDerefElse14:                                  ; preds = %nullDerefThen13, %boundsCheckElse12
-  %27 = getelementptr inbounds %i32arr, %i32arr* %24, i64 0, i32 1
-  %baseArrPtr15 = load i32*, i32** %27, align 8
-  %28 = load %i32arr*, %i32arr** %x, align 8
-  %29 = icmp eq %i32arr* %28, null
-  br i1 %29, label %nullDerefThen16, label %nullDerefElse17
+  %32 = getelementptr inbounds %i32arr, %i32arr* %29, i64 0, i32 1
+  %baseArrPtr15 = load i32*, i32** %32, align 8
+  %33 = load %i32arr*, %i32arr** %x, align 8
+  %34 = icmp eq %i32arr* %33, null
+  br i1 %34, label %nullDerefThen16, label %nullDerefElse17
 
 nullDerefThen16:                                  ; preds = %nullDerefElse14
-  %30 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([29 x i8], [29 x i8]* @nullDerefFormat, i64 0, i64 0), i32 7)
+  %35 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([29 x i8], [29 x i8]* @nullDerefFormat, i64 0, i64 0), i32 7)
   call void @exit(i32 -1)
   br label %nullDerefElse17
 
 nullDerefElse17:                                  ; preds = %nullDerefThen16, %nullDerefElse14
-  %31 = getelementptr inbounds %i32arr, %i32arr* %28, i64 0, i32 2
-  %32 = load i32, i32* %31, align 4
-  %33 = icmp slt i32 %32, 6
-  br i1 %33, label %boundsCheckThen18, label %boundsCheckElse19
+  %36 = getelementptr inbounds %i32arr, %i32arr* %33, i64 0, i32 2
+  %37 = load i32, i32* %36, align 4
+  %38 = icmp slt i32 %37, 6
+  br i1 %38, label %boundsCheckThen18, label %boundsCheckElse19
 
 boundsCheckThen18:                                ; preds = %nullDerefElse17
-  %34 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([72 x i8], [72 x i8]* @outOfBoundsFormat, i64 0, i64 0), i32 7, i32 5, i32 %32)
+  %39 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([72 x i8], [72 x i8]* @outOfBoundsFormat, i64 0, i64 0), i32 7, i32 5, i32 %37)
   call void @exit(i32 -1)
   br label %boundsCheckElse19
 
 boundsCheckElse19:                                ; preds = %boundsCheckThen18, %nullDerefElse17
-  %35 = getelementptr inbounds i32, i32* %baseArrPtr15, i64 5
-  %36 = load i32, i32* %35, align 4
-  %37 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([4 x i8], [4 x i8]* @printIntFormat, i64 0, i64 0), i32 %36)
+  %40 = getelementptr inbounds i32, i32* %baseArrPtr15, i64 5
+  %41 = load i32, i32* %40, align 4
+  %42 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([4 x i8], [4 x i8]* @printIntFormat, i64 0, i64 0), i32 %41)
   ret i32 0
 }

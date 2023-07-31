@@ -1,0 +1,1 @@
+./test/e2e/constructorRetThis.t:2:2 - 2:30: constructor/destructor methods should not have a return statement with an expression

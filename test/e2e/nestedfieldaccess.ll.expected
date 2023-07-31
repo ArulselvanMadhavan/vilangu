@@ -1,16 +1,16 @@
 ; ModuleID = 'Module'
 source_filename = "Module"
-target triple = "x86_64-pc-linux-gnu"
+target triple = "aarch64-unknown-linux-gnu"
 
-%Object_Vtable_type = type { %Object_Vtable_type*, i8* }
-%Langarr_Vtable_type = type { %Object_Vtable_type*, i8* }
-%French_Vtable_type = type { %Lang_Vtable_type*, i8* }
-%Lang_Vtable_type = type { %Object_Vtable_type*, i8* }
-%English_Vtable_type = type { %Lang_Vtable_type*, i8* }
+%Langarr_Vtable_type = type { %Object_Vtable_type*, i8*, void (%Object*)*, void (%Object*)*, void (%Langarr*)*, void (%Langarr*, %Langarr_Vtable_type*, %Lang**, i32)* }
+%Object_Vtable_type = type { %Object_Vtable_type*, i8*, void (%Object*)*, void (%Object*)* }
 %Object = type { %Object_Vtable_type* }
 %Langarr = type { %Langarr_Vtable_type*, %Lang**, i32 }
 %Lang = type { %Lang_Vtable_type*, i32 }
+%Lang_Vtable_type = type { %Object_Vtable_type*, i8*, void (%Object*)*, void (%Object*)*, void (%Lang*)*, void (%Lang*)* }
+%French_Vtable_type = type { %Lang_Vtable_type*, i8*, void (%Object*)*, void (%Object*)*, void (%Lang*)*, void (%Lang*)*, void (%French*)*, void (%French*)* }
 %French = type { %French_Vtable_type*, i32, %Langarr* }
+%English_Vtable_type = type { %Lang_Vtable_type*, i8*, void (%Object*)*, void (%Object*)*, void (%Lang*)*, void (%Lang*)*, void (%English*)*, void (%English*)* }
 %English = type { %English_Vtable_type*, i32, %Lang* }
 
 @printIntFormat = private constant [4 x i8] c"%d\0A\00", align 1
@@ -19,16 +19,16 @@ target triple = "x86_64-pc-linux-gnu"
 @negativeLenFormat = private constant [62 x i8] c"Line: %d | Array len cannot be negative. Length attempted:%d\0A\00", align 1
 @nullDerefFormat = private constant [29 x i8] c"Line: %d | Null dereference\0A\00", align 1
 @divByZeroFormat = private constant [37 x i8] c"Line: %d | Divide by zero exception\0A\00", align 1
-@Object_class_name = private constant [7 x i8] c"Object\00", align 1
-@Object_Vtable = global %Object_Vtable_type { %Object_Vtable_type* null, i8* getelementptr inbounds ([7 x i8], [7 x i8]* @Object_class_name, i32 0, i32 0) }
 @Langarr_class_name = private constant [8 x i8] c"Langarr\00", align 1
-@Langarr_Vtable = global %Langarr_Vtable_type { %Object_Vtable_type* @Object_Vtable, i8* getelementptr inbounds ([8 x i8], [8 x i8]* @Langarr_class_name, i32 0, i32 0) }
+@Langarr_Vtable = global %Langarr_Vtable_type { %Object_Vtable_type* null, i8* getelementptr inbounds ([8 x i8], [8 x i8]* @Langarr_class_name, i32 0, i32 0), void (%Object*)* @"~Object_Object", void (%Object*)* @Object_Object, void (%Langarr*)* @"~Langarr_Langarr", void (%Langarr*, %Langarr_Vtable_type*, %Lang**, i32)* @Langarr_Constructor }
+@Object_class_name = private constant [7 x i8] c"Object\00", align 1
+@Object_Vtable = global %Object_Vtable_type { %Object_Vtable_type* null, i8* getelementptr inbounds ([7 x i8], [7 x i8]* @Object_class_name, i32 0, i32 0), void (%Object*)* @"~Object_Object", void (%Object*)* @Object_Object }
 @French_class_name = private constant [7 x i8] c"French\00", align 1
-@French_Vtable = global %French_Vtable_type { %Lang_Vtable_type* null, i8* getelementptr inbounds ([7 x i8], [7 x i8]* @French_class_name, i32 0, i32 0) }
+@French_Vtable = global %French_Vtable_type { %Lang_Vtable_type* null, i8* getelementptr inbounds ([7 x i8], [7 x i8]* @French_class_name, i32 0, i32 0), void (%Object*)* @"~Object_Object", void (%Object*)* @Object_Object, void (%Lang*)* @"~Lang_Lang", void (%Lang*)* @Lang_Lang, void (%French*)* @"~French_French", void (%French*)* @French_French }
 @English_class_name = private constant [8 x i8] c"English\00", align 1
-@English_Vtable = global %English_Vtable_type { %Lang_Vtable_type* null, i8* getelementptr inbounds ([8 x i8], [8 x i8]* @English_class_name, i32 0, i32 0) }
+@English_Vtable = global %English_Vtable_type { %Lang_Vtable_type* null, i8* getelementptr inbounds ([8 x i8], [8 x i8]* @English_class_name, i32 0, i32 0), void (%Object*)* @"~Object_Object", void (%Object*)* @Object_Object, void (%Lang*)* @"~Lang_Lang", void (%Lang*)* @Lang_Lang, void (%English*)* @"~English_English", void (%English*)* @English_English }
 @Lang_class_name = private constant [5 x i8] c"Lang\00", align 1
-@Lang_Vtable = global %Lang_Vtable_type { %Object_Vtable_type* @Object_Vtable, i8* getelementptr inbounds ([5 x i8], [5 x i8]* @Lang_class_name, i32 0, i32 0) }
+@Lang_Vtable = global %Lang_Vtable_type { %Object_Vtable_type* @Object_Vtable, i8* getelementptr inbounds ([5 x i8], [5 x i8]* @Lang_class_name, i32 0, i32 0), void (%Object*)* @"~Object_Object", void (%Object*)* @Object_Object, void (%Lang*)* @"~Lang_Lang", void (%Lang*)* @Lang_Lang }
 
 declare i32 @printf(i8*, ...)
 
@@ -133,16 +133,11 @@ ifcont13:                                         ; preds = %else12, %loopend
   ret i1 %iftmp
 }
 
-define void @Object_Constructor(%Object* %0) {
-entry:
-  %this = alloca %Object*, align 8
-  store %Object* %0, %Object** %this, align 8
-  ret void
-}
-
 define void @Langarr_Constructor(%Langarr* %0, %Langarr_Vtable_type* %1, %Lang** %2, i32 %3) {
 entry:
   %this = alloca %Langarr*, align 8
+  %super = alloca %Langarr*, align 8
+  store %Langarr* %0, %Langarr** %super, align 8
   store %Langarr* %0, %Langarr** %this, align 8
   %vtable = alloca %Langarr_Vtable_type*, align 8
   store %Langarr_Vtable_type* %1, %Langarr_Vtable_type** %vtable, align 8
@@ -192,24 +187,161 @@ nullDerefElse5:                                   ; preds = %nullDerefThen4, %nu
   ret void
 }
 
-define void @French_Constructor(%French* %0) {
+define void @"~Langarr_Langarr"(%Langarr* %0) {
+entry:
+  %this = alloca %Langarr*, align 8
+  %super = alloca %Langarr*, align 8
+  store %Langarr* %0, %Langarr** %super, align 8
+  store %Langarr* %0, %Langarr** %this, align 8
+  %1 = load %Langarr*, %Langarr** %this, align 8
+  %2 = icmp eq %Langarr* %1, null
+  br i1 %2, label %nullDerefThen1, label %nullDerefElse
+
+nullDerefThen1:                                   ; preds = %entry
+  %3 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([29 x i8], [29 x i8]* @nullDerefFormat, i32 0, i32 0), i32 0)
+  call void @exit(i32 -1)
+  br label %nullDerefElse
+
+nullDerefElse:                                    ; preds = %nullDerefThen1, %entry
+  %4 = getelementptr inbounds %Langarr, %Langarr* %1, i32 0, i32 1
+  %5 = load %Lang**, %Lang*** %4, align 8
+  %6 = bitcast %Lang** %5 to i8*
+  call void @free(i8* %6)
+  ret void
+}
+
+define void @"~Object_Object"(%Object* %0) {
+entry:
+  %this = alloca %Object*, align 8
+  %super = alloca %Object*, align 8
+  store %Object* %0, %Object** %super, align 8
+  store %Object* %0, %Object** %this, align 8
+  ret void
+}
+
+define void @Object_Object(%Object* %0) {
+entry:
+  %this = alloca %Object*, align 8
+  %super = alloca %Object*, align 8
+  store %Object* %0, %Object** %super, align 8
+  store %Object* %0, %Object** %this, align 8
+  ret void
+}
+
+define void @"~French_French"(%French* %0) {
 entry:
   %this = alloca %French*, align 8
+  %super = alloca %French*, align 8
+  store %French* %0, %French** %super, align 8
   store %French* %0, %French** %this, align 8
+  %1 = load %French*, %French** %super, align 8
+  %2 = getelementptr inbounds %French, %French* %1, i32 0, i32 0
+  %vTableLoad = load %French_Vtable_type*, %French_Vtable_type** %2, align 8
+  %3 = getelementptr inbounds %French_Vtable_type, %French_Vtable_type* %vTableLoad, i32 0, i32 4
+  %methodLoad = load void (%Lang*)*, void (%Lang*)** %3, align 8
+  %4 = bitcast %French* %1 to %Lang*
+  call void %methodLoad(%Lang* %4)
   ret void
 }
 
-define void @English_Constructor(%English* %0) {
+define void @French_French(%French* %0) {
+entry:
+  %this = alloca %French*, align 8
+  %super = alloca %French*, align 8
+  store %French* %0, %French** %super, align 8
+  store %French* %0, %French** %this, align 8
+  %1 = load %French*, %French** %super, align 8
+  %2 = getelementptr inbounds %French, %French* %1, i32 0, i32 0
+  %vTableLoad = load %French_Vtable_type*, %French_Vtable_type** %2, align 8
+  %3 = getelementptr inbounds %French_Vtable_type, %French_Vtable_type* %vTableLoad, i32 0, i32 5
+  %methodLoad = load void (%Lang*)*, void (%Lang*)** %3, align 8
+  %4 = bitcast %French* %1 to %Lang*
+  call void %methodLoad(%Lang* %4)
+  %5 = load %French*, %French** %super, align 8
+  %6 = getelementptr inbounds %French, %French* %5, i32 0, i32 0
+  %vTableLoad1 = load %French_Vtable_type*, %French_Vtable_type** %6, align 8
+  %7 = getelementptr inbounds %French_Vtable_type, %French_Vtable_type* %vTableLoad1, i32 0, i32 5
+  %methodLoad2 = load void (%Lang*)*, void (%Lang*)** %7, align 8
+  %8 = bitcast %French* %5 to %Lang*
+  call void %methodLoad2(%Lang* %8)
+  ret void
+}
+
+define void @"~English_English"(%English* %0) {
 entry:
   %this = alloca %English*, align 8
+  %super = alloca %English*, align 8
+  store %English* %0, %English** %super, align 8
   store %English* %0, %English** %this, align 8
+  %1 = load %English*, %English** %super, align 8
+  %2 = getelementptr inbounds %English, %English* %1, i32 0, i32 0
+  %vTableLoad = load %English_Vtable_type*, %English_Vtable_type** %2, align 8
+  %3 = getelementptr inbounds %English_Vtable_type, %English_Vtable_type* %vTableLoad, i32 0, i32 4
+  %methodLoad = load void (%Lang*)*, void (%Lang*)** %3, align 8
+  %4 = bitcast %English* %1 to %Lang*
+  call void %methodLoad(%Lang* %4)
   ret void
 }
 
-define void @Lang_Constructor(%Lang* %0) {
+define void @English_English(%English* %0) {
+entry:
+  %this = alloca %English*, align 8
+  %super = alloca %English*, align 8
+  store %English* %0, %English** %super, align 8
+  store %English* %0, %English** %this, align 8
+  %1 = load %English*, %English** %super, align 8
+  %2 = getelementptr inbounds %English, %English* %1, i32 0, i32 0
+  %vTableLoad = load %English_Vtable_type*, %English_Vtable_type** %2, align 8
+  %3 = getelementptr inbounds %English_Vtable_type, %English_Vtable_type* %vTableLoad, i32 0, i32 5
+  %methodLoad = load void (%Lang*)*, void (%Lang*)** %3, align 8
+  %4 = bitcast %English* %1 to %Lang*
+  call void %methodLoad(%Lang* %4)
+  %5 = load %English*, %English** %super, align 8
+  %6 = getelementptr inbounds %English, %English* %5, i32 0, i32 0
+  %vTableLoad1 = load %English_Vtable_type*, %English_Vtable_type** %6, align 8
+  %7 = getelementptr inbounds %English_Vtable_type, %English_Vtable_type* %vTableLoad1, i32 0, i32 5
+  %methodLoad2 = load void (%Lang*)*, void (%Lang*)** %7, align 8
+  %8 = bitcast %English* %5 to %Lang*
+  call void %methodLoad2(%Lang* %8)
+  ret void
+}
+
+define void @"~Lang_Lang"(%Lang* %0) {
 entry:
   %this = alloca %Lang*, align 8
+  %super = alloca %Lang*, align 8
+  store %Lang* %0, %Lang** %super, align 8
   store %Lang* %0, %Lang** %this, align 8
+  %1 = load %Lang*, %Lang** %super, align 8
+  %2 = getelementptr inbounds %Lang, %Lang* %1, i32 0, i32 0
+  %vTableLoad = load %Lang_Vtable_type*, %Lang_Vtable_type** %2, align 8
+  %3 = getelementptr inbounds %Lang_Vtable_type, %Lang_Vtable_type* %vTableLoad, i32 0, i32 2
+  %methodLoad = load void (%Object*)*, void (%Object*)** %3, align 8
+  %4 = bitcast %Lang* %1 to %Object*
+  call void %methodLoad(%Object* %4)
+  ret void
+}
+
+define void @Lang_Lang(%Lang* %0) {
+entry:
+  %this = alloca %Lang*, align 8
+  %super = alloca %Lang*, align 8
+  store %Lang* %0, %Lang** %super, align 8
+  store %Lang* %0, %Lang** %this, align 8
+  %1 = load %Lang*, %Lang** %super, align 8
+  %2 = getelementptr inbounds %Lang, %Lang* %1, i32 0, i32 0
+  %vTableLoad = load %Lang_Vtable_type*, %Lang_Vtable_type** %2, align 8
+  %3 = getelementptr inbounds %Lang_Vtable_type, %Lang_Vtable_type* %vTableLoad, i32 0, i32 3
+  %methodLoad = load void (%Object*)*, void (%Object*)** %3, align 8
+  %4 = bitcast %Lang* %1 to %Object*
+  call void %methodLoad(%Object* %4)
+  %5 = load %Lang*, %Lang** %super, align 8
+  %6 = getelementptr inbounds %Lang, %Lang* %5, i32 0, i32 0
+  %vTableLoad1 = load %Lang_Vtable_type*, %Lang_Vtable_type** %6, align 8
+  %7 = getelementptr inbounds %Lang_Vtable_type, %Lang_Vtable_type* %vTableLoad1, i32 0, i32 3
+  %methodLoad2 = load void (%Object*)*, void (%Object*)** %7, align 8
+  %8 = bitcast %Lang* %5 to %Object*
+  call void %methodLoad2(%Object* %8)
   ret void
 }
 
@@ -225,7 +357,8 @@ entry:
   %1 = bitcast i8* %0 to %French*
   %2 = getelementptr inbounds %French, %French* %1, i64 0, i32 0
   store %French_Vtable_type* @French_Vtable, %French_Vtable_type** %2, align 8
-  call void @French_Constructor(%French* %1)
+  %constructorLoad = load void (%French*)*, void (%French*)** getelementptr inbounds (%French_Vtable_type, %French_Vtable_type* @French_Vtable, i64 0, i32 7), align 8
+  call void %constructorLoad(%French* %1)
   %3 = bitcast %French** %f to i8**
   store i8* %0, i8** %3, align 8
   br i1 false, label %negativeLenThen1, label %negativeLenCont
@@ -234,194 +367,199 @@ negativeLenThen1:                                 ; preds = %entry
   br label %negativeLenCont
 
 negativeLenCont:                                  ; preds = %negativeLenThen1, %entry
-  %newArrayResult = alloca %Langarr, align 8
-  %4 = call dereferenceable_or_null(40) i8* @calloc(i32 5, i32 8)
-  %5 = bitcast i8* %4 to %Lang**
-  call void @Langarr_Constructor(%Langarr* nonnull %newArrayResult, %Langarr_Vtable_type* nonnull @Langarr_Vtable, %Lang** %5, i32 5)
-  %6 = load %French*, %French** %f, align 8
-  %7 = icmp eq %French* %6, null
-  br i1 %7, label %nullDerefThen2, label %nullDerefElse
+  %4 = call dereferenceable_or_null(24) i8* @calloc(i32 1, i32 24)
+  %5 = bitcast i8* %4 to %Langarr*
+  %6 = call dereferenceable_or_null(40) i8* @calloc(i32 5, i32 8)
+  %7 = bitcast i8* %6 to %Lang**
+  %constructorLoad2 = load void (%Langarr*, %Langarr_Vtable_type*, %Lang**, i32)*, void (%Langarr*, %Langarr_Vtable_type*, %Lang**, i32)** getelementptr inbounds (%Langarr_Vtable_type, %Langarr_Vtable_type* @Langarr_Vtable, i64 0, i32 5), align 8
+  call void %constructorLoad2(%Langarr* %5, %Langarr_Vtable_type* nonnull @Langarr_Vtable, %Lang** %7, i32 5)
+  %8 = load %French*, %French** %f, align 8
+  %9 = icmp eq %French* %8, null
+  br i1 %9, label %nullDerefThen3, label %nullDerefElse
 
-nullDerefThen2:                                   ; preds = %negativeLenCont
-  %8 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([29 x i8], [29 x i8]* @nullDerefFormat, i64 0, i64 0), i32 18)
+nullDerefThen3:                                   ; preds = %negativeLenCont
+  %10 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([29 x i8], [29 x i8]* @nullDerefFormat, i64 0, i64 0), i32 18)
   call void @exit(i32 -1)
   br label %nullDerefElse
 
-nullDerefElse:                                    ; preds = %nullDerefThen2, %negativeLenCont
-  %9 = getelementptr inbounds %French, %French* %6, i64 0, i32 2
-  store %Langarr* %newArrayResult, %Langarr** %9, align 8
-  %10 = call dereferenceable_or_null(24) i8* @calloc(i32 1, i32 24)
-  %11 = bitcast i8* %10 to %English*
-  %12 = getelementptr inbounds %English, %English* %11, i64 0, i32 0
-  store %English_Vtable_type* @English_Vtable, %English_Vtable_type** %12, align 8
-  call void @English_Constructor(%English* %11)
-  %13 = bitcast %English** %e to i8**
-  store i8* %10, i8** %13, align 8
-  %14 = call dereferenceable_or_null(16) i8* @calloc(i32 1, i32 16)
-  %15 = bitcast i8* %14 to %Lang*
-  %16 = getelementptr inbounds %Lang, %Lang* %15, i64 0, i32 0
-  store %Lang_Vtable_type* @Lang_Vtable, %Lang_Vtable_type** %16, align 8
-  call void @Lang_Constructor(%Lang* %15)
-  %.cast = bitcast i8* %10 to %English*
-  %17 = icmp eq i8* %10, null
-  br i1 %17, label %nullDerefThen3, label %nullDerefElse4
+nullDerefElse:                                    ; preds = %nullDerefThen3, %negativeLenCont
+  %11 = getelementptr inbounds %French, %French* %8, i64 0, i32 2
+  %12 = bitcast %Langarr** %11 to i8**
+  store i8* %4, i8** %12, align 8
+  %13 = call dereferenceable_or_null(24) i8* @calloc(i32 1, i32 24)
+  %14 = bitcast i8* %13 to %English*
+  %15 = getelementptr inbounds %English, %English* %14, i64 0, i32 0
+  store %English_Vtable_type* @English_Vtable, %English_Vtable_type** %15, align 8
+  %constructorLoad4 = load void (%English*)*, void (%English*)** getelementptr inbounds (%English_Vtable_type, %English_Vtable_type* @English_Vtable, i64 0, i32 7), align 8
+  call void %constructorLoad4(%English* %14)
+  %16 = bitcast %English** %e to i8**
+  store i8* %13, i8** %16, align 8
+  %17 = call dereferenceable_or_null(16) i8* @calloc(i32 1, i32 16)
+  %18 = bitcast i8* %17 to %Lang*
+  %19 = getelementptr inbounds %Lang, %Lang* %18, i64 0, i32 0
+  store %Lang_Vtable_type* @Lang_Vtable, %Lang_Vtable_type** %19, align 8
+  %constructorLoad5 = load void (%Lang*)*, void (%Lang*)** getelementptr inbounds (%Lang_Vtable_type, %Lang_Vtable_type* @Lang_Vtable, i64 0, i32 5), align 8
+  call void %constructorLoad5(%Lang* %18)
+  %20 = load %English*, %English** %e, align 8
+  %21 = icmp eq %English* %20, null
+  br i1 %21, label %nullDerefThen6, label %nullDerefElse7
 
-nullDerefThen3:                                   ; preds = %nullDerefElse
-  %18 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([29 x i8], [29 x i8]* @nullDerefFormat, i64 0, i64 0), i32 20)
+nullDerefThen6:                                   ; preds = %nullDerefElse
+  %22 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([29 x i8], [29 x i8]* @nullDerefFormat, i64 0, i64 0), i32 20)
   call void @exit(i32 -1)
-  br label %nullDerefElse4
+  br label %nullDerefElse7
 
-nullDerefElse4:                                   ; preds = %nullDerefThen3, %nullDerefElse
-  %19 = getelementptr inbounds %English, %English* %.cast, i64 0, i32 2
-  %20 = bitcast %Lang** %19 to i8**
-  store i8* %14, i8** %20, align 8
-  %21 = load %English*, %English** %e, align 8
-  %22 = icmp eq %English* %21, null
-  br i1 %22, label %nullDerefThen5, label %nullDerefElse6
+nullDerefElse7:                                   ; preds = %nullDerefThen6, %nullDerefElse
+  %23 = getelementptr inbounds %English, %English* %20, i64 0, i32 2
+  %24 = bitcast %Lang** %23 to i8**
+  store i8* %17, i8** %24, align 8
+  %25 = load %English*, %English** %e, align 8
+  %26 = icmp eq %English* %25, null
+  br i1 %26, label %nullDerefThen8, label %nullDerefElse9
 
-nullDerefThen5:                                   ; preds = %nullDerefElse4
-  %23 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([29 x i8], [29 x i8]* @nullDerefFormat, i64 0, i64 0), i32 21)
-  call void @exit(i32 -1)
-  br label %nullDerefElse6
-
-nullDerefElse6:                                   ; preds = %nullDerefThen5, %nullDerefElse4
-  %24 = getelementptr inbounds %English, %English* %21, i64 0, i32 2
-  %25 = load %Lang*, %Lang** %24, align 8
-  %26 = icmp eq %Lang* %25, null
-  br i1 %26, label %nullDerefThen7, label %nullDerefElse8
-
-nullDerefThen7:                                   ; preds = %nullDerefElse6
+nullDerefThen8:                                   ; preds = %nullDerefElse7
   %27 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([29 x i8], [29 x i8]* @nullDerefFormat, i64 0, i64 0), i32 21)
   call void @exit(i32 -1)
-  br label %nullDerefElse8
+  br label %nullDerefElse9
 
-nullDerefElse8:                                   ; preds = %nullDerefThen7, %nullDerefElse6
-  %28 = getelementptr inbounds %Lang, %Lang* %25, i64 0, i32 1
-  store i32 33, i32* %28, align 4
-  %29 = load %English*, %English** %e, align 8
-  %30 = icmp eq %English* %29, null
-  br i1 %30, label %nullDerefThen9, label %nullDerefElse10
+nullDerefElse9:                                   ; preds = %nullDerefThen8, %nullDerefElse7
+  %28 = getelementptr inbounds %English, %English* %25, i64 0, i32 2
+  %29 = load %Lang*, %Lang** %28, align 8
+  %30 = icmp eq %Lang* %29, null
+  br i1 %30, label %nullDerefThen10, label %nullDerefElse11
 
-nullDerefThen9:                                   ; preds = %nullDerefElse8
-  %31 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([29 x i8], [29 x i8]* @nullDerefFormat, i64 0, i64 0), i32 22)
+nullDerefThen10:                                  ; preds = %nullDerefElse9
+  %31 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([29 x i8], [29 x i8]* @nullDerefFormat, i64 0, i64 0), i32 21)
   call void @exit(i32 -1)
-  br label %nullDerefElse10
+  br label %nullDerefElse11
 
-nullDerefElse10:                                  ; preds = %nullDerefThen9, %nullDerefElse8
-  %32 = getelementptr inbounds %English, %English* %29, i64 0, i32 2
-  %33 = load %Lang*, %Lang** %32, align 8
-  %34 = icmp eq %Lang* %33, null
-  br i1 %34, label %nullDerefThen11, label %nullDerefElse12
+nullDerefElse11:                                  ; preds = %nullDerefThen10, %nullDerefElse9
+  %32 = getelementptr inbounds %Lang, %Lang* %29, i64 0, i32 1
+  store i32 33, i32* %32, align 4
+  %33 = load %English*, %English** %e, align 8
+  %34 = icmp eq %English* %33, null
+  br i1 %34, label %nullDerefThen12, label %nullDerefElse13
 
-nullDerefThen11:                                  ; preds = %nullDerefElse10
+nullDerefThen12:                                  ; preds = %nullDerefElse11
   %35 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([29 x i8], [29 x i8]* @nullDerefFormat, i64 0, i64 0), i32 22)
   call void @exit(i32 -1)
-  br label %nullDerefElse12
+  br label %nullDerefElse13
 
-nullDerefElse12:                                  ; preds = %nullDerefThen11, %nullDerefElse10
-  %36 = getelementptr inbounds %Lang, %Lang* %33, i64 0, i32 1
-  %37 = load i32, i32* %36, align 4
-  %38 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([4 x i8], [4 x i8]* @printIntFormat, i64 0, i64 0), i32 %37)
-  %39 = bitcast %English** %e to %Lang**
-  %40 = load %Lang*, %Lang** %39, align 8
-  store %Lang* %40, %Lang** %l, align 8
-  %41 = icmp eq %Lang* %40, null
-  br i1 %41, label %nullDerefThen13, label %nullDerefElse14
+nullDerefElse13:                                  ; preds = %nullDerefThen12, %nullDerefElse11
+  %36 = getelementptr inbounds %English, %English* %33, i64 0, i32 2
+  %37 = load %Lang*, %Lang** %36, align 8
+  %38 = icmp eq %Lang* %37, null
+  br i1 %38, label %nullDerefThen14, label %nullDerefElse15
 
-nullDerefThen13:                                  ; preds = %nullDerefElse12
-  %42 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([29 x i8], [29 x i8]* @nullDerefFormat, i64 0, i64 0), i32 24)
+nullDerefThen14:                                  ; preds = %nullDerefElse13
+  %39 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([29 x i8], [29 x i8]* @nullDerefFormat, i64 0, i64 0), i32 22)
   call void @exit(i32 -1)
-  br label %nullDerefElse14
+  br label %nullDerefElse15
 
-nullDerefElse14:                                  ; preds = %nullDerefThen13, %nullDerefElse12
-  %43 = getelementptr inbounds %Lang, %Lang* %40, i64 0, i32 1
-  store i32 43, i32* %43, align 4
-  %44 = load %Lang*, %Lang** %l, align 8
+nullDerefElse15:                                  ; preds = %nullDerefThen14, %nullDerefElse13
+  %40 = getelementptr inbounds %Lang, %Lang* %37, i64 0, i32 1
+  %41 = load i32, i32* %40, align 4
+  %42 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([4 x i8], [4 x i8]* @printIntFormat, i64 0, i64 0), i32 %41)
+  %43 = bitcast %English** %e to %Lang**
+  %44 = load %Lang*, %Lang** %43, align 8
+  store %Lang* %44, %Lang** %l, align 8
   %45 = icmp eq %Lang* %44, null
-  br i1 %45, label %nullDerefThen15, label %nullDerefElse16
+  br i1 %45, label %nullDerefThen16, label %nullDerefElse17
 
-nullDerefThen15:                                  ; preds = %nullDerefElse14
-  %46 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([29 x i8], [29 x i8]* @nullDerefFormat, i64 0, i64 0), i32 25)
+nullDerefThen16:                                  ; preds = %nullDerefElse15
+  %46 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([29 x i8], [29 x i8]* @nullDerefFormat, i64 0, i64 0), i32 24)
   call void @exit(i32 -1)
-  br label %nullDerefElse16
+  br label %nullDerefElse17
 
-nullDerefElse16:                                  ; preds = %nullDerefThen15, %nullDerefElse14
+nullDerefElse17:                                  ; preds = %nullDerefThen16, %nullDerefElse15
   %47 = getelementptr inbounds %Lang, %Lang* %44, i64 0, i32 1
-  %48 = load i32, i32* %47, align 4
-  %49 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([4 x i8], [4 x i8]* @printIntFormat, i64 0, i64 0), i32 %48)
-  %50 = bitcast %Lang** %l to %Object**
-  %51 = load %Object*, %Object** %50, align 8
-  %52 = call i1 @Object_IsA(%Object* %51, %Object_Vtable_type* nonnull @Object_Vtable, i8* getelementptr inbounds ([8 x i8], [8 x i8]* @English_class_name, i64 0, i64 0))
-  br i1 %52, label %castThen, label %castElse
+  store i32 43, i32* %47, align 4
+  %48 = load %Lang*, %Lang** %l, align 8
+  %49 = icmp eq %Lang* %48, null
+  br i1 %49, label %nullDerefThen18, label %nullDerefElse19
 
-castThen:                                         ; preds = %nullDerefElse16
+nullDerefThen18:                                  ; preds = %nullDerefElse17
+  %50 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([29 x i8], [29 x i8]* @nullDerefFormat, i64 0, i64 0), i32 25)
+  call void @exit(i32 -1)
+  br label %nullDerefElse19
+
+nullDerefElse19:                                  ; preds = %nullDerefThen18, %nullDerefElse17
+  %51 = getelementptr inbounds %Lang, %Lang* %48, i64 0, i32 1
+  %52 = load i32, i32* %51, align 4
+  %53 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([4 x i8], [4 x i8]* @printIntFormat, i64 0, i64 0), i32 %52)
+  %54 = bitcast %Lang** %l to %Object**
+  %55 = load %Object*, %Object** %54, align 8
+  %56 = call i1 @Object_IsA(%Object* %55, %Object_Vtable_type* nonnull @Object_Vtable, i8* getelementptr inbounds ([8 x i8], [8 x i8]* @English_class_name, i64 0, i64 0))
+  br i1 %56, label %castThen, label %castElse
+
+castThen:                                         ; preds = %nullDerefElse19
   br label %castCont
 
-castElse:                                         ; preds = %nullDerefElse16
-  %53 = alloca [5 x i8], align 1
-  %.repack = getelementptr inbounds [5 x i8], [5 x i8]* %53, i64 0, i64 0
+castElse:                                         ; preds = %nullDerefElse19
+  %57 = alloca [5 x i8], align 1
+  %.repack = getelementptr inbounds [5 x i8], [5 x i8]* %57, i64 0, i64 0
   store i8 76, i8* %.repack, align 1
-  %.repack21 = getelementptr inbounds [5 x i8], [5 x i8]* %53, i64 0, i64 1
-  store i8 97, i8* %.repack21, align 1
-  %.repack22 = getelementptr inbounds [5 x i8], [5 x i8]* %53, i64 0, i64 2
-  store i8 110, i8* %.repack22, align 1
-  %.repack23 = getelementptr inbounds [5 x i8], [5 x i8]* %53, i64 0, i64 3
-  store i8 103, i8* %.repack23, align 1
-  %.repack24 = getelementptr inbounds [5 x i8], [5 x i8]* %53, i64 0, i64 4
-  store i8 0, i8* %.repack24, align 1
-  %54 = getelementptr inbounds [5 x i8], [5 x i8]* %53, i64 0, i64 0
-  %55 = alloca [10 x i8], align 1
-  %.repack25 = getelementptr inbounds [10 x i8], [10 x i8]* %55, i64 0, i64 0
-  store i8 37, i8* %.repack25, align 1
-  %.repack26 = getelementptr inbounds [10 x i8], [10 x i8]* %55, i64 0, i64 1
-  store i8 69, i8* %.repack26, align 1
-  %.repack27 = getelementptr inbounds [10 x i8], [10 x i8]* %55, i64 0, i64 2
-  store i8 110, i8* %.repack27, align 1
-  %.repack28 = getelementptr inbounds [10 x i8], [10 x i8]* %55, i64 0, i64 3
-  store i8 103, i8* %.repack28, align 1
-  %.repack29 = getelementptr inbounds [10 x i8], [10 x i8]* %55, i64 0, i64 4
-  store i8 108, i8* %.repack29, align 1
-  %.repack30 = getelementptr inbounds [10 x i8], [10 x i8]* %55, i64 0, i64 5
-  store i8 105, i8* %.repack30, align 1
-  %.repack31 = getelementptr inbounds [10 x i8], [10 x i8]* %55, i64 0, i64 6
-  store i8 115, i8* %.repack31, align 1
-  %.repack32 = getelementptr inbounds [10 x i8], [10 x i8]* %55, i64 0, i64 7
-  store i8 104, i8* %.repack32, align 1
-  %.repack33 = getelementptr inbounds [10 x i8], [10 x i8]* %55, i64 0, i64 8
-  store i8 42, i8* %.repack33, align 1
-  %.repack34 = getelementptr inbounds [10 x i8], [10 x i8]* %55, i64 0, i64 9
-  store i8 0, i8* %.repack34, align 1
-  %56 = getelementptr inbounds [10 x i8], [10 x i8]* %55, i64 0, i64 0
-  %57 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([52 x i8], [52 x i8]* @castErrFormat, i64 0, i64 0), i32 26, i8* nonnull %54, i8* nonnull %56)
+  %.repack24 = getelementptr inbounds [5 x i8], [5 x i8]* %57, i64 0, i64 1
+  store i8 97, i8* %.repack24, align 1
+  %.repack25 = getelementptr inbounds [5 x i8], [5 x i8]* %57, i64 0, i64 2
+  store i8 110, i8* %.repack25, align 1
+  %.repack26 = getelementptr inbounds [5 x i8], [5 x i8]* %57, i64 0, i64 3
+  store i8 103, i8* %.repack26, align 1
+  %.repack27 = getelementptr inbounds [5 x i8], [5 x i8]* %57, i64 0, i64 4
+  store i8 0, i8* %.repack27, align 1
+  %58 = getelementptr inbounds [5 x i8], [5 x i8]* %57, i64 0, i64 0
+  %59 = alloca [10 x i8], align 1
+  %.repack28 = getelementptr inbounds [10 x i8], [10 x i8]* %59, i64 0, i64 0
+  store i8 37, i8* %.repack28, align 1
+  %.repack29 = getelementptr inbounds [10 x i8], [10 x i8]* %59, i64 0, i64 1
+  store i8 69, i8* %.repack29, align 1
+  %.repack30 = getelementptr inbounds [10 x i8], [10 x i8]* %59, i64 0, i64 2
+  store i8 110, i8* %.repack30, align 1
+  %.repack31 = getelementptr inbounds [10 x i8], [10 x i8]* %59, i64 0, i64 3
+  store i8 103, i8* %.repack31, align 1
+  %.repack32 = getelementptr inbounds [10 x i8], [10 x i8]* %59, i64 0, i64 4
+  store i8 108, i8* %.repack32, align 1
+  %.repack33 = getelementptr inbounds [10 x i8], [10 x i8]* %59, i64 0, i64 5
+  store i8 105, i8* %.repack33, align 1
+  %.repack34 = getelementptr inbounds [10 x i8], [10 x i8]* %59, i64 0, i64 6
+  store i8 115, i8* %.repack34, align 1
+  %.repack35 = getelementptr inbounds [10 x i8], [10 x i8]* %59, i64 0, i64 7
+  store i8 104, i8* %.repack35, align 1
+  %.repack36 = getelementptr inbounds [10 x i8], [10 x i8]* %59, i64 0, i64 8
+  store i8 42, i8* %.repack36, align 1
+  %.repack37 = getelementptr inbounds [10 x i8], [10 x i8]* %59, i64 0, i64 9
+  store i8 0, i8* %.repack37, align 1
+  %60 = getelementptr inbounds [10 x i8], [10 x i8]* %59, i64 0, i64 0
+  %61 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([52 x i8], [52 x i8]* @castErrFormat, i64 0, i64 0), i32 26, i8* nonnull %58, i8* nonnull %60)
   call void @exit(i32 -1)
   br label %castCont
 
 castCont:                                         ; preds = %castElse, %castThen
-  %58 = bitcast %English** %e to %Object**
-  store %Object* %51, %Object** %58, align 8
-  %59 = icmp eq %Object* %51, null
-  br i1 %59, label %nullDerefThen17, label %nullDerefElse18
+  %62 = bitcast %English** %e to %Object**
+  store %Object* %55, %Object** %62, align 8
+  %63 = icmp eq %Object* %55, null
+  br i1 %63, label %nullDerefThen20, label %nullDerefElse21
 
-nullDerefThen17:                                  ; preds = %castCont
-  %60 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([29 x i8], [29 x i8]* @nullDerefFormat, i64 0, i64 0), i32 27)
+nullDerefThen20:                                  ; preds = %castCont
+  %64 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([29 x i8], [29 x i8]* @nullDerefFormat, i64 0, i64 0), i32 27)
   call void @exit(i32 -1)
-  br label %nullDerefElse18
+  br label %nullDerefElse21
 
-nullDerefElse18:                                  ; preds = %nullDerefThen17, %castCont
-  %61 = getelementptr inbounds %Object, %Object* %51, i64 2
-  %62 = bitcast %Object* %61 to %Lang**
-  %63 = load %Lang*, %Lang** %62, align 8
-  %64 = icmp eq %Lang* %63, null
-  br i1 %64, label %nullDerefThen19, label %nullDerefElse20
+nullDerefElse21:                                  ; preds = %nullDerefThen20, %castCont
+  %65 = getelementptr inbounds %Object, %Object* %55, i64 2
+  %66 = bitcast %Object* %65 to %Lang**
+  %67 = load %Lang*, %Lang** %66, align 8
+  %68 = icmp eq %Lang* %67, null
+  br i1 %68, label %nullDerefThen22, label %nullDerefElse23
 
-nullDerefThen19:                                  ; preds = %nullDerefElse18
-  %65 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([29 x i8], [29 x i8]* @nullDerefFormat, i64 0, i64 0), i32 27)
+nullDerefThen22:                                  ; preds = %nullDerefElse21
+  %69 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([29 x i8], [29 x i8]* @nullDerefFormat, i64 0, i64 0), i32 27)
   call void @exit(i32 -1)
-  br label %nullDerefElse20
+  br label %nullDerefElse23
 
-nullDerefElse20:                                  ; preds = %nullDerefThen19, %nullDerefElse18
-  %66 = getelementptr inbounds %Lang, %Lang* %63, i64 0, i32 1
-  %67 = load i32, i32* %66, align 4
-  %68 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([4 x i8], [4 x i8]* @printIntFormat, i64 0, i64 0), i32 %67)
+nullDerefElse23:                                  ; preds = %nullDerefThen22, %nullDerefElse21
+  %70 = getelementptr inbounds %Lang, %Lang* %67, i64 0, i32 1
+  %71 = load i32, i32* %70, align 4
+  %72 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([4 x i8], [4 x i8]* @printIntFormat, i64 0, i64 0), i32 %71)
   ret i32 0
 }

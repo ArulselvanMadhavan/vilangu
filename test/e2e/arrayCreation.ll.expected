@@ -1,14 +1,14 @@
 ; ModuleID = 'Module'
 source_filename = "Module"
-target triple = "x86_64-pc-linux-gnu"
+target triple = "aarch64-unknown-linux-gnu"
 
-%Object_Vtable_type = type { %Object_Vtable_type*, i8* }
-%i32arr_Vtable_type = type { %Object_Vtable_type*, i8* }
-%i32arrarr_Vtable_type = type { %Object_Vtable_type*, i8* }
-%i32arrarrarr_Vtable_type = type { %Object_Vtable_type*, i8* }
+%i32arr_Vtable_type = type { %Object_Vtable_type*, i8*, void (%Object*)*, void (%Object*)*, void (%i32arr*)*, void (%i32arr*, %i32arr_Vtable_type*, i32*, i32)* }
+%Object_Vtable_type = type { %Object_Vtable_type*, i8*, void (%Object*)*, void (%Object*)* }
 %Object = type { %Object_Vtable_type* }
 %i32arr = type { %i32arr_Vtable_type*, i32*, i32 }
+%i32arrarr_Vtable_type = type { %Object_Vtable_type*, i8*, void (%Object*)*, void (%Object*)*, void (%i32arrarr*)*, void (%i32arrarr*, %i32arrarr_Vtable_type*, %i32arr*, i32)* }
 %i32arrarr = type { %i32arrarr_Vtable_type*, %i32arr*, i32 }
+%i32arrarrarr_Vtable_type = type { %Object_Vtable_type*, i8*, void (%Object*)*, void (%Object*)*, void (%i32arrarrarr*)*, void (%i32arrarrarr*, %i32arrarrarr_Vtable_type*, %i32arrarr*, i32)* }
 %i32arrarrarr = type { %i32arrarrarr_Vtable_type*, %i32arrarr*, i32 }
 
 @printIntFormat = private constant [4 x i8] c"%d\0A\00", align 1
@@ -17,14 +17,14 @@ target triple = "x86_64-pc-linux-gnu"
 @negativeLenFormat = private constant [62 x i8] c"Line: %d | Array len cannot be negative. Length attempted:%d\0A\00", align 1
 @nullDerefFormat = private constant [29 x i8] c"Line: %d | Null dereference\0A\00", align 1
 @divByZeroFormat = private constant [37 x i8] c"Line: %d | Divide by zero exception\0A\00", align 1
-@Object_class_name = private constant [7 x i8] c"Object\00", align 1
-@Object_Vtable = global %Object_Vtable_type { %Object_Vtable_type* null, i8* getelementptr inbounds ([7 x i8], [7 x i8]* @Object_class_name, i32 0, i32 0) }
 @i32arr_class_name = private constant [7 x i8] c"i32arr\00", align 1
-@i32arr_Vtable = global %i32arr_Vtable_type { %Object_Vtable_type* @Object_Vtable, i8* getelementptr inbounds ([7 x i8], [7 x i8]* @i32arr_class_name, i32 0, i32 0) }
+@i32arr_Vtable = global %i32arr_Vtable_type { %Object_Vtable_type* null, i8* getelementptr inbounds ([7 x i8], [7 x i8]* @i32arr_class_name, i32 0, i32 0), void (%Object*)* @"~Object_Object", void (%Object*)* @Object_Object, void (%i32arr*)* @"~i32arr_i32arr", void (%i32arr*, %i32arr_Vtable_type*, i32*, i32)* @i32arr_Constructor }
 @i32arrarr_class_name = private constant [10 x i8] c"i32arrarr\00", align 1
-@i32arrarr_Vtable = global %i32arrarr_Vtable_type { %Object_Vtable_type* @Object_Vtable, i8* getelementptr inbounds ([10 x i8], [10 x i8]* @i32arrarr_class_name, i32 0, i32 0) }
+@i32arrarr_Vtable = global %i32arrarr_Vtable_type { %Object_Vtable_type* null, i8* getelementptr inbounds ([10 x i8], [10 x i8]* @i32arrarr_class_name, i32 0, i32 0), void (%Object*)* @"~Object_Object", void (%Object*)* @Object_Object, void (%i32arrarr*)* @"~i32arrarr_i32arrarr", void (%i32arrarr*, %i32arrarr_Vtable_type*, %i32arr*, i32)* @i32arrarr_Constructor }
 @i32arrarrarr_class_name = private constant [13 x i8] c"i32arrarrarr\00", align 1
-@i32arrarrarr_Vtable = global %i32arrarrarr_Vtable_type { %Object_Vtable_type* @Object_Vtable, i8* getelementptr inbounds ([13 x i8], [13 x i8]* @i32arrarrarr_class_name, i32 0, i32 0) }
+@i32arrarrarr_Vtable = global %i32arrarrarr_Vtable_type { %Object_Vtable_type* null, i8* getelementptr inbounds ([13 x i8], [13 x i8]* @i32arrarrarr_class_name, i32 0, i32 0), void (%Object*)* @"~Object_Object", void (%Object*)* @Object_Object, void (%i32arrarrarr*)* @"~i32arrarrarr_i32arrarrarr", void (%i32arrarrarr*, %i32arrarrarr_Vtable_type*, %i32arrarr*, i32)* @i32arrarrarr_Constructor }
+@Object_class_name = private constant [7 x i8] c"Object\00", align 1
+@Object_Vtable = global %Object_Vtable_type { %Object_Vtable_type* null, i8* getelementptr inbounds ([7 x i8], [7 x i8]* @Object_class_name, i32 0, i32 0), void (%Object*)* @"~Object_Object", void (%Object*)* @Object_Object }
 
 declare i32 @printf(i8*, ...)
 
@@ -129,16 +129,11 @@ ifcont13:                                         ; preds = %else12, %loopend
   ret i1 %iftmp
 }
 
-define void @Object_Constructor(%Object* %0) {
-entry:
-  %this = alloca %Object*, align 8
-  store %Object* %0, %Object** %this, align 8
-  ret void
-}
-
 define void @i32arr_Constructor(%i32arr* %0, %i32arr_Vtable_type* %1, i32* %2, i32 %3) {
 entry:
   %this = alloca %i32arr*, align 8
+  %super = alloca %i32arr*, align 8
+  store %i32arr* %0, %i32arr** %super, align 8
   store %i32arr* %0, %i32arr** %this, align 8
   %vtable = alloca %i32arr_Vtable_type*, align 8
   store %i32arr_Vtable_type* %1, %i32arr_Vtable_type** %vtable, align 8
@@ -188,9 +183,34 @@ nullDerefElse5:                                   ; preds = %nullDerefThen4, %nu
   ret void
 }
 
+define void @"~i32arr_i32arr"(%i32arr* %0) {
+entry:
+  %this = alloca %i32arr*, align 8
+  %super = alloca %i32arr*, align 8
+  store %i32arr* %0, %i32arr** %super, align 8
+  store %i32arr* %0, %i32arr** %this, align 8
+  %1 = load %i32arr*, %i32arr** %this, align 8
+  %2 = icmp eq %i32arr* %1, null
+  br i1 %2, label %nullDerefThen1, label %nullDerefElse
+
+nullDerefThen1:                                   ; preds = %entry
+  %3 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([29 x i8], [29 x i8]* @nullDerefFormat, i32 0, i32 0), i32 0)
+  call void @exit(i32 -1)
+  br label %nullDerefElse
+
+nullDerefElse:                                    ; preds = %nullDerefThen1, %entry
+  %4 = getelementptr inbounds %i32arr, %i32arr* %1, i32 0, i32 1
+  %5 = load i32*, i32** %4, align 8
+  %6 = bitcast i32* %5 to i8*
+  call void @free(i8* %6)
+  ret void
+}
+
 define void @i32arrarr_Constructor(%i32arrarr* %0, %i32arrarr_Vtable_type* %1, %i32arr* %2, i32 %3) {
 entry:
   %this = alloca %i32arrarr*, align 8
+  %super = alloca %i32arrarr*, align 8
+  store %i32arrarr* %0, %i32arrarr** %super, align 8
   store %i32arrarr* %0, %i32arrarr** %this, align 8
   %vtable = alloca %i32arrarr_Vtable_type*, align 8
   store %i32arrarr_Vtable_type* %1, %i32arrarr_Vtable_type** %vtable, align 8
@@ -240,9 +260,34 @@ nullDerefElse5:                                   ; preds = %nullDerefThen4, %nu
   ret void
 }
 
+define void @"~i32arrarr_i32arrarr"(%i32arrarr* %0) {
+entry:
+  %this = alloca %i32arrarr*, align 8
+  %super = alloca %i32arrarr*, align 8
+  store %i32arrarr* %0, %i32arrarr** %super, align 8
+  store %i32arrarr* %0, %i32arrarr** %this, align 8
+  %1 = load %i32arrarr*, %i32arrarr** %this, align 8
+  %2 = icmp eq %i32arrarr* %1, null
+  br i1 %2, label %nullDerefThen1, label %nullDerefElse
+
+nullDerefThen1:                                   ; preds = %entry
+  %3 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([29 x i8], [29 x i8]* @nullDerefFormat, i32 0, i32 0), i32 0)
+  call void @exit(i32 -1)
+  br label %nullDerefElse
+
+nullDerefElse:                                    ; preds = %nullDerefThen1, %entry
+  %4 = getelementptr inbounds %i32arrarr, %i32arrarr* %1, i32 0, i32 1
+  %5 = load %i32arr*, %i32arr** %4, align 8
+  %6 = bitcast %i32arr* %5 to i8*
+  call void @free(i8* %6)
+  ret void
+}
+
 define void @i32arrarrarr_Constructor(%i32arrarrarr* %0, %i32arrarrarr_Vtable_type* %1, %i32arrarr* %2, i32 %3) {
 entry:
   %this = alloca %i32arrarrarr*, align 8
+  %super = alloca %i32arrarrarr*, align 8
+  store %i32arrarrarr* %0, %i32arrarrarr** %super, align 8
   store %i32arrarrarr* %0, %i32arrarrarr** %this, align 8
   %vtable = alloca %i32arrarrarr_Vtable_type*, align 8
   store %i32arrarrarr_Vtable_type* %1, %i32arrarrarr_Vtable_type** %vtable, align 8
@@ -292,6 +337,47 @@ nullDerefElse5:                                   ; preds = %nullDerefThen4, %nu
   ret void
 }
 
+define void @"~i32arrarrarr_i32arrarrarr"(%i32arrarrarr* %0) {
+entry:
+  %this = alloca %i32arrarrarr*, align 8
+  %super = alloca %i32arrarrarr*, align 8
+  store %i32arrarrarr* %0, %i32arrarrarr** %super, align 8
+  store %i32arrarrarr* %0, %i32arrarrarr** %this, align 8
+  %1 = load %i32arrarrarr*, %i32arrarrarr** %this, align 8
+  %2 = icmp eq %i32arrarrarr* %1, null
+  br i1 %2, label %nullDerefThen1, label %nullDerefElse
+
+nullDerefThen1:                                   ; preds = %entry
+  %3 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([29 x i8], [29 x i8]* @nullDerefFormat, i32 0, i32 0), i32 0)
+  call void @exit(i32 -1)
+  br label %nullDerefElse
+
+nullDerefElse:                                    ; preds = %nullDerefThen1, %entry
+  %4 = getelementptr inbounds %i32arrarrarr, %i32arrarrarr* %1, i32 0, i32 1
+  %5 = load %i32arrarr*, %i32arrarr** %4, align 8
+  %6 = bitcast %i32arrarr* %5 to i8*
+  call void @free(i8* %6)
+  ret void
+}
+
+define void @"~Object_Object"(%Object* %0) {
+entry:
+  %this = alloca %Object*, align 8
+  %super = alloca %Object*, align 8
+  store %Object* %0, %Object** %super, align 8
+  store %Object* %0, %Object** %this, align 8
+  ret void
+}
+
+define void @Object_Object(%Object* %0) {
+entry:
+  %this = alloca %Object*, align 8
+  %super = alloca %Object*, align 8
+  store %Object* %0, %Object** %super, align 8
+  store %Object* %0, %Object** %this, align 8
+  ret void
+}
+
 define i32 @main() {
 entry:
   %i = alloca i32, align 4
@@ -302,39 +388,45 @@ negativeLenThen1:                                 ; preds = %entry
   br label %negativeLenCont
 
 negativeLenCont:                                  ; preds = %negativeLenThen1, %entry
-  %newArrayResult = alloca %i32arr, align 8
-  %0 = call dereferenceable_or_null(76) i8* @calloc(i32 19, i32 4)
-  %1 = bitcast i8* %0 to i32*
-  call void @i32arr_Constructor(%i32arr* nonnull %newArrayResult, %i32arr_Vtable_type* nonnull @i32arr_Vtable, i32* %1, i32 19)
-  %2 = load i32, i32* %i, align 4
-  %add = add i32 %2, 1
-  %3 = icmp slt i32 %add, 0
-  br i1 %3, label %negativeLenThen2, label %negativeLenCont3
+  %0 = call dereferenceable_or_null(24) i8* @calloc(i32 1, i32 24)
+  %1 = bitcast i8* %0 to %i32arr*
+  %2 = call dereferenceable_or_null(76) i8* @calloc(i32 19, i32 4)
+  %3 = bitcast i8* %2 to i32*
+  %constructorLoad = load void (%i32arr*, %i32arr_Vtable_type*, i32*, i32)*, void (%i32arr*, %i32arr_Vtable_type*, i32*, i32)** getelementptr inbounds (%i32arr_Vtable_type, %i32arr_Vtable_type* @i32arr_Vtable, i64 0, i32 5), align 8
+  call void %constructorLoad(%i32arr* %1, %i32arr_Vtable_type* nonnull @i32arr_Vtable, i32* %3, i32 19)
+  %4 = load i32, i32* %i, align 4
+  %add = add i32 %4, 1
+  %5 = icmp slt i32 %add, 0
+  br i1 %5, label %negativeLenThen2, label %negativeLenCont3
 
 negativeLenThen2:                                 ; preds = %negativeLenCont
-  %4 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([62 x i8], [62 x i8]* @negativeLenFormat, i64 0, i64 0), i32 12, i32 %add)
+  %6 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([62 x i8], [62 x i8]* @negativeLenFormat, i64 0, i64 0), i32 12, i32 %add)
   call void @exit(i32 -1)
   br label %negativeLenCont3
 
 negativeLenCont3:                                 ; preds = %negativeLenThen2, %negativeLenCont
-  %newArrayResult4 = alloca %i32arrarr, align 8
-  %5 = call i8* @calloc(i32 %add, i32 24)
-  %6 = bitcast i8* %5 to %i32arr*
-  call void @i32arrarr_Constructor(%i32arrarr* nonnull %newArrayResult4, %i32arrarr_Vtable_type* nonnull @i32arrarr_Vtable, %i32arr* %6, i32 %add)
-  %7 = load i32, i32* %i, align 4
-  %add5 = add i32 %7, 2
-  %8 = icmp slt i32 %add5, 0
-  br i1 %8, label %negativeLenThen6, label %negativeLenCont7
+  %7 = call dereferenceable_or_null(24) i8* @calloc(i32 1, i32 24)
+  %8 = bitcast i8* %7 to %i32arrarr*
+  %9 = call i8* @calloc(i32 %add, i32 24)
+  %10 = bitcast i8* %9 to %i32arr*
+  %constructorLoad4 = load void (%i32arrarr*, %i32arrarr_Vtable_type*, %i32arr*, i32)*, void (%i32arrarr*, %i32arrarr_Vtable_type*, %i32arr*, i32)** getelementptr inbounds (%i32arrarr_Vtable_type, %i32arrarr_Vtable_type* @i32arrarr_Vtable, i64 0, i32 5), align 8
+  call void %constructorLoad4(%i32arrarr* %8, %i32arrarr_Vtable_type* nonnull @i32arrarr_Vtable, %i32arr* %10, i32 %add)
+  %11 = load i32, i32* %i, align 4
+  %add5 = add i32 %11, 2
+  %12 = icmp slt i32 %add5, 0
+  br i1 %12, label %negativeLenThen6, label %negativeLenCont7
 
 negativeLenThen6:                                 ; preds = %negativeLenCont3
-  %9 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([62 x i8], [62 x i8]* @negativeLenFormat, i64 0, i64 0), i32 13, i32 %add5)
+  %13 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([62 x i8], [62 x i8]* @negativeLenFormat, i64 0, i64 0), i32 13, i32 %add5)
   call void @exit(i32 -1)
   br label %negativeLenCont7
 
 negativeLenCont7:                                 ; preds = %negativeLenThen6, %negativeLenCont3
-  %newArrayResult8 = alloca %i32arrarrarr, align 8
-  %10 = call i8* @calloc(i32 %add5, i32 24)
-  %11 = bitcast i8* %10 to %i32arrarr*
-  call void @i32arrarrarr_Constructor(%i32arrarrarr* nonnull %newArrayResult8, %i32arrarrarr_Vtable_type* nonnull @i32arrarrarr_Vtable, %i32arrarr* %11, i32 %add5)
+  %14 = call dereferenceable_or_null(24) i8* @calloc(i32 1, i32 24)
+  %15 = bitcast i8* %14 to %i32arrarrarr*
+  %16 = call i8* @calloc(i32 %add5, i32 24)
+  %17 = bitcast i8* %16 to %i32arrarr*
+  %constructorLoad8 = load void (%i32arrarrarr*, %i32arrarrarr_Vtable_type*, %i32arrarr*, i32)*, void (%i32arrarrarr*, %i32arrarrarr_Vtable_type*, %i32arrarr*, i32)** getelementptr inbounds (%i32arrarrarr_Vtable_type, %i32arrarrarr_Vtable_type* @i32arrarrarr_Vtable, i64 0, i32 5), align 8
+  call void %constructorLoad8(%i32arrarrarr* %15, %i32arrarrarr_Vtable_type* nonnull @i32arrarrarr_Vtable, %i32arrarr* %17, i32 %add5)
   ret i32 0
 }

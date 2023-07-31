@@ -1,15 +1,15 @@
 ; ModuleID = 'Module'
 source_filename = "Module"
-target triple = "x86_64-pc-linux-gnu"
+target triple = "aarch64-unknown-linux-gnu"
 
-%Object_Vtable_type = type { %Object_Vtable_type*, i8* }
-%C_Vtable_type = type { %B_Vtable_type*, i8* }
-%B_Vtable_type = type { %A_Vtable_type*, i8* }
-%A_Vtable_type = type { %Object_Vtable_type*, i8* }
+%Object_Vtable_type = type { %Object_Vtable_type*, i8*, void (%Object*)*, void (%Object*)* }
 %Object = type { %Object_Vtable_type* }
-%C = type { %C_Vtable_type* }
-%B = type { %B_Vtable_type* }
+%C_Vtable_type = type { %B_Vtable_type*, i8*, void (%Object*)*, void (%Object*)*, void (%A*)*, void (%A*)*, void (%B*)*, void (%B*)*, void (%C*)*, void (%C*)* }
+%B_Vtable_type = type { %A_Vtable_type*, i8*, void (%Object*)*, void (%Object*)*, void (%A*)*, void (%A*)*, void (%B*)*, void (%B*)* }
+%A_Vtable_type = type { %Object_Vtable_type*, i8*, void (%Object*)*, void (%Object*)*, void (%A*)*, void (%A*)* }
 %A = type { %A_Vtable_type* }
+%B = type { %B_Vtable_type* }
+%C = type { %C_Vtable_type* }
 
 @printIntFormat = private constant [4 x i8] c"%d\0A\00", align 1
 @castErrFormat = private constant [52 x i8] c"Line no: %d | Narrow cast err: %s is not a type %s\0A\00", align 1
@@ -18,13 +18,13 @@ target triple = "x86_64-pc-linux-gnu"
 @nullDerefFormat = private constant [29 x i8] c"Line: %d | Null dereference\0A\00", align 1
 @divByZeroFormat = private constant [37 x i8] c"Line: %d | Divide by zero exception\0A\00", align 1
 @Object_class_name = private constant [7 x i8] c"Object\00", align 1
-@Object_Vtable = global %Object_Vtable_type { %Object_Vtable_type* null, i8* getelementptr inbounds ([7 x i8], [7 x i8]* @Object_class_name, i32 0, i32 0) }
+@Object_Vtable = global %Object_Vtable_type { %Object_Vtable_type* null, i8* getelementptr inbounds ([7 x i8], [7 x i8]* @Object_class_name, i32 0, i32 0), void (%Object*)* @"~Object_Object", void (%Object*)* @Object_Object }
 @C_class_name = private constant [2 x i8] c"C\00", align 1
-@C_Vtable = global %C_Vtable_type { %B_Vtable_type* null, i8* getelementptr inbounds ([2 x i8], [2 x i8]* @C_class_name, i32 0, i32 0) }
+@C_Vtable = global %C_Vtable_type { %B_Vtable_type* null, i8* getelementptr inbounds ([2 x i8], [2 x i8]* @C_class_name, i32 0, i32 0), void (%Object*)* @"~Object_Object", void (%Object*)* @Object_Object, void (%A*)* @"~A_A", void (%A*)* @A_A, void (%B*)* @"~B_B", void (%B*)* @B_B, void (%C*)* @"~C_C", void (%C*)* @C_C }
 @B_class_name = private constant [2 x i8] c"B\00", align 1
-@B_Vtable = global %B_Vtable_type { %A_Vtable_type* null, i8* getelementptr inbounds ([2 x i8], [2 x i8]* @B_class_name, i32 0, i32 0) }
+@B_Vtable = global %B_Vtable_type { %A_Vtable_type* null, i8* getelementptr inbounds ([2 x i8], [2 x i8]* @B_class_name, i32 0, i32 0), void (%Object*)* @"~Object_Object", void (%Object*)* @Object_Object, void (%A*)* @"~A_A", void (%A*)* @A_A, void (%B*)* @"~B_B", void (%B*)* @B_B }
 @A_class_name = private constant [2 x i8] c"A\00", align 1
-@A_Vtable = global %A_Vtable_type { %Object_Vtable_type* @Object_Vtable, i8* getelementptr inbounds ([2 x i8], [2 x i8]* @A_class_name, i32 0, i32 0) }
+@A_Vtable = global %A_Vtable_type { %Object_Vtable_type* @Object_Vtable, i8* getelementptr inbounds ([2 x i8], [2 x i8]* @A_class_name, i32 0, i32 0), void (%Object*)* @"~Object_Object", void (%Object*)* @Object_Object, void (%A*)* @"~A_A", void (%A*)* @A_A }
 
 declare i32 @printf(i8*, ...)
 
@@ -129,31 +129,138 @@ ifcont13:                                         ; preds = %else12, %loopend
   ret i1 %iftmp
 }
 
-define void @Object_Constructor(%Object* %0) {
+define void @"~Object_Object"(%Object* %0) {
 entry:
   %this = alloca %Object*, align 8
+  %super = alloca %Object*, align 8
+  store %Object* %0, %Object** %super, align 8
   store %Object* %0, %Object** %this, align 8
   ret void
 }
 
-define void @C_Constructor(%C* %0) {
+define void @Object_Object(%Object* %0) {
+entry:
+  %this = alloca %Object*, align 8
+  %super = alloca %Object*, align 8
+  store %Object* %0, %Object** %super, align 8
+  store %Object* %0, %Object** %this, align 8
+  ret void
+}
+
+define void @"~C_C"(%C* %0) {
 entry:
   %this = alloca %C*, align 8
+  %super = alloca %C*, align 8
+  store %C* %0, %C** %super, align 8
   store %C* %0, %C** %this, align 8
+  %1 = load %C*, %C** %super, align 8
+  %2 = getelementptr inbounds %C, %C* %1, i32 0, i32 0
+  %vTableLoad = load %C_Vtable_type*, %C_Vtable_type** %2, align 8
+  %3 = getelementptr inbounds %C_Vtable_type, %C_Vtable_type* %vTableLoad, i32 0, i32 6
+  %methodLoad = load void (%B*)*, void (%B*)** %3, align 8
+  %4 = bitcast %C* %1 to %B*
+  call void %methodLoad(%B* %4)
   ret void
 }
 
-define void @B_Constructor(%B* %0) {
+define void @C_C(%C* %0) {
+entry:
+  %this = alloca %C*, align 8
+  %super = alloca %C*, align 8
+  store %C* %0, %C** %super, align 8
+  store %C* %0, %C** %this, align 8
+  %1 = load %C*, %C** %super, align 8
+  %2 = getelementptr inbounds %C, %C* %1, i32 0, i32 0
+  %vTableLoad = load %C_Vtable_type*, %C_Vtable_type** %2, align 8
+  %3 = getelementptr inbounds %C_Vtable_type, %C_Vtable_type* %vTableLoad, i32 0, i32 7
+  %methodLoad = load void (%B*)*, void (%B*)** %3, align 8
+  %4 = bitcast %C* %1 to %B*
+  call void %methodLoad(%B* %4)
+  %5 = load %C*, %C** %super, align 8
+  %6 = getelementptr inbounds %C, %C* %5, i32 0, i32 0
+  %vTableLoad1 = load %C_Vtable_type*, %C_Vtable_type** %6, align 8
+  %7 = getelementptr inbounds %C_Vtable_type, %C_Vtable_type* %vTableLoad1, i32 0, i32 7
+  %methodLoad2 = load void (%B*)*, void (%B*)** %7, align 8
+  %8 = bitcast %C* %5 to %B*
+  call void %methodLoad2(%B* %8)
+  ret void
+}
+
+define void @"~B_B"(%B* %0) {
 entry:
   %this = alloca %B*, align 8
+  %super = alloca %B*, align 8
+  store %B* %0, %B** %super, align 8
   store %B* %0, %B** %this, align 8
+  %1 = load %B*, %B** %super, align 8
+  %2 = getelementptr inbounds %B, %B* %1, i32 0, i32 0
+  %vTableLoad = load %B_Vtable_type*, %B_Vtable_type** %2, align 8
+  %3 = getelementptr inbounds %B_Vtable_type, %B_Vtable_type* %vTableLoad, i32 0, i32 4
+  %methodLoad = load void (%A*)*, void (%A*)** %3, align 8
+  %4 = bitcast %B* %1 to %A*
+  call void %methodLoad(%A* %4)
   ret void
 }
 
-define void @A_Constructor(%A* %0) {
+define void @B_B(%B* %0) {
+entry:
+  %this = alloca %B*, align 8
+  %super = alloca %B*, align 8
+  store %B* %0, %B** %super, align 8
+  store %B* %0, %B** %this, align 8
+  %1 = load %B*, %B** %super, align 8
+  %2 = getelementptr inbounds %B, %B* %1, i32 0, i32 0
+  %vTableLoad = load %B_Vtable_type*, %B_Vtable_type** %2, align 8
+  %3 = getelementptr inbounds %B_Vtable_type, %B_Vtable_type* %vTableLoad, i32 0, i32 5
+  %methodLoad = load void (%A*)*, void (%A*)** %3, align 8
+  %4 = bitcast %B* %1 to %A*
+  call void %methodLoad(%A* %4)
+  %5 = load %B*, %B** %super, align 8
+  %6 = getelementptr inbounds %B, %B* %5, i32 0, i32 0
+  %vTableLoad1 = load %B_Vtable_type*, %B_Vtable_type** %6, align 8
+  %7 = getelementptr inbounds %B_Vtable_type, %B_Vtable_type* %vTableLoad1, i32 0, i32 5
+  %methodLoad2 = load void (%A*)*, void (%A*)** %7, align 8
+  %8 = bitcast %B* %5 to %A*
+  call void %methodLoad2(%A* %8)
+  ret void
+}
+
+define void @"~A_A"(%A* %0) {
 entry:
   %this = alloca %A*, align 8
+  %super = alloca %A*, align 8
+  store %A* %0, %A** %super, align 8
   store %A* %0, %A** %this, align 8
+  %1 = load %A*, %A** %super, align 8
+  %2 = getelementptr inbounds %A, %A* %1, i32 0, i32 0
+  %vTableLoad = load %A_Vtable_type*, %A_Vtable_type** %2, align 8
+  %3 = getelementptr inbounds %A_Vtable_type, %A_Vtable_type* %vTableLoad, i32 0, i32 2
+  %methodLoad = load void (%Object*)*, void (%Object*)** %3, align 8
+  %4 = bitcast %A* %1 to %Object*
+  call void %methodLoad(%Object* %4)
+  ret void
+}
+
+define void @A_A(%A* %0) {
+entry:
+  %this = alloca %A*, align 8
+  %super = alloca %A*, align 8
+  store %A* %0, %A** %super, align 8
+  store %A* %0, %A** %this, align 8
+  %1 = load %A*, %A** %super, align 8
+  %2 = getelementptr inbounds %A, %A* %1, i32 0, i32 0
+  %vTableLoad = load %A_Vtable_type*, %A_Vtable_type** %2, align 8
+  %3 = getelementptr inbounds %A_Vtable_type, %A_Vtable_type* %vTableLoad, i32 0, i32 3
+  %methodLoad = load void (%Object*)*, void (%Object*)** %3, align 8
+  %4 = bitcast %A* %1 to %Object*
+  call void %methodLoad(%Object* %4)
+  %5 = load %A*, %A** %super, align 8
+  %6 = getelementptr inbounds %A, %A* %5, i32 0, i32 0
+  %vTableLoad1 = load %A_Vtable_type*, %A_Vtable_type** %6, align 8
+  %7 = getelementptr inbounds %A_Vtable_type, %A_Vtable_type* %vTableLoad1, i32 0, i32 3
+  %methodLoad2 = load void (%Object*)*, void (%Object*)** %7, align 8
+  %8 = bitcast %A* %5 to %Object*
+  call void %methodLoad2(%Object* %8)
   ret void
 }
 
@@ -167,14 +274,16 @@ entry:
   %1 = bitcast i8* %0 to %B*
   %2 = getelementptr inbounds %B, %B* %1, i64 0, i32 0
   store %B_Vtable_type* @B_Vtable, %B_Vtable_type** %2, align 8
-  call void @B_Constructor(%B* %1)
+  %constructorLoad = load void (%B*)*, void (%B*)** getelementptr inbounds (%B_Vtable_type, %B_Vtable_type* @B_Vtable, i64 0, i32 7), align 8
+  call void %constructorLoad(%B* %1)
   %3 = bitcast %B** %b to i8**
   store i8* %0, i8** %3, align 8
   %4 = call dereferenceable_or_null(8) i8* @calloc(i32 1, i32 8)
   %5 = bitcast i8* %4 to %C*
   %6 = getelementptr inbounds %C, %C* %5, i64 0, i32 0
   store %C_Vtable_type* @C_Vtable, %C_Vtable_type** %6, align 8
-  call void @C_Constructor(%C* %5)
+  %constructorLoad1 = load void (%C*)*, void (%C*)** getelementptr inbounds (%C_Vtable_type, %C_Vtable_type* @C_Vtable, i64 0, i32 9), align 8
+  call void %constructorLoad1(%C* %5)
   %7 = bitcast %C** %c to i8**
   store i8* %4, i8** %7, align 8
   %8 = bitcast %B** %b to %A**
@@ -190,18 +299,18 @@ castElse:                                         ; preds = %entry
   %11 = alloca [2 x i8], align 1
   %.repack = getelementptr inbounds [2 x i8], [2 x i8]* %11, i64 0, i64 0
   store i8 65, i8* %.repack, align 1
-  %.repack7 = getelementptr inbounds [2 x i8], [2 x i8]* %11, i64 0, i64 1
-  store i8 0, i8* %.repack7, align 1
+  %.repack8 = getelementptr inbounds [2 x i8], [2 x i8]* %11, i64 0, i64 1
+  store i8 0, i8* %.repack8, align 1
   %12 = getelementptr inbounds [2 x i8], [2 x i8]* %11, i64 0, i64 0
   %13 = alloca [4 x i8], align 1
-  %.repack8 = getelementptr inbounds [4 x i8], [4 x i8]* %13, i64 0, i64 0
-  store i8 37, i8* %.repack8, align 1
-  %.repack9 = getelementptr inbounds [4 x i8], [4 x i8]* %13, i64 0, i64 1
-  store i8 66, i8* %.repack9, align 1
-  %.repack10 = getelementptr inbounds [4 x i8], [4 x i8]* %13, i64 0, i64 2
-  store i8 42, i8* %.repack10, align 1
-  %.repack11 = getelementptr inbounds [4 x i8], [4 x i8]* %13, i64 0, i64 3
-  store i8 0, i8* %.repack11, align 1
+  %.repack9 = getelementptr inbounds [4 x i8], [4 x i8]* %13, i64 0, i64 0
+  store i8 37, i8* %.repack9, align 1
+  %.repack10 = getelementptr inbounds [4 x i8], [4 x i8]* %13, i64 0, i64 1
+  store i8 66, i8* %.repack10, align 1
+  %.repack11 = getelementptr inbounds [4 x i8], [4 x i8]* %13, i64 0, i64 2
+  store i8 42, i8* %.repack11, align 1
+  %.repack12 = getelementptr inbounds [4 x i8], [4 x i8]* %13, i64 0, i64 3
+  store i8 0, i8* %.repack12, align 1
   %14 = getelementptr inbounds [4 x i8], [4 x i8]* %13, i64 0, i64 0
   %15 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([52 x i8], [52 x i8]* @castErrFormat, i64 0, i64 0), i32 17, i8* nonnull %12, i8* nonnull %14)
   call void @exit(i32 -1)
@@ -213,65 +322,65 @@ castCont:                                         ; preds = %castElse, %castThen
   %17 = bitcast %C** %c to %Object**
   %18 = load %Object*, %Object** %17, align 8
   %19 = call i1 @Object_IsA(%Object* %18, %Object_Vtable_type* nonnull @Object_Vtable, i8* getelementptr inbounds ([2 x i8], [2 x i8]* @C_class_name, i64 0, i64 0))
-  br i1 %19, label %castThen1, label %castElse2
+  br i1 %19, label %castThen2, label %castElse3
 
-castThen1:                                        ; preds = %castCont
-  br label %castCont3
+castThen2:                                        ; preds = %castCont
+  br label %castCont4
 
-castElse2:                                        ; preds = %castCont
+castElse3:                                        ; preds = %castCont
   %20 = alloca [2 x i8], align 1
-  %.repack13 = getelementptr inbounds [2 x i8], [2 x i8]* %20, i64 0, i64 0
-  store i8 65, i8* %.repack13, align 1
-  %.repack14 = getelementptr inbounds [2 x i8], [2 x i8]* %20, i64 0, i64 1
-  store i8 0, i8* %.repack14, align 1
+  %.repack14 = getelementptr inbounds [2 x i8], [2 x i8]* %20, i64 0, i64 0
+  store i8 65, i8* %.repack14, align 1
+  %.repack15 = getelementptr inbounds [2 x i8], [2 x i8]* %20, i64 0, i64 1
+  store i8 0, i8* %.repack15, align 1
   %21 = getelementptr inbounds [2 x i8], [2 x i8]* %20, i64 0, i64 0
   %22 = alloca [4 x i8], align 1
-  %.repack15 = getelementptr inbounds [4 x i8], [4 x i8]* %22, i64 0, i64 0
-  store i8 37, i8* %.repack15, align 1
-  %.repack16 = getelementptr inbounds [4 x i8], [4 x i8]* %22, i64 0, i64 1
-  store i8 67, i8* %.repack16, align 1
-  %.repack17 = getelementptr inbounds [4 x i8], [4 x i8]* %22, i64 0, i64 2
-  store i8 42, i8* %.repack17, align 1
-  %.repack18 = getelementptr inbounds [4 x i8], [4 x i8]* %22, i64 0, i64 3
-  store i8 0, i8* %.repack18, align 1
+  %.repack16 = getelementptr inbounds [4 x i8], [4 x i8]* %22, i64 0, i64 0
+  store i8 37, i8* %.repack16, align 1
+  %.repack17 = getelementptr inbounds [4 x i8], [4 x i8]* %22, i64 0, i64 1
+  store i8 67, i8* %.repack17, align 1
+  %.repack18 = getelementptr inbounds [4 x i8], [4 x i8]* %22, i64 0, i64 2
+  store i8 42, i8* %.repack18, align 1
+  %.repack19 = getelementptr inbounds [4 x i8], [4 x i8]* %22, i64 0, i64 3
+  store i8 0, i8* %.repack19, align 1
   %23 = getelementptr inbounds [4 x i8], [4 x i8]* %22, i64 0, i64 0
   %24 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([52 x i8], [52 x i8]* @castErrFormat, i64 0, i64 0), i32 20, i8* nonnull %21, i8* nonnull %23)
   call void @exit(i32 -1)
-  br label %castCont3
+  br label %castCont4
 
-castCont3:                                        ; preds = %castElse2, %castThen1
+castCont4:                                        ; preds = %castElse3, %castThen2
   %25 = bitcast %C** %c to %Object**
   store %Object* %18, %Object** %25, align 8
   %26 = bitcast %B** %b to %Object**
   %27 = load %Object*, %Object** %26, align 8
   %28 = call i1 @Object_IsA(%Object* %27, %Object_Vtable_type* nonnull @Object_Vtable, i8* getelementptr inbounds ([2 x i8], [2 x i8]* @C_class_name, i64 0, i64 0))
-  br i1 %28, label %castThen4, label %castElse5
+  br i1 %28, label %castThen5, label %castElse6
 
-castThen4:                                        ; preds = %castCont3
-  br label %castCont6
+castThen5:                                        ; preds = %castCont4
+  br label %castCont7
 
-castElse5:                                        ; preds = %castCont3
+castElse6:                                        ; preds = %castCont4
   %29 = alloca [2 x i8], align 1
-  %.repack19 = getelementptr inbounds [2 x i8], [2 x i8]* %29, i64 0, i64 0
-  store i8 66, i8* %.repack19, align 1
-  %.repack20 = getelementptr inbounds [2 x i8], [2 x i8]* %29, i64 0, i64 1
-  store i8 0, i8* %.repack20, align 1
+  %.repack20 = getelementptr inbounds [2 x i8], [2 x i8]* %29, i64 0, i64 0
+  store i8 66, i8* %.repack20, align 1
+  %.repack21 = getelementptr inbounds [2 x i8], [2 x i8]* %29, i64 0, i64 1
+  store i8 0, i8* %.repack21, align 1
   %30 = getelementptr inbounds [2 x i8], [2 x i8]* %29, i64 0, i64 0
   %31 = alloca [4 x i8], align 1
-  %.repack21 = getelementptr inbounds [4 x i8], [4 x i8]* %31, i64 0, i64 0
-  store i8 37, i8* %.repack21, align 1
-  %.repack22 = getelementptr inbounds [4 x i8], [4 x i8]* %31, i64 0, i64 1
-  store i8 67, i8* %.repack22, align 1
-  %.repack23 = getelementptr inbounds [4 x i8], [4 x i8]* %31, i64 0, i64 2
-  store i8 42, i8* %.repack23, align 1
-  %.repack24 = getelementptr inbounds [4 x i8], [4 x i8]* %31, i64 0, i64 3
-  store i8 0, i8* %.repack24, align 1
+  %.repack22 = getelementptr inbounds [4 x i8], [4 x i8]* %31, i64 0, i64 0
+  store i8 37, i8* %.repack22, align 1
+  %.repack23 = getelementptr inbounds [4 x i8], [4 x i8]* %31, i64 0, i64 1
+  store i8 67, i8* %.repack23, align 1
+  %.repack24 = getelementptr inbounds [4 x i8], [4 x i8]* %31, i64 0, i64 2
+  store i8 42, i8* %.repack24, align 1
+  %.repack25 = getelementptr inbounds [4 x i8], [4 x i8]* %31, i64 0, i64 3
+  store i8 0, i8* %.repack25, align 1
   %32 = getelementptr inbounds [4 x i8], [4 x i8]* %31, i64 0, i64 0
   %33 = call i32 (i8*, ...) @printf(i8* noundef nonnull dereferenceable(1) getelementptr inbounds ([52 x i8], [52 x i8]* @castErrFormat, i64 0, i64 0), i32 22, i8* nonnull %30, i8* nonnull %32)
   call void @exit(i32 -1)
-  br label %castCont6
+  br label %castCont7
 
-castCont6:                                        ; preds = %castElse5, %castThen4
+castCont7:                                        ; preds = %castElse6, %castThen5
   %34 = bitcast %C** %c to %Object**
   store %Object* %27, %Object** %34, align 8
   ret i32 0
