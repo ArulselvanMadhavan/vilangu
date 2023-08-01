@@ -33,8 +33,6 @@ type expr_p_cast =
   | Wide_cast
   | Narrow_cast
 
-type expr_p_class_creation = { texpr : type_expr }
-
 type var_p_subscript =
   { base_var : var
   ; var_exp : expr
@@ -67,6 +65,7 @@ and expr =
   | Null_lit
   | Cast_expr of expr_p_cast_expr
   | Class_creation of expr_p_class_creation
+  | Method_call of expr_p_method_call
 
 and expr_p_function_app =
   { name : string
@@ -96,6 +95,7 @@ and expr_p_array_creation =
   { creation_exprs : expr list
   ; texpr : type_expr
   ; make_line_no : int32
+  ; arr_cons_idx : int32
   }
 
 and expr_p_cast_expr =
@@ -103,6 +103,18 @@ and expr_p_cast_expr =
   ; expr : expr
   ; cast_type : expr_p_cast
   ; cast_line_no : int32
+  }
+
+and expr_p_class_creation =
+  { con_texpr : type_expr
+  ; con_args : expr list
+  ; vtable_index : int32
+  }
+
+and expr_p_method_call =
+  { method_idx : int32
+  ; obj_expr : expr
+  ; method_args : expr list
   }
 
 and var_p_load = { var : var }
@@ -118,6 +130,8 @@ type stmt_p_printf =
   }
 
 type stmt_p_expr_stmt = { expr_stmt : expr }
+type stmt_p_delete = { del_expr : expr }
+type stmt_p_free = { free_expr : expr }
 
 type stmt_p_while =
   { while_cond : expr
@@ -133,6 +147,8 @@ and stmt =
   | Break
   | Continue
   | If_stmt of stmt_p_if_stmt
+  | Delete of stmt_p_delete
+  | Free of stmt_p_free
 
 and stmt_p_block = { stmt_list : stmt list }
 
@@ -146,6 +162,7 @@ type class_def =
   { name : string
   ; fields : type_expr list
   ; base_class_name : string
+  ; vtable : string list
   }
 
 type param =
@@ -188,9 +205,6 @@ val default_type_expr_p_pointer : ?data:type_expr -> unit -> type_expr_p_pointer
 
 (** [default_expr_p_cast ()] is the default value for type [expr_p_cast] *)
 val default_expr_p_cast : unit -> expr_p_cast
-
-(** [default_expr_p_class_creation ()] is the default value for type [expr_p_class_creation] *)
-val default_expr_p_class_creation : ?texpr:type_expr -> unit -> expr_p_class_creation
 
 (** [default_var_p_subscript ()] is the default value for type [var_p_subscript] *)
 val default_var_p_subscript
@@ -245,6 +259,7 @@ val default_expr_p_array_creation
   :  ?creation_exprs:expr list
   -> ?texpr:type_expr
   -> ?make_line_no:int32
+  -> ?arr_cons_idx:int32
   -> unit
   -> expr_p_array_creation
 
@@ -256,6 +271,22 @@ val default_expr_p_cast_expr
   -> ?cast_line_no:int32
   -> unit
   -> expr_p_cast_expr
+
+(** [default_expr_p_class_creation ()] is the default value for type [expr_p_class_creation] *)
+val default_expr_p_class_creation
+  :  ?con_texpr:type_expr
+  -> ?con_args:expr list
+  -> ?vtable_index:int32
+  -> unit
+  -> expr_p_class_creation
+
+(** [default_expr_p_method_call ()] is the default value for type [expr_p_method_call] *)
+val default_expr_p_method_call
+  :  ?method_idx:int32
+  -> ?obj_expr:expr
+  -> ?method_args:expr list
+  -> unit
+  -> expr_p_method_call
 
 (** [default_var_p_load ()] is the default value for type [var_p_load] *)
 val default_var_p_load : ?var:var -> unit -> var_p_load
@@ -272,6 +303,12 @@ val default_stmt_p_printf : ?format:string -> ?f_args:expr list -> unit -> stmt_
 
 (** [default_stmt_p_expr_stmt ()] is the default value for type [stmt_p_expr_stmt] *)
 val default_stmt_p_expr_stmt : ?expr_stmt:expr -> unit -> stmt_p_expr_stmt
+
+(** [default_stmt_p_delete ()] is the default value for type [stmt_p_delete] *)
+val default_stmt_p_delete : ?del_expr:expr -> unit -> stmt_p_delete
+
+(** [default_stmt_p_free ()] is the default value for type [stmt_p_free] *)
+val default_stmt_p_free : ?free_expr:expr -> unit -> stmt_p_free
 
 (** [default_stmt_p_while ()] is the default value for type [stmt_p_while] *)
 val default_stmt_p_while : ?while_cond:expr -> ?while_block:stmt -> unit -> stmt_p_while
@@ -295,6 +332,7 @@ val default_class_def
   :  ?name:string
   -> ?fields:type_expr list
   -> ?base_class_name:string
+  -> ?vtable:string list
   -> unit
   -> class_def
 

@@ -23,30 +23,53 @@ any desired architecture.
   bash run.sh
 #+end_src
 ** Pending tasks
-- [X] Classes - Add names with empty list of fields first. Then, update fields here
-- [X] Ref types init to null at variable declaration time. Handle the case when they are used
-  without proper initialization.
-- [X] Pass line number with all subscript accesses
-- [X] Uninit Arrays. Null check
-- [X] object.length should not be allowed.
-- [X] Handle the case when arrays aren’t declared by used.
-- [X] Divide by zero check
-- [X] Array type should be int*.
-- [X] Respect multiple ranks
-- [X] Generate loop blocks to init array based on rank
-- [X] Return type of subscript var should be pointer
-- [X] Type should also keep track of length and ptr
-- [X] Add support for length field
+- [X] translate methods after class_decs are fully inserted into tenv;
+  Because the body of the constructor may use fields from classes that
+  aren’t fully constructed yet.
+- [ ] At compile time, catch
+  - [ ] Constructor/Dest
+    - [ ] Add implicit return if one doesn’t exist
+    - [ ] return should always be None; but the value returned should
+      be ref_type|void
+    - [ ] If empty return exists, fill it with default value of the type(ref_type|void)
+  - [ ] Method
+    - [ ] Add implicit return if one doesn’t exist
+    - [ ] If empty return exists, fill it with default value of the type(ref_type|int|void)
+  - [ ] If return stmt exists, with a different type than expected,
+    throw an error
+- [ ] Add value returned from method to venv
+- [X] Add default const
+- [X] Generate class_name_meth_name_param_type name
+- [X] delete statement -> transform to destructor call. Pass this as
+  default arg.
+  - [X] MethodCall - When field is None, use base as the method name.
+  - [X] Translate delete to MethodCall (base = ~refty, fields = None,
+    args = None)
+  - [X] default destructor should free this?
+- [X] Destructor for other classes
+  - [X] Object should have a destructor method. It should do nothing.
+- [X] Test user provided destructor
+- [-] Constructor invocation
+  - [ ] Check if first line is an explicit const invocation. Restrict
+    to this/super
+  - [X] Serious bug. post super call. changes are not visible.
+- [ ] Overload testing
+- [-] support for super
+  - [X] in destructor
+  - [ ] In constructor
+- [ ] support for null
+- [ ] equals method
+- [ ] Apply overrides
+- [X] Object should have a default constructor.
+- [ ] Object should not have a super call in constructor body.
+- [ ] Add a default destructor for all classes
+- [ ] Throw an error for more than one destructor
+- [X] Add a default destructor for arrays
+- [X] frontend.proto needs "methodCall"; methodName as string;
+  arguments - are expressions. Arg expressions might need bitcast.
 - [ ] Warn users of unreachable code blocks after break; continue statements
-- [X] Add support for narrow cast without Object_IsA
-- [X] Narrow cast line no
-- [X] Subscript exprs should eval to int type of rank 0
 - [ ] Warn Unused variables
-- [X] Dockerize things
-  - [X] Install ocaml libs
-  - [X] Install protocol buffer
 - [ ] nounwind attribute to main, malloc, free, printf
-- [X] phase 3 tests should pass
     
 ** Useful links
   - https://github.com/ksrky/tiger/tree/master

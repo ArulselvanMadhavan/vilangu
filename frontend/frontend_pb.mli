@@ -26,12 +26,6 @@ val encode_type_expr_p_pointer
 (** [encode_expr_p_cast v encoder] encodes [v] with the given [encoder] *)
 val encode_expr_p_cast : Frontend_types.expr_p_cast -> Pbrt.Encoder.t -> unit
 
-(** [encode_expr_p_class_creation v encoder] encodes [v] with the given [encoder] *)
-val encode_expr_p_class_creation
-  :  Frontend_types.expr_p_class_creation
-  -> Pbrt.Encoder.t
-  -> unit
-
 (** [encode_var_p_subscript v encoder] encodes [v] with the given [encoder] *)
 val encode_var_p_subscript : Frontend_types.var_p_subscript -> Pbrt.Encoder.t -> unit
 
@@ -71,6 +65,18 @@ val encode_expr_p_array_creation
 (** [encode_expr_p_cast_expr v encoder] encodes [v] with the given [encoder] *)
 val encode_expr_p_cast_expr : Frontend_types.expr_p_cast_expr -> Pbrt.Encoder.t -> unit
 
+(** [encode_expr_p_class_creation v encoder] encodes [v] with the given [encoder] *)
+val encode_expr_p_class_creation
+  :  Frontend_types.expr_p_class_creation
+  -> Pbrt.Encoder.t
+  -> unit
+
+(** [encode_expr_p_method_call v encoder] encodes [v] with the given [encoder] *)
+val encode_expr_p_method_call
+  :  Frontend_types.expr_p_method_call
+  -> Pbrt.Encoder.t
+  -> unit
+
 (** [encode_var_p_load v encoder] encodes [v] with the given [encoder] *)
 val encode_var_p_load : Frontend_types.var_p_load -> Pbrt.Encoder.t -> unit
 
@@ -82,6 +88,12 @@ val encode_stmt_p_printf : Frontend_types.stmt_p_printf -> Pbrt.Encoder.t -> uni
 
 (** [encode_stmt_p_expr_stmt v encoder] encodes [v] with the given [encoder] *)
 val encode_stmt_p_expr_stmt : Frontend_types.stmt_p_expr_stmt -> Pbrt.Encoder.t -> unit
+
+(** [encode_stmt_p_delete v encoder] encodes [v] with the given [encoder] *)
+val encode_stmt_p_delete : Frontend_types.stmt_p_delete -> Pbrt.Encoder.t -> unit
+
+(** [encode_stmt_p_free v encoder] encodes [v] with the given [encoder] *)
+val encode_stmt_p_free : Frontend_types.stmt_p_free -> Pbrt.Encoder.t -> unit
 
 (** [encode_stmt_p_while v encoder] encodes [v] with the given [encoder] *)
 val encode_stmt_p_while : Frontend_types.stmt_p_while -> Pbrt.Encoder.t -> unit
@@ -130,9 +142,6 @@ val decode_type_expr_p_pointer : Pbrt.Decoder.t -> Frontend_types.type_expr_p_po
 (** [decode_expr_p_cast decoder] decodes a [expr_p_cast] value from [decoder] *)
 val decode_expr_p_cast : Pbrt.Decoder.t -> Frontend_types.expr_p_cast
 
-(** [decode_expr_p_class_creation decoder] decodes a [expr_p_class_creation] value from [decoder] *)
-val decode_expr_p_class_creation : Pbrt.Decoder.t -> Frontend_types.expr_p_class_creation
-
 (** [decode_var_p_subscript decoder] decodes a [var_p_subscript] value from [decoder] *)
 val decode_var_p_subscript : Pbrt.Decoder.t -> Frontend_types.var_p_subscript
 
@@ -166,6 +175,12 @@ val decode_expr_p_array_creation : Pbrt.Decoder.t -> Frontend_types.expr_p_array
 (** [decode_expr_p_cast_expr decoder] decodes a [expr_p_cast_expr] value from [decoder] *)
 val decode_expr_p_cast_expr : Pbrt.Decoder.t -> Frontend_types.expr_p_cast_expr
 
+(** [decode_expr_p_class_creation decoder] decodes a [expr_p_class_creation] value from [decoder] *)
+val decode_expr_p_class_creation : Pbrt.Decoder.t -> Frontend_types.expr_p_class_creation
+
+(** [decode_expr_p_method_call decoder] decodes a [expr_p_method_call] value from [decoder] *)
+val decode_expr_p_method_call : Pbrt.Decoder.t -> Frontend_types.expr_p_method_call
+
 (** [decode_var_p_load decoder] decodes a [var_p_load] value from [decoder] *)
 val decode_var_p_load : Pbrt.Decoder.t -> Frontend_types.var_p_load
 
@@ -177,6 +192,12 @@ val decode_stmt_p_printf : Pbrt.Decoder.t -> Frontend_types.stmt_p_printf
 
 (** [decode_stmt_p_expr_stmt decoder] decodes a [stmt_p_expr_stmt] value from [decoder] *)
 val decode_stmt_p_expr_stmt : Pbrt.Decoder.t -> Frontend_types.stmt_p_expr_stmt
+
+(** [decode_stmt_p_delete decoder] decodes a [stmt_p_delete] value from [decoder] *)
+val decode_stmt_p_delete : Pbrt.Decoder.t -> Frontend_types.stmt_p_delete
+
+(** [decode_stmt_p_free decoder] decodes a [stmt_p_free] value from [decoder] *)
+val decode_stmt_p_free : Pbrt.Decoder.t -> Frontend_types.stmt_p_free
 
 (** [decode_stmt_p_while decoder] decodes a [stmt_p_while] value from [decoder] *)
 val decode_stmt_p_while : Pbrt.Decoder.t -> Frontend_types.stmt_p_while

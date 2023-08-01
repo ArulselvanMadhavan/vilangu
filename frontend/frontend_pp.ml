@@ -61,13 +61,6 @@ let rec pp_expr_p_cast fmt (v : Frontend_types.expr_p_cast) =
   | Frontend_types.Narrow_cast -> Format.fprintf fmt "Narrow_cast"
 ;;
 
-let rec pp_expr_p_class_creation fmt (v : Frontend_types.expr_p_class_creation) =
-  let pp_i fmt () =
-    Pbrt.Pp.pp_record_field ~first:true "texpr" pp_type_expr fmt v.Frontend_types.texpr
-  in
-  Pbrt.Pp.pp_brk pp_i fmt ()
-;;
-
 let rec pp_var_p_subscript fmt (v : Frontend_types.var_p_subscript) =
   let pp_i fmt () =
     Pbrt.Pp.pp_record_field ~first:true "base_var" pp_var fmt v.Frontend_types.base_var;
@@ -131,6 +124,8 @@ and pp_expr fmt (v : Frontend_types.expr) =
     Format.fprintf fmt "@[<hv2>Cast_expr(@,%a)@]" pp_expr_p_cast_expr x
   | Frontend_types.Class_creation x ->
     Format.fprintf fmt "@[<hv2>Class_creation(@,%a)@]" pp_expr_p_class_creation x
+  | Frontend_types.Method_call x ->
+    Format.fprintf fmt "@[<hv2>Method_call(@,%a)@]" pp_expr_p_method_call x
 
 and pp_expr_p_function_app fmt (v : Frontend_types.expr_p_function_app) =
   let pp_i fmt () =
@@ -192,7 +187,13 @@ and pp_expr_p_array_creation fmt (v : Frontend_types.expr_p_array_creation) =
       "make_line_no"
       Pbrt.Pp.pp_int32
       fmt
-      v.Frontend_types.make_line_no
+      v.Frontend_types.make_line_no;
+    Pbrt.Pp.pp_record_field
+      ~first:false
+      "arr_cons_idx"
+      Pbrt.Pp.pp_int32
+      fmt
+      v.Frontend_types.arr_cons_idx
   in
   Pbrt.Pp.pp_brk pp_i fmt ()
 
@@ -217,6 +218,47 @@ and pp_expr_p_cast_expr fmt (v : Frontend_types.expr_p_cast_expr) =
       Pbrt.Pp.pp_int32
       fmt
       v.Frontend_types.cast_line_no
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+
+and pp_expr_p_class_creation fmt (v : Frontend_types.expr_p_class_creation) =
+  let pp_i fmt () =
+    Pbrt.Pp.pp_record_field
+      ~first:true
+      "con_texpr"
+      pp_type_expr
+      fmt
+      v.Frontend_types.con_texpr;
+    Pbrt.Pp.pp_record_field
+      ~first:false
+      "con_args"
+      (Pbrt.Pp.pp_list pp_expr)
+      fmt
+      v.Frontend_types.con_args;
+    Pbrt.Pp.pp_record_field
+      ~first:false
+      "vtable_index"
+      Pbrt.Pp.pp_int32
+      fmt
+      v.Frontend_types.vtable_index
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+
+and pp_expr_p_method_call fmt (v : Frontend_types.expr_p_method_call) =
+  let pp_i fmt () =
+    Pbrt.Pp.pp_record_field
+      ~first:true
+      "method_idx"
+      Pbrt.Pp.pp_int32
+      fmt
+      v.Frontend_types.method_idx;
+    Pbrt.Pp.pp_record_field ~first:false "obj_expr" pp_expr fmt v.Frontend_types.obj_expr;
+    Pbrt.Pp.pp_record_field
+      ~first:false
+      "method_args"
+      (Pbrt.Pp.pp_list pp_expr)
+      fmt
+      v.Frontend_types.method_args
   in
   Pbrt.Pp.pp_brk pp_i fmt ()
 
@@ -265,6 +307,20 @@ let rec pp_stmt_p_expr_stmt fmt (v : Frontend_types.stmt_p_expr_stmt) =
   Pbrt.Pp.pp_brk pp_i fmt ()
 ;;
 
+let rec pp_stmt_p_delete fmt (v : Frontend_types.stmt_p_delete) =
+  let pp_i fmt () =
+    Pbrt.Pp.pp_record_field ~first:true "del_expr" pp_expr fmt v.Frontend_types.del_expr
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+;;
+
+let rec pp_stmt_p_free fmt (v : Frontend_types.stmt_p_free) =
+  let pp_i fmt () =
+    Pbrt.Pp.pp_record_field ~first:true "free_expr" pp_expr fmt v.Frontend_types.free_expr
+  in
+  Pbrt.Pp.pp_brk pp_i fmt ()
+;;
+
 let rec pp_stmt_p_while fmt (v : Frontend_types.stmt_p_while) =
   let pp_i fmt () =
     Pbrt.Pp.pp_record_field
@@ -296,6 +352,9 @@ and pp_stmt fmt (v : Frontend_types.stmt) =
   | Frontend_types.Continue -> Format.fprintf fmt "Continue"
   | Frontend_types.If_stmt x ->
     Format.fprintf fmt "@[<hv2>If_stmt(@,%a)@]" pp_stmt_p_if_stmt x
+  | Frontend_types.Delete x ->
+    Format.fprintf fmt "@[<hv2>Delete(@,%a)@]" pp_stmt_p_delete x
+  | Frontend_types.Free x -> Format.fprintf fmt "@[<hv2>Free(@,%a)@]" pp_stmt_p_free x
 
 and pp_stmt_p_block fmt (v : Frontend_types.stmt_p_block) =
   let pp_i fmt () =
@@ -336,7 +395,13 @@ let rec pp_class_def fmt (v : Frontend_types.class_def) =
       "base_class_name"
       Pbrt.Pp.pp_string
       fmt
-      v.Frontend_types.base_class_name
+      v.Frontend_types.base_class_name;
+    Pbrt.Pp.pp_record_field
+      ~first:false
+      "vtable"
+      (Pbrt.Pp.pp_list Pbrt.Pp.pp_string)
+      fmt
+      v.Frontend_types.vtable
   in
   Pbrt.Pp.pp_brk pp_i fmt ()
 ;;

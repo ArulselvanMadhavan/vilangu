@@ -26,12 +26,6 @@ val pp_type_expr_p_pointer
 (** [pp_expr_p_cast v] formats v *)
 val pp_expr_p_cast : Format.formatter -> Frontend_types.expr_p_cast -> unit
 
-(** [pp_expr_p_class_creation v] formats v *)
-val pp_expr_p_class_creation
-  :  Format.formatter
-  -> Frontend_types.expr_p_class_creation
-  -> unit
-
 (** [pp_var_p_subscript v] formats v *)
 val pp_var_p_subscript : Format.formatter -> Frontend_types.var_p_subscript -> unit
 
@@ -71,6 +65,15 @@ val pp_expr_p_array_creation
 (** [pp_expr_p_cast_expr v] formats v *)
 val pp_expr_p_cast_expr : Format.formatter -> Frontend_types.expr_p_cast_expr -> unit
 
+(** [pp_expr_p_class_creation v] formats v *)
+val pp_expr_p_class_creation
+  :  Format.formatter
+  -> Frontend_types.expr_p_class_creation
+  -> unit
+
+(** [pp_expr_p_method_call v] formats v *)
+val pp_expr_p_method_call : Format.formatter -> Frontend_types.expr_p_method_call -> unit
+
 (** [pp_var_p_load v] formats v *)
 val pp_var_p_load : Format.formatter -> Frontend_types.var_p_load -> unit
 
@@ -82,6 +85,12 @@ val pp_stmt_p_printf : Format.formatter -> Frontend_types.stmt_p_printf -> unit
 
 (** [pp_stmt_p_expr_stmt v] formats v *)
 val pp_stmt_p_expr_stmt : Format.formatter -> Frontend_types.stmt_p_expr_stmt -> unit
+
+(** [pp_stmt_p_delete v] formats v *)
+val pp_stmt_p_delete : Format.formatter -> Frontend_types.stmt_p_delete -> unit
+
+(** [pp_stmt_p_free v] formats v *)
+val pp_stmt_p_free : Format.formatter -> Frontend_types.stmt_p_free -> unit
 
 (** [pp_stmt_p_while v] formats v *)
 val pp_stmt_p_while : Format.formatter -> Frontend_types.stmt_p_while -> unit

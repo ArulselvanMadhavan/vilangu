@@ -65,9 +65,18 @@ ExprArrayMakeIR::ExprArrayMakeIR(
     const Frontend_ir::Expr::_ArrayCreation &expr) {
   varType = deserializeType(expr.texpr());
   lineNo = expr.make_line_no();
+  arrConsIdx = expr.arr_cons_idx();
   for (auto e : expr.creation_exprs()) {
     creationExprs.push_back(deserializeExpr(e));
   }
+};
+
+ExprMethodCallIR::ExprMethodCallIR(const Frontend_ir::Expr::_MethodCall &expr) {
+  objExpr = deserializeExpr(expr.obj_expr());
+  for (auto a : expr.method_args()) {
+    methodArgs.push_back(deserializeExpr(a));
+  }
+  methodIdx = expr.method_idx();
 };
 
 std::unique_ptr<ExprIR> deserializeExpr(const Frontend_ir::Expr &expr) {
@@ -96,6 +105,8 @@ std::unique_ptr<ExprIR> deserializeExpr(const Frontend_ir::Expr &expr) {
     return std::unique_ptr<ExprIR>(new ExprCastIR(expr.castexpr()));
   case Frontend_ir::Expr::kClassCreation:
     return std::unique_ptr<ExprIR>(new ExprClassMakeIR(expr.classcreation()));
+  case Frontend_ir::Expr::kMethodCall:
+    return std::unique_ptr<ExprIR>(new ExprMethodCallIR(expr.methodcall()));
   default:
     // FIXME
     return std::unique_ptr<ExprIR>(new ExprIntegerIR(-1));
@@ -104,7 +115,11 @@ std::unique_ptr<ExprIR> deserializeExpr(const Frontend_ir::Expr &expr) {
 
 ExprClassMakeIR::ExprClassMakeIR(
     const Frontend_ir::Expr::_ClassCreation &expr) {
-  classType = deserializeType(expr.texpr());
+  classType = deserializeType(expr.con_texpr());
+  vtableIdx = expr.vtable_index();
+  for (auto a : expr.con_args()) {
+    conArgs.push_back(deserializeExpr(a));
+  }
 };
 
 CastType deserializeCastType(const Frontend_ir::Expr::_Cast c) {
@@ -228,5 +243,8 @@ llvm::Value *ExprCastIR::codegen(IRVisitor &visitor) {
   return visitor.codegen(*this);
 }
 llvm::Value *ExprClassMakeIR::codegen(IRVisitor &visitor) {
+  return visitor.codegen(*this);
+}
+llvm::Value *ExprMethodCallIR::codegen(IRVisitor &visitor) {
   return visitor.codegen(*this);
 }

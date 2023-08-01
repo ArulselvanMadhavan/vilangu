@@ -1,0 +1,43 @@
+<head>
+<title> AST for methRet2.t</title>
+</head>
+<body>
+<pre>
+CompilationUnit
+[classes]
+  ClassDeclaration A (Object)
+    FieldDeclaration (int) 
+      (i, 0)
+    FieldDeclaration (A) 
+      (a, 0)
+    MethodDeclaration (meth1 A) 
+      ExpressionStatement
+        ASSIGN (A)
+        FieldAccess (A) a at position 2
+        ThisExpression (A)
+        NewObject A
+      ExpressionStatement
+        ASSIGN (int)
+        FieldAccess (int) i at position 1
+        DEREF (A)
+        FieldAccess (A) a at position 2
+        ThisExpression (A)
+        IntegerLiteral (int) 42
+      ReturnStatement
+        DEREF (A)
+        FieldAccess (A) a at position 2
+        ThisExpression (A)
+[main block]
+  MainVariableDeclarationStatement
+    (a, A)
+  ExpressionStatement
+    ASSIGN (A)
+    MainBlockVariable (A) a
+    NewObject A
+  OutputStatement
+    DEREF (int)
+    FieldAccess (int) i at position 1
+    MethodInvocationExpression meth1 A
+      DEREF (A)
+      MainBlockVariable (A) a
+</pre>

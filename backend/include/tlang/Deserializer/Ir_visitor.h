@@ -18,12 +18,15 @@ public:
   virtual llvm::Value *codegen(const ExprIdentifierIR &expr) = 0;
   virtual llvm::Value *codegen(const ExprAssignIR &expr) = 0;
   virtual llvm::Value *codegen(const ExprCastIR &expr) = 0;
+  virtual llvm::Value *codegen(const ExprMethodCallIR &expr) = 0;
   virtual llvm::Value *codegen(const SimpleVarIR &expr) = 0;
   virtual llvm::Value *codegen(const SubscriptVarIR &expr) = 0;
   virtual llvm::Value *codegen(const FieldVarIR &expr) = 0;
   virtual llvm::Value *codegen(const StmtBlockIR &expr) = 0;
   virtual llvm::Value *codegen(const StmtIfElseIR &expr) = 0;
   virtual llvm::Value *codegen(const StmtWhileIR &expr) = 0;
+  virtual llvm::Value *codegen(const StmtDeleteIR &expr) = 0;
+  virtual llvm::Value *codegen(const StmtFreeIR &expr) = 0;
   virtual llvm::Value *codegen(const StmtBreakIR &expr) = 0;
   virtual llvm::Value *codegen(const StmtContinueIR &expr) = 0;
   virtual llvm::Value *codegen(const ExprEmptyIR &expr) = 0;

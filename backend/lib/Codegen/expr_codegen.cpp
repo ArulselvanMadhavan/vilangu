@@ -6,6 +6,7 @@
 #include "llvm/IR/Constants.h"
 #include "llvm/IR/Type.h"
 #include "llvm/IR/Value.h"
+#include <llvm-14/llvm/Support/Casting.h>
 #include <llvm/ADT/ArrayRef.h>
 #include <llvm/ADT/StringRef.h>
 #include <llvm/IR/DataLayout.h>
@@ -274,26 +275,32 @@ llvm::Value *IRCodegenVisitor::codegen(const ExprEmptyIR &expr) {
 llvm::Value *IRCodegenVisitor::codegen(const ExprClassMakeIR &expr) {
   llvm::Type *resultTypePtr = expr.classType->codegen(*this); // i32arr*
   llvm::Type *resultType = resultTypePtr->getContainedType(0);
-  // llvm::AllocaInst *newClassPtr =
-  //     builder->CreateAlloca(resultType, nullptr,
-  //     llvm::Twine("newClassResult"));
-  llvm::Type *int32Type = llvm::Type::getInt32Ty(*context);
-  llvm::Value *intOne = llvm::ConstantInt::getSigned(int32Type, 1);
-  llvm::Value *sizeOfPtr = builder->CreateGEP(
-      resultType,
-      llvm::ConstantPointerNull::get(llvm::PointerType::get(resultType, 0)),
-      intOne, llvm::Twine("sizeOf"));
-  llvm::Value *sizeOf = builder->CreatePtrToInt(sizeOfPtr, int32Type);
-  llvm::Function *calloc = module->getFunction("calloc");
-  auto callocParams = llvm::ArrayRef<llvm::Value *>{intOne, sizeOf};
-  llvm::CallInst *callocRes = builder->CreateCall(calloc, callocParams);
-  llvm::Value *callocHead = builder->CreateBitCast(callocRes, resultTypePtr);
+  llvm::Value *callocHead =
+      builder->CreateBitCast(heapAlloc(resultType), resultTypePtr);
   llvm::Twine classVTableName = resultType->getStructName() + "_Vtable";
   llvm::GlobalVariable *classVtable =
       module->getNamedGlobal(classVTableName.str());
   llvm::Value *vTableField =
       builder->CreateStructGEP(resultType, callocHead, 0);
   builder->CreateStore(classVtable, vTableField);
+
+  llvm::Value *constFuncPtr = builder->CreateStructGEP(
+      classVtable->getType()->getContainedType(0), classVtable, expr.vtableIdx);
+  llvm::Value *constFuncVal =
+      builder->CreateLoad(constFuncPtr->getType()->getContainedType(0),
+                          constFuncPtr, "constructorLoad");
+  std::vector<llvm::Value *> constArgs;
+  constArgs.push_back(callocHead); // Pass this as first arg
+  for (auto &e : expr.conArgs) {
+    llvm::Value *e_val = e->codegen(*this);
+    constArgs.push_back(e_val);
+  }
+  if (auto fnType = llvm::dyn_cast<llvm::FunctionType>(
+          constFuncVal->getType()->getContainedType(0))) {
+    builder->CreateCall(fnType, constFuncVal, constArgs);
+  } else {
+    llvm::outs() << "vtable lookup returned a non-function type";
+  }
   return callocHead;
 }
 
@@ -335,8 +342,10 @@ llvm::Value *IRCodegenVisitor::codegen(const ExprArrayMakeIR &expr) {
     llvm::outs() << "ArrayCreation resultType is not a pointer";
     return nullptr;
   }
-  llvm::AllocaInst *newArrayResultPtr =
-      builder->CreateAlloca(resultType, nullptr, llvm::Twine("newArrayResult"));
+  // stack allocated
+  llvm::Value *newArrayResultPtr =
+      builder->CreateBitCast(heapAlloc(resultType), resultTypePtr);
+
   llvm::Value *elemPtrPtr =
       builder->CreateStructGEP(resultType, newArrayResultPtr, 1); // elem**
   llvm::Type *elemPtrType = elemPtrPtr->getType()->getContainedType(0);
@@ -355,13 +364,24 @@ llvm::Value *IRCodegenVisitor::codegen(const ExprArrayMakeIR &expr) {
   llvm::Value *callocHead = builder->CreateBitCast(callocRes, elemPtrType);
 
   // constructor
-  llvm::Twine resultTypeStr = resultType->getStructName() + "_Constructor";
-  llvm::Function *constructorFunc = module->getFunction(resultTypeStr.str());
+  // llvm::Twine resultTypeStr = resultType->getStructName() + "_Constructor";
+  // llvm::Function *constructorFunc = module->getFunction(resultTypeStr.str());
   llvm::Twine arrVTableName = resultType->getStructName() + "_Vtable";
   llvm::GlobalVariable *arrVtable = module->getNamedGlobal(arrVTableName.str());
-  builder->CreateCall(constructorFunc,
-                      llvm::ArrayRef<llvm::Value *>{
-                          newArrayResultPtr, arrVtable, callocHead, size});
+  llvm::Value *constFuncPtr = builder->CreateStructGEP(
+      arrVtable->getType()->getContainedType(0), arrVtable, expr.arrConsIdx);
+  llvm::Value *constFuncVal =
+      builder->CreateLoad(constFuncPtr->getType()->getContainedType(0),
+                          constFuncPtr, "constructorLoad");
+  llvm::ArrayRef<llvm::Value *> constArgs = {newArrayResultPtr, arrVtable,
+                                             callocHead, size};
+  if (auto fnType = llvm::dyn_cast<llvm::FunctionType>(
+          constFuncVal->getType()->getContainedType(0))) {
+    builder->CreateCall(fnType, constFuncVal, constArgs);
+  } else {
+    llvm::outs() << "vtable lookup returned a non-function type";
+  }
+  // builder->CreateCall(constructorFunc, constArgs);
   return newArrayResultPtr; // i32arr*
 }
 
@@ -476,5 +496,47 @@ llvm::Value *IRCodegenVisitor::codegen(const ExprCastIR &expr) {
   }
   case Identity:
     return expr.expr->codegen(*this);
+  }
+}
+
+llvm::Value *IRCodegenVisitor::codegen(const ExprMethodCallIR &expr) {
+  llvm::Value *thisObj = expr.objExpr->codegen(*this);
+  if (thisObj == nullptr) {
+    llvm::outs() << "methodcall: this object is null";
+    return nullptr;
+  }
+  // thisObj has to be ref type
+  llvm::Type *thisType = thisObj->getType()->getContainedType(0);
+  llvm::Value *vTableFieldPtr = builder->CreateStructGEP(thisType, thisObj, 0);
+  llvm::Value *vTablePtr =
+      builder->CreateLoad(vTableFieldPtr->getType()->getContainedType(0),
+                          vTableFieldPtr, "vTableLoad");
+  llvm::Value *calleeMethodPtr = builder->CreateStructGEP(
+      vTablePtr->getType()->getPointerElementType(), vTablePtr, expr.methodIdx);
+  llvm::Value *calleeMethodVal =
+      builder->CreateLoad(calleeMethodPtr->getType()->getContainedType(0),
+                          calleeMethodPtr, "methodLoad");
+  if (auto calleeMethTy = llvm::dyn_cast<llvm::FunctionType>(
+          calleeMethodVal->getType()->getContainedType(0))) {
+    llvm::Value *thisArg =
+        builder->CreateBitCast(thisObj, calleeMethTy->getParamType(0));
+    std::vector<llvm::Value *> argVals{thisArg};
+    int i = 0;
+    for (auto &arg : expr.methodArgs) {
+      llvm ::Value *argVal = arg->codegen(*this);
+      if (argVal == nullptr) {
+        llvm::outs() << "methodcall: null arg value at " << i;
+        return nullptr;
+      }
+      llvm::Type *paramTy = calleeMethTy->getParamType(
+          i + 1); // note shift by one since "this" is first arg
+      llvm::Value *bitCastArgVal = builder->CreateBitCast(argVal, paramTy);
+      argVals.push_back(bitCastArgVal);
+      i = i + 1;
+    }
+    return builder->CreateCall(calleeMethTy, calleeMethodVal, argVals);
+  } else {
+    llvm::outs() << "Method function type conversion failed";
+    return nullptr;
   }
 }

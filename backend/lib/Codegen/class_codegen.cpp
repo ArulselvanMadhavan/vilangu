@@ -53,17 +53,12 @@ void IRCodegenVisitor::codegenVTables(
       inits.push_back(baseClassVtable);
     }
 
-    // class name is kept as global var; It’s a string. Reuse addGlobalVarStr
-    auto classNameVal =
-        llvm::ConstantDataArray::getString(*context, currClass->className);
+    llvm::StringRef classNameVal = currClass->className;
     std::string classNameGlobalVarName = currClass->className + "_class_name";
-    module->getOrInsertGlobal(classNameGlobalVarName, classNameVal->getType());
+    addGlobalVarStr(classNameGlobalVarName, classNameVal);
+
     llvm::GlobalVariable *classNameVar =
         module->getNamedGlobal(classNameGlobalVarName);
-    classNameVar->setLinkage(llvm::GlobalValue::PrivateLinkage);
-    classNameVar->setConstant(true);
-    classNameVar->setAlignment(llvm::Align());
-    classNameVar->setInitializer(classNameVal);
     llvm::Value *zeroIdx =
         llvm::ConstantInt::getSigned(llvm::Type::getInt32Ty(*context), 0);
     llvm::Value *classNameBegin = builder->CreateInBoundsGEP(
@@ -72,6 +67,12 @@ void IRCodegenVisitor::codegenVTables(
     bodyTypes.push_back(llvm::Type::getInt8PtrTy(*context));
     if (auto *temp = llvm::dyn_cast<llvm::Constant>(classNameBegin)) {
       inits.push_back(temp);
+    }
+
+    for (auto &methodName : currClass->vtable) {
+      llvm::Function *method = module->getFunction(llvm::StringRef(methodName));
+      inits.push_back(method);
+      bodyTypes.push_back(method->getType());
     }
 
     // Complete vtable type defs

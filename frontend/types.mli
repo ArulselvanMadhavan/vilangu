@@ -8,7 +8,8 @@ type ty =
   | NAME of
       Symbol.symbol
       * (Symbol.symbol * ty) list
-      * Symbol.symbol option (* class_name, field_names list *)
+      * Symbol.symbol option
+      * (string * ty) list
   | NAMEREF of Symbol.symbol
   | ARRAY of int * ty
 [@@deriving sexp]

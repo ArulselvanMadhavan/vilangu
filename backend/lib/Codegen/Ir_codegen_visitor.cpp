@@ -134,3 +134,15 @@ void IRCodegenVisitor::runtimeError(std::string formatStr,
       exit, llvm::ArrayRef<llvm::Value *>{llvm::ConstantInt::getSigned(
                 llvm::Type::getInt32Ty(*context), -1)});
 }
+
+llvm::CallInst *IRCodegenVisitor::heapAlloc(llvm::Type *t) {
+  llvm::Type *int32Type = llvm::Type::getInt32Ty(*context);
+  llvm::Value *intOne = llvm::ConstantInt::getSigned(int32Type, 1);
+  llvm::Value *sizeOfPtr = builder->CreateGEP(
+      t, llvm::ConstantPointerNull::get(llvm::PointerType::get(t, 0)), intOne,
+      llvm::Twine("sizeOf"));
+  llvm::Value *sizeOf = builder->CreatePtrToInt(sizeOfPtr, int32Type);
+  llvm::Function *calloc = module->getFunction("calloc");
+  auto callocParams = llvm::ArrayRef<llvm::Value *>{intOne, sizeOf};
+  return builder->CreateCall(calloc, callocParams);
+}

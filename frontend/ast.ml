@@ -11,6 +11,11 @@ let line_no pos =
   Int32.of_int sl |> Option.value ~default:(Int32.neg Int32.one)
 ;;
 
+let default_pos =
+  let loc = -1, -1 in
+  loc, loc
+;;
+
 type comp_unit =
   { main_decl : main list
   ; class_decs : classdec list
@@ -38,6 +43,7 @@ and class_body =
       { name : symbol
       ; fparams : param list
       ; body : stmt
+      ; pos : pos
       }
   | FieldDec of class_field list
   | Method of
@@ -49,6 +55,8 @@ and class_body =
   | Destructor of
       { name : symbol
       ; body : stmt
+      ; fparams : param list
+      ; pos : pos
       }
 
 and param =
@@ -84,7 +92,7 @@ and stmt =
   | Break of pos
   | Continue of pos
   | ExprStmt of exp
-  | Delete of exp
+  | Delete of exp * pos
   | IfElse of
       { exp : exp
       ; istmt : stmt
@@ -92,19 +100,22 @@ and stmt =
       ; pos : pos
       }
 
+and identifier = Identifier of Symbol.symbol * pos
+
 and exp =
-  | Identifier of symbol * pos
   | IntLit of int32 * pos
   | OpExp of operator * pos
   | ArrayCreationExp of
       { type_ : type_
       ; exprs : exp list
       ; pos : pos
+      ; vtbl_idx : int option
       }
   | ClassCreationExp of
       { type_ : type_
       ; args : exp list
       ; pos : pos
+      ; vtbl_idx : int option
       }
   | VarExp of var * pos
   | NullLit of pos
@@ -112,9 +123,10 @@ and exp =
   | Super of pos
   | MethodCall of
       { base : exp
-      ; field : exp option
+      ; field : identifier option
       ; args : exp list
       ; pos : pos
+      ; vtbl_idx : int option
       }
   | CastEvalExp of
       { to_ : exp

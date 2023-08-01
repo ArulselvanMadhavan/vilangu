@@ -85,8 +85,11 @@ public:
   virtual llvm::Value *codegen(const StmtContinueIR &expr) override;
   virtual llvm::Value *codegen(const ExprEmptyIR &expr) override;
   virtual llvm::Value *codegen(const StmtExprIR &expr) override;
+  virtual llvm::Value *codegen(const StmtDeleteIR &expr) override;
+  virtual llvm::Value *codegen(const StmtFreeIR &expr) override;
   virtual llvm::Value *codegen(const ExprArrayMakeIR &expr) override;
   virtual llvm::Value *codegen(const ExprClassMakeIR &expr) override;
+  virtual llvm::Value *codegen(const ExprMethodCallIR &expr) override;
   virtual llvm::Type *codegen(const TypeIntIR &texpr) override;
   virtual llvm::Type *codegen(const TypeClassIR &texpr) override;
   virtual llvm::Type *codegen(const TypePointerIR &texpr) override;
@@ -95,6 +98,7 @@ public:
   virtual llvm::Type *codegen(const TypeInt8IR &texpr) override;
   virtual llvm::Value *codegen(const ExprVarIR &expr) override;
   virtual llvm::Value *codegen(const LoadVarIR &expr) override;
+  llvm::CallInst *heapAlloc(llvm::Type *t);
   void
   runOptimizingPasses(const std::vector<std::unique_ptr<StmtIR>> &mainExpr);
 };

@@ -10,6 +10,7 @@ struct ClassIR {
   std::string className;
   std::vector<std::unique_ptr<TypeIR>> fields;
   std::string baseClassName;
+  std::vector<std::string> vtable;
   ClassIR(const Frontend_ir::ClassDef &cdef);
 };
 #endif

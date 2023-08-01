@@ -17,6 +17,7 @@ let gen_binop = function
 exception NoMatchingTypeExpr
 exception SubscriptAccessException
 exception NonArrayTypeException
+exception ClassNotFoundException
 
 let gen_texpr tenv type_ =
   let ty = Semant.trans_type tenv type_ in
@@ -46,13 +47,19 @@ let gen_expr tenv e =
         ; op_line_no = A.line_no pos
         }
     | A.Assignment { lhs; exp; _ } -> FT.Assign { lhs = gen_var lhs; rhs = gexpr exp }
-    | A.Identifier ((sym_name, _), _) ->
-      FT.Expr_id { id = FT.Simple { var_name = sym_name } }
-    | A.ArrayCreationExp { type_; exprs; pos } ->
+    (* | A.Identifier ((sym_name, _), _) -> *)
+    (*   FT.Expr_id { id = FT.Simple { var_name = sym_name } } *)
+    | A.ArrayCreationExp { type_; exprs; pos; vtbl_idx } ->
       let ty = Semant.trans_type tenv type_ in
       let texpr = T.gen_type_expr ty in
       let make_line_no = A.line_no pos in
-      FT.Array_creation { creation_exprs = List.map gexpr exprs; texpr; make_line_no }
+      let vtable_index = Option.value vtbl_idx ~default:(-1) |> Int32.of_int in
+      FT.Array_creation
+        { creation_exprs = List.map gexpr exprs
+        ; texpr
+        ; make_line_no
+        ; arr_cons_idx = vtable_index
+        }
     | A.VarExp (v, _) -> FT.Var_exp (gen_var v)
     | A.CastType { type_; exp; cast_type; pos } ->
       let cast_type = Option.fold cast_type ~none:FT.No_cast ~some:gen_cast_type in
@@ -62,8 +69,15 @@ let gen_expr tenv e =
         ; cast_type
         ; cast_line_no = A.line_no pos
         }
-    | A.ClassCreationExp { type_; _ } ->
-      FT.Class_creation { texpr = gen_texpr tenv type_ }
+    | A.ClassCreationExp { type_; args; vtbl_idx; _ } ->
+      let con_args = List.map gexpr args in
+      let vtable_index = Option.value vtbl_idx ~default:(-1) |> Int32.of_int in
+      FT.Class_creation { con_texpr = gen_texpr tenv type_; con_args; vtable_index }
+    | A.MethodCall { base; args; vtbl_idx; _ } ->
+      let vtable_index = Option.value vtbl_idx ~default:(-1) |> Int32.of_int in
+      let obj_expr = gexpr base in
+      let method_args = List.map gexpr args in
+      FT.Method_call { method_idx = vtable_index; obj_expr; method_args }
     | _ -> FT.Integer (Int32.of_int (-1))
   and gen_var = function
     | A.SimpleVar ((sym_name, _), _) -> FT.Simple { var_name = sym_name }
@@ -121,6 +135,7 @@ let gen_stmt tenv s =
       FT.While { while_cond = gen_expr tenv exp; while_block = gstmt block }
     | A.Break _ -> FT.Break
     | A.Continue _ -> FT.Continue
+    | A.Delete (e, _) -> FT.Delete { del_expr = gen_expr tenv e }
     (* | A.Empty -> FT.Empty *)
     (* | _ -> FT.Integer (Int32.of_int (-1)) *)
     | _ -> FT.Printf { format = "%d"; f_args = [ FT.Integer (Int32.of_int (-1)) ] }
@@ -139,17 +154,53 @@ let gen_decls tenv xs =
 
 let ir_gen_field_defn tenv (A.Field { type_; _ }) = gen_texpr tenv type_
 
-let ir_gen_class_defn tenv class_defns (A.ClassDec { name; base; _ }) =
-  List.map (ir_gen_field_defn tenv) (Ir_gen_env.get_class_fields name class_defns)
-  |> fun ir_fields ->
-  let name, _ = name in
-  let base_class_name, _ = Option.value base ~default:Env.obj_symbol in
-  FT.{ name; fields = ir_fields; base_class_name }
+let gen_params tenv fparams =
+  let gparam (A.Param { name; type_ }) =
+    let param_name, _ = name in
+    let param_type = gen_texpr tenv type_ in
+    FT.{ param_name; param_type }
+  in
+  List.map gparam fparams
 ;;
 
-let ir_gen_class_defns tenv class_defns =
-  List.map (ir_gen_class_defn tenv class_defns) class_defns
+let gen_fun_def tenv = function
+  | A.Constructor { name; fparams; body; _ } ->
+    let name, _ = name in
+    let args = List.map (Semant.param_to_type tenv) fparams in
+    let name = Ir_gen_env.vtable_method_name name args in
+    let params = gen_params tenv fparams in
+    let body = gen_stmt tenv body in
+    FT.{ name; return_t = FT.Void; params; body } |> Option.some
+  | A.Destructor { name; body; fparams; _ } ->
+    let name, _ = name in
+    let args = List.map (Semant.param_to_type tenv) fparams in
+    let name = Ir_gen_env.vtable_method_name name args in
+    let params = gen_params tenv fparams in
+    let body = gen_stmt tenv body in
+    Some FT.{ name; return_t = FT.Void; params; body }
+  | _ -> None
 ;;
+
+let ir_gen_class_defn tenv (A.ClassDec { name; base; class_body; _ }) =
+  let class_defn =
+    match S.look (tenv, name) with
+    | Some (T.NAME (_, fields, _, vtable)) ->
+      let ir_fields = List.map (fun (_, ty) -> T.gen_type_expr ty) fields in
+      let name, _ = name in
+      let base_class_name, _ = Option.value base ~default:Env.obj_symbol in
+      let vtable = List.map (fun (v, _) -> v) vtable in
+      FT.{ name; fields = ir_fields; base_class_name; vtable }
+    | _ -> raise ClassNotFoundException
+  in
+  (* gen fun_def for const *)
+  (* use tenv to get vtable *)
+  (* for all constructor defs in class_body find an entry in the vtable *)
+  (* don’t worry about default const for now. *)
+  let fun_defs = List.filter_map (gen_fun_def tenv) class_body in
+  class_defn, fun_defs
+;;
+
+let ir_gen_class_defns tenv class_defns = List.map (ir_gen_class_defn tenv) class_defns
 
 let mk_arr_inner_type lower_rank type_ =
   if lower_rank > 0
@@ -157,14 +208,45 @@ let mk_arr_inner_type lower_rank type_ =
   else FT.Pointer { data = T.gen_type_expr type_ }
 ;;
 
-let make_array_class name rank type_ =
+let make_array_class tenv name rank type_ =
   let lower_rank = rank - 1 in
   let lower_type = mk_arr_inner_type lower_rank type_ in
   let base_class_name, _ = Env.obj_symbol in
-  FT.{ name; fields = [ lower_type; FT.Int32 ]; base_class_name }
+  (* cons + dest *)
+  let arr_ty = T.type2str (T.ARRAY (rank, type_)) in
+  let cons_method = arr_ty ^ "_Constructor" in
+  let dest_method = Ir_gen_env.vtable_method_name ("~" ^ arr_ty) [ arr_ty ] in
+  let arr_vtable = [ dest_method; cons_method ] in
+  let vtable =
+    match S.look (tenv, E.obj_symbol) with
+    | Some (T.NAME (_, _, _, vtable)) ->
+      let vtable = List.map (fun (v, _) -> v) vtable in
+      List.append vtable arr_vtable
+    | _ -> arr_vtable
+  in
+  FT.{ name; fields = [ lower_type; FT.Int32 ]; base_class_name; vtable }
 ;;
 
-let mk_arr_constr name rank type_ =
+let mk_arr_destr rank type_ =
+  let cur_type = T.gen_type_expr (ARRAY (rank, type_)) in
+  let this_field field_index =
+    FT.Field
+      { base_expr = FT.Var_exp (FT.Simple { var_name = "this" })
+      ; field_index
+      ; field_line_no = Int32.zero
+      }
+  in
+  (* let super_call = FT.Method_call {obj_expr = FT.Var_exp} in *)
+  let del_stmt = FT.Free { free_expr = FT.Var_exp (this_field Int32.one) } in
+  let body = FT.Block { stmt_list = [ del_stmt ] } in
+  let params = [ FT.{ param_name = "this"; param_type = cur_type } ] in
+  let arr_ty = T.ARRAY (rank, type_) in
+  let name = "~" ^ T.type2str arr_ty in
+  let name = Ir_gen_env.vtable_method_name name [ T.type2str arr_ty ] in
+  FT.{ name; params; body; return_t = FT.Void }
+;;
+
+let mk_arr_constr rank type_ =
   let cur_type = T.gen_type_expr (ARRAY (rank, type_)) in
   let lower_rank = rank - 1 in
   let lower_type = mk_arr_inner_type lower_rank type_ in
@@ -229,11 +311,6 @@ let mk_arr_constr name rank type_ =
             }
       }
   in
-  (* let zero_val_type = *)
-  (*   match lower_type with *)
-  (*   | FT.Pointer { data = elem } -> elem *)
-  (*   | _ -> raise NoMatchingTypeExpr *)
-  (* in *)
   let body =
     FT.Block
       { stmt_list =
@@ -246,25 +323,23 @@ let mk_arr_constr name rank type_ =
           ]
       }
   in
-  FT.
-    { name
-    ; return_t = FT.Void
-    ; params =
-        [ FT.{ param_name = "this"; param_type = cur_type }
-        ; FT.
-            { param_name = "vtable"
-            ; param_type =
-                FT.Pointer
-                  { data =
-                      FT.Class
-                        { name = T.type2str (ARRAY (rank, type_)) ^ "_Vtable_type" }
-                  }
-            }
-        ; FT.{ param_name = "data"; param_type = lower_type }
-        ; FT.{ param_name = "length"; param_type = FT.Int32 }
-        ]
-    ; body
-    }
+  let arr_ty = T.ARRAY (rank, type_) in
+  let arr_vty = T.type2str arr_ty ^ "_Vtable_type" in
+  (* let elem_ty = if lower_rank > 0 then T.ARRAY (lower_rank, type_) else type_ in *)
+  (* let args_ty = [ T.type2str arr_ty; arr_vty; T.type2str elem_ty; T.type2str T.INT ] in *)
+  let params =
+    [ FT.{ param_name = "this"; param_type = cur_type }
+    ; FT.
+        { param_name = "vtable"
+        ; param_type = FT.Pointer { data = FT.Class { name = arr_vty } }
+        }
+    ; FT.{ param_name = "data"; param_type = lower_type }
+    ; FT.{ param_name = "length"; param_type = FT.Int32 }
+    ]
+  in
+  (* let name = Ir_gen_env.vtable_method_name (T.type2str arr_ty) args_ty in *)
+  let name = T.type2str arr_ty ^ "_Constructor" in
+  FT.{ name; return_t = FT.Void; params; body }
 ;;
 
 let filter_arr_creation_exp tenv main_decl =
@@ -275,16 +350,15 @@ let filter_arr_creation_exp tenv main_decl =
       arr_types := ty :: !arr_types
       (* Printf.printf "%s|%d\n" (T.type2str ty) (List.length exprs) *)
     | A.ClassCreationExp { args; _ } -> List.iter h_exp args
-    | A.MethodCall { base; field; args; _ } ->
+    | A.MethodCall { base; args; _ } ->
       List.iter h_exp args;
-      h_exp base;
-      Option.fold ~none:() ~some:h_exp field
+      h_exp base
     | A.CastEvalExp { to_; from_ } ->
       h_exp to_;
       h_exp from_
     | A.CastType { exp; _ } -> h_exp exp
     | A.Assignment { exp; _ } -> h_exp exp
-    | Ast.Identifier (_, _)
+    (* | Ast.Identifier (_, _) *)
     | Ast.IntLit (_, _)
     | Ast.OpExp (_, _)
     | Ast.VarExp (_, _)
@@ -298,7 +372,7 @@ let filter_arr_creation_exp tenv main_decl =
     | A.Output (exp, _) -> h_exp exp
     | A.ReturnStmt (Some exp) -> h_exp exp
     | A.ExprStmt exp -> h_exp exp
-    | A.Delete exp -> h_exp exp
+    | A.Delete (exp, _) -> h_exp exp
     | A.IfElse { exp; istmt; estmt; _ } ->
       h_exp exp;
       h_stmt istmt;
@@ -330,17 +404,16 @@ let arr_class_defns venv tenv main_decl =
     then ()
     else (
       Base.Hash_set.add h name;
-      let array_class = make_array_class name rank type_ in
+      let array_class = make_array_class tenv name rank type_ in
       class_results := array_class :: !class_results)
   in
-  let add_constructor type_ rank =
-    let name = T.type2str (ARRAY (rank, type_)) ^ "_Constructor" in
-    let is_present = Base.Hash_set.exists h ~f:(String.equal name) in
-    if is_present
+  let add_cons_dest type_ rank ~fun_gen =
+    let const_func = fun_gen rank type_ in
+    let FT.{ name; _ } = const_func in
+    if Base.Hash_set.mem h name
     then ()
     else (
       Base.Hash_set.add h name;
-      let const_func = mk_arr_constr name rank type_ in
       func_results := const_func :: !func_results)
   in
   let arr_types = filter_arr_creation_exp tenv main_decl in
@@ -348,7 +421,8 @@ let arr_class_defns venv tenv main_decl =
     | T.ARRAY (rank, type_) ->
       let ranks = List.init rank (fun rank -> rank + 1) in
       List.iter (add_class type_) ranks;
-      List.iter (add_constructor type_) ranks
+      List.iter (add_cons_dest type_ ~fun_gen:mk_arr_constr) ranks;
+      List.iter (add_cons_dest type_ ~fun_gen:mk_arr_destr) ranks
     | _ -> ()
   in
   let handle_ventry _symbol = function
@@ -356,7 +430,7 @@ let arr_class_defns venv tenv main_decl =
     | _ -> ()
   in
   let rec handle_tentry _sym = function
-    | T.NAME (_ty_name, fields, _) ->
+    | T.NAME (_ty_name, fields, _, _) ->
       List.iter (fun (sym, ty) -> handle_tentry sym ty) fields
     | T.ARRAY _ as arr -> handle_arr_type arr
     | _ -> ()
@@ -365,11 +439,6 @@ let arr_class_defns venv tenv main_decl =
   S.iter handle_ventry venv;
   S.iter handle_tentry tenv;
   List.rev !class_results, List.rev !func_results
-;;
-
-let obj_class_defn =
-  let name, _ = E.obj_symbol in
-  FT.{ name; fields = []; base_class_name = name }
 ;;
 
 let ir_gen_function_defns tenv class_defns =
@@ -498,11 +567,15 @@ let gen_prog (venv, tenv, A.{ main_decl; class_decs }) =
     | A.MainStmt s :: xs -> gen_stmt tenv s :: gen_main xs
   in
   let arr_classdefs, arr_funcdefs = arr_class_defns venv tenv main_decl in
-  let classdefs = ir_gen_class_defns tenv class_decs in
-  let obj_and_arr_classdefs = List.cons obj_class_defn arr_classdefs in
-  let classdefs = List.append obj_and_arr_classdefs classdefs in
+  let classdefs, method_defs = ir_gen_class_defns tenv class_decs |> Base.List.unzip in
+  let method_defs = List.concat method_defs in
+  (* let obj_class_def, obj_method_defs = obj_class_defn in *)
+  (* let obj_and_arr_classdefs = List.cons obj_class_def arr_classdefs in *)
+  let classdefs = List.append arr_classdefs classdefs in
   (* let funcdefs = ir_gen_function_defns tenv class_decs in *)
-  let function_defs = obj_is_a_fun :: arr_funcdefs in
+  (* let obj_funcs = obj_is_a_fun :: obj_method_defs in *)
+  let obj_and_arr_funcs = obj_is_a_fun :: arr_funcdefs in
+  let function_defs = List.append obj_and_arr_funcs method_defs in
   FT.{ main = gen_main main_decl; classdefs; function_defs }
 ;;
 

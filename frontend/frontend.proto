@@ -110,10 +110,13 @@ message Expr {
     repeated Expr creation_exprs = 1;
     required Type_expr texpr = 2;
     required int32 make_line_no = 3;
+    required int32 arr_cons_idx = 4;
   }
 
   message _ClassCreation{
-    required Type_expr texpr = 1;
+    required Type_expr con_texpr = 1;
+    repeated Expr con_args = 2;
+    required int32 vtable_index = 3;
   }
 
   message _NullLit {
@@ -137,6 +140,12 @@ message Expr {
     required _Cast cast_type = 3;
     required int32 cast_line_no = 4;
   }
+
+  message _MethodCall {
+    required int32 method_idx = 1;
+    required Expr obj_expr = 2;
+    repeated Expr method_args = 3;
+  }
   
   oneof value {
     int32 Integer = 1;
@@ -151,6 +160,7 @@ message Expr {
     _NullLit NullLit = 10;
     _CastExpr CastExpr = 11;
     _ClassCreation ClassCreation = 12;
+    _MethodCall MethodCall = 13;
   }
 }
 
@@ -184,6 +194,14 @@ message Stmt {
     required Stmt if_stmt = 2;
     required Stmt else_stmt = 3;
   }
+
+  message _Delete {
+    required Expr del_expr = 1; // Transform into a method call
+  }
+
+  message _Free {
+    required Expr free_expr = 1;
+  }
   
   oneof value {
     _VarDecl VarDecl = 1;
@@ -194,6 +212,8 @@ message Stmt {
     _Break Break = 6;
     _Continue Continue = 7;
     _If_stmt IfStmt = 8;
+    _Delete Delete = 9;
+    _Free Free = 10;
   }
 }
 
@@ -201,6 +221,7 @@ message ClassDef {
   required string name = 1;
   repeated Type_expr fields = 2;
   required string baseClassName = 3;
+  repeated string vtable = 4;
 }
 
 message Param {
